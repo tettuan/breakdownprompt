@@ -1,27 +1,9 @@
 {
-  "name": "implementation",
-  "version": "1.0.0",
-  "description": "Test schema for implementation layer",
+  "type": "object",
   "properties": {
-    "input": {
-      "type": "object",
-      "properties": {
-        "design": {
-          "type": "string",
-          "description": "Design document content"
-        }
-      },
-      "required": ["design"]
-    },
-    "output": {
-      "type": "object",
-      "properties": {
-        "implementation": {
-          "type": "string",
-          "description": "Implementation code"
-        }
-      },
-      "required": ["implementation"]
-    }
-  }
+    "name": { "type": "string" },
+    "description": { "type": "string" },
+    "version": { "type": "string" }
+  },
+  "required": ["name", "description"]
 } 

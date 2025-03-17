@@ -1,12 +1,14 @@
 # Implementation from Design
 
-## Input Design
-{input_markdown}
+This is a test template for generating implementation from design.
 
-## Schema Reference
+## Schema
 {schema_file}
 
-## Output Location
+## Input
+{input_markdown_file}
+
+## Output
 {destination_path}
 
 ## Additional Context

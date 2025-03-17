@@ -33,9 +33,19 @@ export const TEST_PARAMS = {
 // Helper function to create test directories
 export async function setupTestDirs(): Promise<void> {
   try {
+    // Create base directories
     await Deno.mkdir(TEST_CONFIG.BASE_DIR, { recursive: true });
     await Deno.mkdir(TEST_CONFIG.OUTPUT_DIR, { recursive: true });
+    
+    // Create template directories
     await Deno.mkdir(`${TEST_CONFIG.BASE_DIR}/${TEST_PARAMS.DEMONSTRATIVE_TYPE}/${TEST_PARAMS.LAYER_TYPE}`, { recursive: true });
+    
+    // Create schema directory
+    await Deno.mkdir(`${TEST_CONFIG.BASE_DIR}/schema`, { recursive: true });
+    
+    // Create input directory
+    await Deno.mkdir(`${TEST_CONFIG.BASE_DIR}/input`, { recursive: true });
+    
     logger.debug("Test directories created successfully");
   } catch (error) {
     logger.error("Failed to create test directories:", error);

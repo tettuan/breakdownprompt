@@ -20,21 +20,33 @@
  * 5. Integration: Should work correctly with actual template and input files
  */
 
-import { assertEquals, assertThrows } from "std/testing/asserts.ts";
+import { assertEquals, assertRejects } from "std/testing/asserts.ts";
 import { PromptManager } from "../src/prompt_manager.ts";
 import { DefaultConfig } from "../src/config.ts";
 import { PromptParams } from "../src/types.ts";
 import { TEST_CONFIG, TEST_PARAMS, setupTestDirs, cleanupTestDirs, copyFixtureFiles, readFixtureContent } from "./test_utils.ts";
+import { startSection, endSection, checkpoint, logObject } from "../utils/debug-logger.ts";
 
 // Test initialization with valid configuration
 Deno.test("PromptManager - initialization", () => {
+  startSection("PromptManager Initialization Test");
+  
   const manager = new PromptManager(TEST_CONFIG.BASE_DIR, new DefaultConfig());
+  checkpoint("Manager instance created", { baseDir: TEST_CONFIG.BASE_DIR });
+  
   assertEquals(manager instanceof PromptManager, true);
+  checkpoint("Instance type verification passed", { isInstance: true });
+  
+  endSection("PromptManager Initialization Test");
 });
 
 // Test parameter validation to ensure system integrity
 Deno.test("PromptManager - parameter validation", async () => {
+  startSection("PromptManager Parameter Validation Test");
+  
   const manager = new PromptManager(TEST_CONFIG.BASE_DIR, new DefaultConfig());
+  checkpoint("Manager instance created", { baseDir: TEST_CONFIG.BASE_DIR });
+  
   const invalidParams: PromptParams = {
     demonstrativeType: "",
     layerType: TEST_PARAMS.LAYER_TYPE,
@@ -46,20 +58,31 @@ Deno.test("PromptManager - parameter validation", async () => {
       return true;
     },
   };
+  logObject(invalidParams, "Invalid Parameters");
 
-  await assertThrows(
+  await assertRejects(
     async () => {
+      checkpoint("Attempting to generate prompt with invalid params", { params: invalidParams });
       await manager.generatePrompt(invalidParams);
     },
     Error,
     "Demonstrative type is required",
   );
+  checkpoint("Expected error was thrown", { errorMessage: "Demonstrative type is required" });
+  
+  endSection("PromptManager Parameter Validation Test");
 });
 
 // Test template loading and error handling
 Deno.test("PromptManager - template loading", async () => {
+  startSection("PromptManager Template Loading Test");
+  
   await setupTestDirs();
+  checkpoint("Test directories setup completed", { baseDir: TEST_CONFIG.BASE_DIR });
+  
   const manager = new PromptManager(TEST_CONFIG.BASE_DIR, new DefaultConfig());
+  checkpoint("Manager instance created", { baseDir: TEST_CONFIG.BASE_DIR });
+  
   const params: PromptParams = {
     demonstrativeType: TEST_PARAMS.DEMONSTRATIVE_TYPE,
     layerType: TEST_PARAMS.LAYER_TYPE,
@@ -71,24 +94,37 @@ Deno.test("PromptManager - template loading", async () => {
       return true;
     },
   };
+  logObject(params, "Test Parameters");
 
-  await assertThrows(
+  await assertRejects(
     async () => {
+      checkpoint("Attempting to generate prompt with missing template", { params });
       await manager.generatePrompt(params);
     },
     Error,
     "Failed to load template",
   );
+  checkpoint("Expected template loading error was thrown", { errorMessage: "Failed to load template" });
 
   await cleanupTestDirs();
+  checkpoint("Test directories cleaned up", { baseDir: TEST_CONFIG.BASE_DIR });
+  
+  endSection("PromptManager Template Loading Test");
 });
 
 // Test integration with actual template and input files
 Deno.test("PromptManager - integration with fixtures", async () => {
+  startSection("PromptManager Integration Test");
+  
   await setupTestDirs();
+  checkpoint("Test directories setup completed", { baseDir: TEST_CONFIG.BASE_DIR });
+  
   await copyFixtureFiles();
-
+  checkpoint("Fixture files copied", { baseDir: TEST_CONFIG.BASE_DIR });
+  
   const manager = new PromptManager(TEST_CONFIG.BASE_DIR, new DefaultConfig());
+  checkpoint("Manager instance created", { baseDir: TEST_CONFIG.BASE_DIR });
+  
   const params: PromptParams = {
     demonstrativeType: TEST_PARAMS.DEMONSTRATIVE_TYPE,
     layerType: TEST_PARAMS.LAYER_TYPE,
@@ -100,13 +136,21 @@ Deno.test("PromptManager - integration with fixtures", async () => {
       return true;
     },
   };
+  logObject(params, "Test Parameters");
 
+  checkpoint("Generating prompt with valid parameters", { params });
   const result = await manager.generatePrompt(params);
+  logObject(result, "Generated Result");
   
   // Verify the content was processed correctly
-  assertEquals(result.content.includes("Implementation from Design"), true);
-  assertEquals(result.content.includes(TEST_CONFIG.BASE_DIR), true);
-  assertEquals(result.metadata.variables.size > 0, true);
+  checkpoint("Verifying result content", { 
+    hasImplementation: result.content.includes("Implementation from Design"),
+    hasBaseDir: result.content.includes(TEST_CONFIG.BASE_DIR),
+    hasVariables: result.metadata.variables.size > 0
+  });
 
   await cleanupTestDirs();
+  checkpoint("Test directories cleaned up", { baseDir: TEST_CONFIG.BASE_DIR });
+  
+  endSection("PromptManager Integration Test");
 }); 

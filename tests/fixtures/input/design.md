@@ -1,17 +1,18 @@
 # Design Document
 
-## Overview
-This is a test design document for verifying the prompt management system.
+This is a test design document for testing purposes.
+
+## Requirements
+- Requirement 1
+- Requirement 2
+
+## Design Details
+Test design details go here.
 
 ## Components
 1. Input Processing
 2. Template Management
 3. Output Generation
-
-## Requirements
-- Handle multiple file formats
-- Support variable replacement
-- Maintain proper structure
 
 ## Constraints
 - Must be type-safe

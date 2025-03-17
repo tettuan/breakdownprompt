@@ -81,7 +81,9 @@ export class PromptManager {
       if (this.templateCache.size >= this.config.cacheSize) {
         // Remove oldest entry
         const firstKey = this.templateCache.keys().next().value;
-        this.templateCache.delete(firstKey);
+        if (firstKey !== undefined) {
+          this.templateCache.delete(firstKey);
+        }
       }
       this.templateCache.set(cacheKey, template);
       return template;

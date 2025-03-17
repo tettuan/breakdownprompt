@@ -8,26 +8,26 @@ Deno.test("PromptGenerator - initialization", () => {
 
 Deno.test("PromptGenerator - template parsing", () => {
   const generator = new PromptGenerator();
-  const template = "Hello {name}, welcome to {project}!";
+  const template = "Load schema from {schema_file} and input from {input_markdown_file}";
   const result = generator.parseTemplate(template);
 
   assertEquals(result.content, template);
   assertEquals(result.metadata.variables.size, 2);
-  assertEquals(result.metadata.variables.has("name"), true);
-  assertEquals(result.metadata.variables.has("project"), true);
+  assertEquals(result.metadata.variables.has("schema_file"), true);
+  assertEquals(result.metadata.variables.has("input_markdown_file"), true);
 });
 
 Deno.test("PromptGenerator - variable replacement", () => {
   const generator = new PromptGenerator();
-  const template = "Hello {name}, welcome to {project}!";
+  const template = "Load schema from {schema_file} and save to {destination_path}";
   const result = generator.parseTemplate(template);
 
   const values = new Map<string, unknown>();
-  values.set("name", "John");
-  values.set("project", "Deno");
+  values.set("schema_file", "/path/to/schema.json");
+  values.set("destination_path", "/path/to/output");
 
   const content = generator.replaceVariables(result, values);
-  assertEquals(content, "Hello John, welcome to Deno!");
+  assertEquals(content, "Load schema from /path/to/schema.json and save to /path/to/output");
 });
 
 Deno.test("PromptGenerator - unknown variable", () => {
@@ -45,17 +45,17 @@ Deno.test("PromptGenerator - unknown variable", () => {
 
 Deno.test("PromptGenerator - invalid value type", () => {
   const generator = new PromptGenerator();
-  const template = "Count: {count}";
+  const template = "Save to {destination_path}";
   const result = generator.parseTemplate(template);
 
   const values = new Map<string, unknown>();
-  values.set("count", 42); // Number instead of string
+  values.set("destination_path", 42); // Number instead of string
 
   assertThrows(
     () => {
       generator.replaceVariables(result, values);
     },
     Error,
-    "Invalid value for variable: count",
+    "Invalid value for variable: destination_path",
   );
 }); 

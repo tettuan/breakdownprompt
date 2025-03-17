@@ -1,6 +1,6 @@
 {
   "tasks": {
-    "test": "deno test --allow-read --allow-write",
+    "test": "LOG_LEVEL=debug deno test --allow-read --allow-write --allow-env",
     "fmt": "deno fmt",
     "lint": "deno lint"
   },
