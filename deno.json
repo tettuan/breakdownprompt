@@ -1,0 +1,25 @@
+{
+  "tasks": {
+    "test": "deno test --allow-read --allow-write",
+    "fmt": "deno fmt",
+    "lint": "deno lint"
+  },
+  "imports": {
+    "std/": "https://deno.land/std@0.220.1/",
+    "testing/": "https://deno.land/std@0.220.1/testing/"
+  },
+  "compilerOptions": {
+    "allowJs": true,
+    "lib": ["deno.window", "dom", "esnext"],
+    "strict": true
+  },
+  "fmt": {
+    "files": {
+      "include": ["src/", "tests/"]
+    },
+    "options": {
+      "lineWidth": 100,
+      "indentWidth": 2
+    }
+  }
+} 
