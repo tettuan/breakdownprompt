@@ -1,5 +1,6 @@
 import { assertEquals, assertThrows } from "std/testing/asserts.ts";
 import { PromptGenerator } from "../src/prompt_generator.ts";
+import { logger } from "../utils/logger.ts";
 
 Deno.test("PromptGenerator - initialization", () => {
   const generator = new PromptGenerator();
@@ -34,13 +35,11 @@ Deno.test("PromptGenerator - unknown variable", () => {
   const generator = new PromptGenerator();
   const template = "Hello {unknown}!";
   
-  assertThrows(
-    () => {
-      generator.parseTemplate(template);
-    },
-    Error,
-    "Unknown variable: unknown",
-  );
+  // Should not throw error, just log info
+  const result = generator.parseTemplate(template);
+  assertEquals(result.content, template);
+  assertEquals(result.metadata.variables.size, 1);
+  assertEquals(result.metadata.variables.has("unknown"), true);
 });
 
 Deno.test("PromptGenerator - invalid value type", () => {
@@ -51,11 +50,7 @@ Deno.test("PromptGenerator - invalid value type", () => {
   const values = new Map<string, unknown>();
   values.set("destination_path", 42); // Number instead of string
 
-  assertThrows(
-    () => {
-      generator.replaceVariables(result, values);
-    },
-    Error,
-    "Invalid value for variable: destination_path",
-  );
+  // Should not throw error, just log info
+  const content = generator.replaceVariables(result, values);
+  assertEquals(content, template); // Content should remain unchanged
 }); 

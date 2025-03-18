@@ -271,15 +271,15 @@ Deno.test("PromptManager - variable replacement errors", async () => {
   };
   logObject(params, "Test Parameters");
 
-  await assertRejects(
-    async () => {
-      checkpoint("Attempting to generate prompt with invalid variable", { params });
-      await manager.generatePrompt(params);
-    },
-    Error,
-    "Unknown variable: invalid_variable"
-  );
-  checkpoint("Expected error was thrown", { errorMessage: "Unknown variable: invalid_variable" });
+  // Should not throw error, just log info
+  const result = await manager.generatePrompt(params);
+  checkpoint("Generated prompt with invalid variable", { result });
+  
+  // Verify the content remains unchanged
+  assert(result.content.includes("{invalid_variable}"), "Invalid variable should remain in content");
+  
+  // Verify metadata contains the invalid variable
+  assert(result.metadata.variables.has("invalid_variable"), "Invalid variable should be in metadata");
 
   await cleanupTestDirs();
   checkpoint("Test directories cleaned up", { baseDir: TEST_CONFIG.BASE_DIR });

@@ -3,6 +3,7 @@ import { SchemaFileReplacer } from "./replacers/schema_file_replacer.ts";
 import { InputMarkdownReplacer } from "./replacers/input_markdown_replacer.ts";
 import { InputMarkdownFileReplacer } from "./replacers/input_markdown_file_replacer.ts";
 import { DestinationPathReplacer } from "./replacers/destination_path_replacer.ts";
+import { logger } from "../utils/logger.ts";
 
 export class PromptGenerator {
   private variables: Map<string, VariableReplacer>;
@@ -32,7 +33,7 @@ export class PromptGenerator {
     while ((match = variablePattern.exec(template)) !== null) {
       const [fullMatch, varName] = match;
       if (!this.variables.has(varName)) {
-        throw new Error(`Unknown variable: ${varName}`);
+        logger.info(`Unknown variable found in template: ${varName}`);
       }
       variables.set(varName, fullMatch);
     }
@@ -53,11 +54,13 @@ export class PromptGenerator {
     for (const [varName, value] of values) {
       const replacer = this.variables.get(varName);
       if (!replacer) {
-        throw new Error(`No replacer found for variable: ${varName}`);
+        logger.info(`No replacer found for variable: ${varName}`);
+        continue;
       }
 
       if (!replacer.validate(value)) {
-        throw new Error(`Invalid value for variable: ${varName}`);
+        logger.info(`Invalid value for variable: ${varName}`);
+        continue;
       }
 
       const replacement = replacer.replace(value);
