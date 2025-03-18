@@ -83,5 +83,8 @@ this is a input markdown contents.
 - MultipleFiles 複数ファイルか、単独か
 - Structured or Independent 階層か、独立
 
-
+# エラーハンドリング
+- 置換対象の変数はあらかじめ指定されている
+  - 指定以外の変数が見つかった場合は、 log debug レベルで出力する
+  - 例外は発生させずスルーする
 

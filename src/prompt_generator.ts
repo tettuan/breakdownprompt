@@ -33,7 +33,7 @@ export class PromptGenerator {
     while ((match = variablePattern.exec(template)) !== null) {
       const [fullMatch, varName] = match;
       if (!this.variables.has(varName)) {
-        logger.info(`Unknown variable found in template: ${varName}`);
+        logger.debug(`Unknown variable found in template: ${varName}`);
       }
       variables.set(varName, fullMatch);
     }
@@ -54,12 +54,12 @@ export class PromptGenerator {
     for (const [varName, value] of values) {
       const replacer = this.variables.get(varName);
       if (!replacer) {
-        logger.info(`No replacer found for variable: ${varName}`);
+        logger.debug(`No replacer found for variable: ${varName}`);
         continue;
       }
 
       if (!replacer.validate(value)) {
-        logger.info(`Invalid value for variable: ${varName}`);
+        logger.debug(`Invalid value for variable: ${varName}`);
         continue;
       }
 
