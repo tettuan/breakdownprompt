@@ -149,6 +149,25 @@ Deno.test("PromptManager - integration with fixtures", async () => {
   assert(result.metadata.variables !== undefined, "Result should have variables in metadata");
   assert(result.metadata.timestamp !== undefined, "Result should have timestamp in metadata");
 
+  // Verify the prompt content after variable replacement
+  assert(result.content.includes(TEST_PARAMS.DEMONSTRATIVE_TYPE), "Result should contain demonstrative type");
+  assert(result.content.includes(TEST_PARAMS.LAYER_TYPE), "Result should contain layer type");
+  assert(result.content.includes(TEST_PARAMS.FROM_LAYER_TYPE), "Result should contain from layer type");
+  assert(result.content.includes("Implementation from Design"), "Result should contain implementation section");
+  assert(result.content.includes("Schema"), "Result should contain schema section");
+  assert(result.content.includes("Input"), "Result should contain input section");
+  assert(result.content.includes("Output"), "Result should contain output section");
+  assert(result.content.includes("Additional Context"), "Result should contain additional context section");
+
+  // Verify the structure matches the template format
+  const sections = result.content.split("\n\n");
+  assert(sections.length >= 4, "Result should have at least 4 major sections");
+  assert(sections[0].startsWith("# "), "First section should be a main heading");
+  assert(sections.some(s => s.includes("## Schema")), "Should contain Schema heading");
+  assert(sections.some(s => s.includes("## Input")), "Should contain Input heading");
+  assert(sections.some(s => s.includes("## Output")), "Should contain Output heading");
+  assert(sections.some(s => s.includes("## Additional Context")), "Should contain Additional Context heading");
+
   await cleanupTestDirs();
   checkpoint("Test directories cleaned up", { baseDir: TEST_CONFIG.BASE_DIR });
   
