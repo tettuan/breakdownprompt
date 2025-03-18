@@ -13,14 +13,22 @@ A Deno TypeScript library for managing and generating prompts from templates wit
 
 ## Installation
 
+### From JSR
+
 ```bash
-deno add @your-username/prompt-management
+deno add @tettuan/breakdownprompt
+```
+
+### From GitHub
+
+```bash
+deno add https://github.com/tettuan/breakdownprompt
 ```
 
 ## Usage
 
 ```typescript
-import { PromptManager, DefaultConfig } from "@your-username/prompt-management";
+import { PromptManager, DefaultConfig } from "@tettuan/breakdownprompt";
 
 // Initialize the manager
 const manager = new PromptManager("./templates", new DefaultConfig());
@@ -129,19 +137,25 @@ interface PromptParams {
 ### Running Tests
 
 ```bash
-deno test
+deno task test
 ```
 
 ### Code Formatting
 
 ```bash
-deno fmt
+deno task fmt
 ```
 
 ### Linting
 
 ```bash
-deno lint
+deno task lint
+```
+
+### Publishing to JSR
+
+```bash
+deno task publish
 ```
 
 ## License

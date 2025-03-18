@@ -88,3 +88,7 @@ this is a input markdown contents.
   - 指定以外の変数が見つかった場合は、 log debug レベルで出力する
   - 例外は発生させずスルーする
 
+# テスト
+docs/tests.ja.md を参照する
+
+

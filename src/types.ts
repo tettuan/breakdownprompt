@@ -1,9 +1,15 @@
+/**
+ * Configuration options for the prompt manager.
+ */
 export interface Config {
   cacheSize: number;
   timeout: number;
   validate(): boolean;
 }
 
+/**
+ * Parameters for prompt generation.
+ */
 export interface PromptParams {
   demonstrativeType: string;
   layerType: string;
@@ -25,6 +31,9 @@ export interface OutputResult {
   error?: string;
 }
 
+/**
+ * Result of prompt generation.
+ */
 export interface PromptResult {
   content: string;
   metadata: {

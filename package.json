@@ -1,0 +1,28 @@
+{
+  "name": "@tettuan/breakdownprompt",
+  "version": "0.1.0",
+  "type": "module",
+  "exports": "./src/mod.ts",
+  "files": [
+    "src/",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "deno test",
+    "fmt": "deno fmt",
+    "lint": "deno lint"
+  },
+  "keywords": [
+    "deno",
+    "prompt",
+    "ai",
+    "llm"
+  ],
+  "author": "tettuan",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tettuan/breakdownprompt.git"
+  }
+} 
