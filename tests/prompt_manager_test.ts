@@ -22,7 +22,6 @@
 
 import { assert, assertRejects } from "std/testing/asserts.ts";
 import { PromptManager } from "../src/prompt_manager.ts";
-import { PromptGenerator } from "../src/prompt_generator.ts";
 import { DefaultConfig } from "../src/config.ts";
 import { PromptParams } from "../src/types.ts";
 import { TEST_CONFIG, TEST_PARAMS, setupTestDirs, cleanupTestDirs, copyFixtureFiles } from "./test_utils.ts";

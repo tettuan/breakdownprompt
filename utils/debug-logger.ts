@@ -7,7 +7,7 @@ import { logger } from "./logger.ts";
  * @param fn 対象関数
  * @returns ラップされた関数
  */
-export function logFunction<T extends (...args: any[]) => any>(
+export function logFunction<T extends (...args: unknown[]) => ReturnType<T>>(
   name: string,
   fn: T
 ): (...args: Parameters<T>) => ReturnType<T> {
