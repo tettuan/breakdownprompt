@@ -22,6 +22,7 @@
 
 import { assert, assertRejects } from "std/testing/asserts.ts";
 import { PromptManager } from "../src/prompt_manager.ts";
+import { PromptGenerator } from "../src/prompt_generator.ts";
 import { DefaultConfig } from "../src/config.ts";
 import { PromptParams } from "../src/types.ts";
 import { TEST_CONFIG, TEST_PARAMS, setupTestDirs, cleanupTestDirs, copyFixtureFiles } from "./test_utils.ts";
@@ -172,4 +173,116 @@ Deno.test("PromptManager - integration with fixtures", async () => {
   checkpoint("Test directories cleaned up", { baseDir: TEST_CONFIG.BASE_DIR });
   
   endSection("PromptManager Integration Test");
+});
+
+// Test variable replacement accuracy
+Deno.test("PromptManager - variable replacement accuracy", async () => {
+  startSection("Variable Replacement Accuracy Test");
+  
+  await setupTestDirs();
+  await copyFixtureFiles();
+  checkpoint("Test directories and fixtures setup completed", { baseDir: TEST_CONFIG.BASE_DIR });
+  
+  const manager = new PromptManager(TEST_CONFIG.BASE_DIR, new DefaultConfig());
+  checkpoint("Manager instance created", { baseDir: TEST_CONFIG.BASE_DIR });
+  
+  const params: PromptParams = {
+    demonstrativeType: TEST_PARAMS.DEMONSTRATIVE_TYPE,
+    layerType: TEST_PARAMS.LAYER_TYPE,
+    fromLayerType: TEST_PARAMS.FROM_LAYER_TYPE,
+    destination: TEST_CONFIG.OUTPUT_DIR,
+    multipleFiles: false,
+    structured: false,
+    validate() { return true; }
+  };
+  logObject(params, "Test Parameters");
+
+  checkpoint("Generating prompt with test parameters", { params });
+  const result = await manager.generatePrompt(params);
+  logObject(result, "Generated Result");
+  
+  // Verify variable replacement accuracy
+  const content = result.content;
+  
+  // Check that no variables remain unreplaced
+  assert(!content.includes("{schema_file}"), "Schema file variable should be replaced");
+  assert(!content.includes("{input_markdown_file}"), "Input markdown variable should be replaced");
+  assert(!content.includes("{destination_path}"), "Destination path variable should be replaced");
+  
+  // Check that variables are replaced with correct values
+  assert(content.includes(`${TEST_CONFIG.BASE_DIR}/schema/${TEST_PARAMS.LAYER_TYPE}.json`), "Schema file should be replaced with correct path");
+  assert(content.includes(`${TEST_CONFIG.BASE_DIR}/input/${TEST_PARAMS.FROM_LAYER_TYPE}.md`), "Input file should be replaced with correct path");
+  assert(content.includes(TEST_CONFIG.OUTPUT_DIR), "Destination should be replaced with correct path");
+
+  // Verify metadata consistency
+  const variables = result.metadata.variables;
+  assert(variables.size > 0, "Should have variables in metadata");
+  
+  // Check each variable's replacement
+  for (const [varName, originalValue] of variables) {
+    // Verify original variable pattern is replaced
+    assert(!content.includes(originalValue), `Variable ${varName} should be replaced`);
+    
+    // Verify correct replacement value
+    const values = new Map<string, unknown>();
+    values.set("schema_file", `${TEST_CONFIG.BASE_DIR}/schema/${TEST_PARAMS.LAYER_TYPE}.json`);
+    values.set("input_markdown_file", `${TEST_CONFIG.BASE_DIR}/input/${TEST_PARAMS.FROM_LAYER_TYPE}.md`);
+    values.set("destination_path", TEST_CONFIG.OUTPUT_DIR);
+    
+    const expectedValue = values.get(varName);
+    if (expectedValue) {
+      assert(content.includes(String(expectedValue)), `Variable ${varName} should be replaced with correct value`);
+    }
+  }
+
+  await cleanupTestDirs();
+  checkpoint("Test directories cleaned up", { baseDir: TEST_CONFIG.BASE_DIR });
+  
+  endSection("Variable Replacement Accuracy Test");
+});
+
+// Test variable replacement errors
+Deno.test("PromptManager - variable replacement errors", async () => {
+  startSection("Variable Replacement Error Test");
+  
+  await setupTestDirs();
+  await copyFixtureFiles();
+  checkpoint("Test directories and fixtures setup completed", { baseDir: TEST_CONFIG.BASE_DIR });
+  
+  const manager = new PromptManager(TEST_CONFIG.BASE_DIR, new DefaultConfig());
+  checkpoint("Manager instance created", { baseDir: TEST_CONFIG.BASE_DIR });
+  
+  // Create template with invalid variable
+  const invalidTemplate = "Test with {invalid_variable}";
+  await Deno.writeTextFile(
+    `${TEST_CONFIG.BASE_DIR}/${TEST_PARAMS.DEMONSTRATIVE_TYPE}/${TEST_PARAMS.LAYER_TYPE}/f_${TEST_PARAMS.FROM_LAYER_TYPE}.md`,
+    invalidTemplate
+  );
+  checkpoint("Created template with invalid variable", { template: invalidTemplate });
+  
+  const params: PromptParams = {
+    demonstrativeType: TEST_PARAMS.DEMONSTRATIVE_TYPE,
+    layerType: TEST_PARAMS.LAYER_TYPE,
+    fromLayerType: TEST_PARAMS.FROM_LAYER_TYPE,
+    destination: TEST_CONFIG.OUTPUT_DIR,
+    multipleFiles: false,
+    structured: false,
+    validate() { return true; }
+  };
+  logObject(params, "Test Parameters");
+
+  await assertRejects(
+    async () => {
+      checkpoint("Attempting to generate prompt with invalid variable", { params });
+      await manager.generatePrompt(params);
+    },
+    Error,
+    "Unknown variable: invalid_variable"
+  );
+  checkpoint("Expected error was thrown", { errorMessage: "Unknown variable: invalid_variable" });
+
+  await cleanupTestDirs();
+  checkpoint("Test directories cleaned up", { baseDir: TEST_CONFIG.BASE_DIR });
+  
+  endSection("Variable Replacement Error Test");
 }); 
