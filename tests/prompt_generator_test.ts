@@ -1,4 +1,4 @@
-import { assertEquals, assertThrows } from "std/testing/asserts.ts";
+import { assertEquals, assertThrows } from "jsr:@std/assert";
 import { PromptGenerator } from "../src/prompt_generator.ts";
 import { startSection, endSection, checkpoint } from "../utils/debug-logger.ts";
 import { logger } from "../utils/logger.ts";

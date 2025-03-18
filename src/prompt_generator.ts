@@ -1,4 +1,4 @@
-import { VariableReplacer, PromptResult } from "./types.ts";
+import type { VariableReplacer, PromptResult } from "./types.ts";
 import { SchemaFileReplacer } from "./replacers/schema_file_replacer.ts";
 import { InputMarkdownReplacer } from "./replacers/input_markdown_replacer.ts";
 import { InputMarkdownFileReplacer } from "./replacers/input_markdown_file_replacer.ts";

@@ -5,7 +5,7 @@
  * It includes logging setup and common test configurations.
  */
 
-import { getLogger } from "std/log/mod.ts";
+import { getLogger } from "jsr:@std/log";
 
 // Configure logging based on environment
 const logger = getLogger("test");

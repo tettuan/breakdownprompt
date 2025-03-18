@@ -20,10 +20,10 @@
  * 5. Integration: Should work correctly with actual template and input files
  */
 
-import { assert, assertRejects } from "std/testing/asserts.ts";
+import { assert, assertRejects } from "jsr:@std/assert";
 import { PromptManager } from "../src/prompt_manager.ts";
 import { DefaultConfig } from "../src/config.ts";
-import { PromptParams } from "../src/types.ts";
+import type { PromptParams } from "../src/types.ts";
 import { TEST_CONFIG, TEST_PARAMS, setupTestDirs, cleanupTestDirs, copyFixtureFiles } from "./test_utils.ts";
 import { startSection, endSection, checkpoint, logObject } from "../utils/debug-logger.ts";
 import { logger } from "../utils/logger.ts";
