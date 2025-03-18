@@ -23,11 +23,17 @@
 import { assert } from "std/testing/asserts.ts";
 import { OutputController } from "../src/output_controller.ts";
 import { TEST_CONFIG, setupTestDirs, cleanupTestDirs } from "./test_utils.ts";
+import { logger } from "../utils/logger.ts";
 
 // Test basic initialization and instance creation
 Deno.test("OutputController - initialization", () => {
   const controller = new OutputController(TEST_CONFIG.OUTPUT_DIR, false, false);
   assert(controller instanceof OutputController, "Controller should be an instance of OutputController");
+  logger.info("OutputController initialized successfully", {
+    outputDir: TEST_CONFIG.OUTPUT_DIR,
+    multipleFiles: false,
+    structured: false
+  });
 });
 
 // Test single file output generation
@@ -41,6 +47,12 @@ Deno.test("OutputController - single file output", async () => {
   assert(result.files.length === 1, "Should have exactly one file");
   assert(result.files[0].startsWith(TEST_CONFIG.OUTPUT_DIR), "File path should start with output dir");
   assert(result.files[0].endsWith(".md"), "File should have .md extension");
+
+  logger.info("Single file output generated successfully", {
+    fileCount: result.files.length,
+    filePaths: result.files,
+    contentLength: content.length
+  });
 
   await cleanupTestDirs();
 });
@@ -61,6 +73,12 @@ Content for section 2`;
   assert(result.files.every(f => f.startsWith(TEST_CONFIG.OUTPUT_DIR)), "All files should start with output dir");
   assert(result.files.every(f => f.endsWith(".md")), "All files should have .md extension");
 
+  logger.info("Multiple files output generated successfully", {
+    fileCount: result.files.length,
+    filePaths: result.files,
+    sectionCount: content.split("# ").length - 1
+  });
+
   await cleanupTestDirs();
 });
 
@@ -80,6 +98,13 @@ Content for section 2`;
   assert(result.files.every(f => f.startsWith(TEST_CONFIG.OUTPUT_DIR)), "All files should start with output dir");
   assert(result.files.every(f => f.endsWith(".md")), "All files should have .md extension");
 
+  logger.info("Structured output generated successfully", {
+    fileCount: result.files.length,
+    filePaths: result.files,
+    sectionCount: content.split("# ").length - 1,
+    isStructured: true
+  });
+
   await cleanupTestDirs();
 });
 
@@ -93,4 +118,10 @@ Deno.test("OutputController - error handling", async () => {
   assert(!result.success, "Result should not be successful");
   assert(result.files.length === 0, "Should have no files");
   assert(typeof result.error === "string", "Error should be a string");
+
+  logger.warn("Error handling test completed successfully", {
+    invalidPath: testDir,
+    hasError: typeof result.error === "string",
+    errorMessage: result.error
+  });
 }); 
