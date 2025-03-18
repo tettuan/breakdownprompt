@@ -54,13 +54,11 @@ export class PromptGenerator {
     for (const [varName, value] of values) {
       const replacer = this.variables.get(varName);
       if (!replacer) {
-        logger.debug(`No replacer found for variable: ${varName}`);
-        continue;
+        throw new Error(`No replacer found for variable: ${varName}`);
       }
 
       if (!replacer.validate(value)) {
-        logger.debug(`Invalid value for variable: ${varName}`);
-        continue;
+        throw new Error(`Invalid value for variable: ${varName}`);
       }
 
       const replacement = replacer.replace(value);
