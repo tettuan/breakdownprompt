@@ -9,8 +9,7 @@
     "publish": "deno publish"
   },
   "imports": {
-    "std/": "https://deno.land/std@0.220.1/",
-    "testing/": "https://deno.land/std@0.220.1/testing/"
+    "@std/": "jsr:@std/"
   },
   "compilerOptions": {
     "lib": ["deno.window", "dom", "esnext"],

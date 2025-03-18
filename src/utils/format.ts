@@ -1,4 +1,4 @@
-import { join } from "std/path/mod.ts";
+import { join } from "jsr:@std/path@1";
 
 /**
  * Utility functions for formatting prompts and outputs.
