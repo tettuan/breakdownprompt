@@ -20,14 +20,14 @@
  * 4. Resource Cleanup: Test directories should be properly cleaned up
  */
 
-import { assertStrictEquals } from "std/testing/asserts.ts";
+import { assert } from "std/testing/asserts.ts";
 import { OutputController } from "../src/output_controller.ts";
 import { TEST_CONFIG, setupTestDirs, cleanupTestDirs } from "./test_utils.ts";
 
 // Test basic initialization and instance creation
 Deno.test("OutputController - initialization", () => {
   const controller = new OutputController(TEST_CONFIG.OUTPUT_DIR, false, false);
-  assertStrictEquals(controller instanceof OutputController, true);
+  assert(controller instanceof OutputController, "Controller should be an instance of OutputController");
 });
 
 // Test single file output generation
@@ -37,10 +37,10 @@ Deno.test("OutputController - single file output", async () => {
   const content = "# Test Content\nThis is a test file.";
 
   const result = await controller.generateOutput(content);
-  assertStrictEquals(result.success, true);
-  assertStrictEquals(result.files.length, 1);
-  assertStrictEquals(result.files[0].startsWith(TEST_CONFIG.OUTPUT_DIR), true);
-  assertStrictEquals(result.files[0].endsWith(".md"), true);
+  assert(result.success, "Result should be successful");
+  assert(result.files.length === 1, "Should have exactly one file");
+  assert(result.files[0].startsWith(TEST_CONFIG.OUTPUT_DIR), "File path should start with output dir");
+  assert(result.files[0].endsWith(".md"), "File should have .md extension");
 
   await cleanupTestDirs();
 });
@@ -56,10 +56,10 @@ Content for section 1
 Content for section 2`;
 
   const result = await controller.generateOutput(content);
-  assertStrictEquals(result.success, true);
-  assertStrictEquals(result.files.length, 2);
-  assertStrictEquals(result.files.every(f => f.startsWith(TEST_CONFIG.OUTPUT_DIR)), true);
-  assertStrictEquals(result.files.every(f => f.endsWith(".md")), true);
+  assert(result.success, "Result should be successful");
+  assert(result.files.length === 2, "Should have exactly two files");
+  assert(result.files.every(f => f.startsWith(TEST_CONFIG.OUTPUT_DIR)), "All files should start with output dir");
+  assert(result.files.every(f => f.endsWith(".md")), "All files should have .md extension");
 
   await cleanupTestDirs();
 });
@@ -75,10 +75,10 @@ Content for section 1
 Content for section 2`;
 
   const result = await controller.generateOutput(content);
-  assertStrictEquals(result.success, true);
-  assertStrictEquals(result.files.length, 2);
-  assertStrictEquals(result.files.every(f => f.startsWith(TEST_CONFIG.OUTPUT_DIR)), true);
-  assertStrictEquals(result.files.every(f => f.endsWith(".md")), true);
+  assert(result.success, "Result should be successful");
+  assert(result.files.length === 2, "Should have exactly two files");
+  assert(result.files.every(f => f.startsWith(TEST_CONFIG.OUTPUT_DIR)), "All files should start with output dir");
+  assert(result.files.every(f => f.endsWith(".md")), "All files should have .md extension");
 
   await cleanupTestDirs();
 });
@@ -90,7 +90,7 @@ Deno.test("OutputController - error handling", async () => {
   const content = "# Test Content";
 
   const result = await controller.generateOutput(content);
-  assertStrictEquals(result.success, false);
-  assertStrictEquals(result.files.length, 0);
-  assertStrictEquals(typeof result.error, "string");
+  assert(!result.success, "Result should not be successful");
+  assert(result.files.length === 0, "Should have no files");
+  assert(typeof result.error === "string", "Error should be a string");
 }); 

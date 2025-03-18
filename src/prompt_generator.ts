@@ -26,7 +26,7 @@ export class PromptGenerator {
   public parseTemplate(template: string): PromptResult {
     const variablePattern = /\{([^}]+)\}/g;
     const variables = new Map<string, string>();
-    let content = template;
+    const content = template;
 
     let match;
     while ((match = variablePattern.exec(template)) !== null) {

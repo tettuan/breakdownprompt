@@ -1,5 +1,5 @@
 // デバッグ用ロガー - 詳細なチェックポイントログを提供
-import { logger, LogLevel } from "./logger.ts";
+import { logger } from "./logger.ts";
 
 /**
  * 関数の入出力をログに記録するラッパー関数

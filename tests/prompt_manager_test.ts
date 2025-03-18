@@ -20,7 +20,7 @@
  * 5. Integration: Should work correctly with actual template and input files
  */
 
-import { assertEquals, assertRejects } from "std/testing/asserts.ts";
+import { assert, assertRejects } from "std/testing/asserts.ts";
 import { PromptManager } from "../src/prompt_manager.ts";
 import { DefaultConfig } from "../src/config.ts";
 import { PromptParams } from "../src/types.ts";
@@ -34,7 +34,7 @@ Deno.test("PromptManager - initialization", () => {
   const manager = new PromptManager(TEST_CONFIG.BASE_DIR, new DefaultConfig());
   checkpoint("Manager instance created", { baseDir: TEST_CONFIG.BASE_DIR });
   
-  assertEquals(manager instanceof PromptManager, true);
+  assert(manager instanceof PromptManager, "Manager should be an instance of PromptManager");
   checkpoint("Instance type verification passed", { isInstance: true });
   
   endSection("PromptManager Initialization Test");
@@ -143,11 +143,11 @@ Deno.test("PromptManager - integration with fixtures", async () => {
   logObject(result, "Generated Result");
   
   // Verify the content was processed correctly
-  checkpoint("Verifying result content", { 
-    hasImplementation: result.content.includes("Implementation from Design"),
-    hasBaseDir: result.content.includes(TEST_CONFIG.BASE_DIR),
-    hasVariables: result.metadata.variables.size > 0
-  });
+  assert(result.content !== undefined, "Result should have content");
+  assert(result.metadata !== undefined, "Result should have metadata");
+  assert(result.metadata.template !== undefined, "Result should have template in metadata");
+  assert(result.metadata.variables !== undefined, "Result should have variables in metadata");
+  assert(result.metadata.timestamp !== undefined, "Result should have timestamp in metadata");
 
   await cleanupTestDirs();
   checkpoint("Test directories cleaned up", { baseDir: TEST_CONFIG.BASE_DIR });
