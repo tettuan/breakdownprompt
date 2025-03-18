@@ -1,3 +1,5 @@
+import { join } from "std/path/mod.ts";
+
 /**
  * Utility functions for formatting prompts and outputs.
  */
@@ -39,9 +41,11 @@ export function formatAsStructured(content: string, format: "json" | "yaml" = "j
  * Formats a filename based on content type and timestamp.
  * @param prefix The prefix for the filename
  * @param extension The file extension
- * @returns Formatted filename
+ * @param directory Optional directory path
+ * @returns Formatted filename with full path
  */
-export function formatFilename(prefix: string, extension = "md"): string {
+export function formatFilename(prefix: string, extension = "md", directory?: string): string {
   const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-  return `${prefix}_${timestamp}.${extension}`;
+  const filename = `${prefix}_${timestamp}.${extension}`;
+  return directory ? join(directory, filename) : filename;
 } 
