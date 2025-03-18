@@ -20,7 +20,7 @@
  * 4. Resource Cleanup: Test directories should be properly cleaned up
  */
 
-import { assert } from "std/testing/asserts.ts";
+import { assert } from "jsr:@std/testing/assert";
 import { OutputController } from "../src/output_controller.ts";
 import { TEST_CONFIG, setupTestDirs, cleanupTestDirs } from "./test_utils.ts";
 import { logger } from "../utils/logger.ts";

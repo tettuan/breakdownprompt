@@ -1,6 +1,6 @@
 {
   "name": "@tettuan/breakdownprompt",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "exports": "./src/mod.ts",
   "tasks": {
     "test": "LOG_LEVEL=debug deno test --allow-read --allow-write --allow-env",
@@ -9,7 +9,10 @@
     "publish": "deno publish"
   },
   "imports": {
-    "@std/": "jsr:@std/"
+    "@std/": "jsr:@std/",
+    "@std/testing": "jsr:@std/testing@^1.0.9",
+    "std/": "jsr:@std/",
+    "testing/": "jsr:@std/testing/"
   },
   "compilerOptions": {
     "lib": ["deno.window", "dom", "esnext"],
@@ -26,6 +29,7 @@
   },
   "publish": {
     "include": ["src/", "README.md", "LICENSE"],
-    "exclude": ["tests/", "docs/", ".git/", ".cursor/"]
+    "exclude": ["tests/", "docs/", ".git/", ".cursor/"],
+    "provenance": true
   }
 } 
