@@ -24,7 +24,7 @@ import { assertEquals, assertRejects } from "std/testing/asserts.ts";
 import { PromptManager } from "../src/prompt_manager.ts";
 import { DefaultConfig } from "../src/config.ts";
 import { PromptParams } from "../src/types.ts";
-import { TEST_CONFIG, TEST_PARAMS, setupTestDirs, cleanupTestDirs, copyFixtureFiles, readFixtureContent } from "./test_utils.ts";
+import { TEST_CONFIG, TEST_PARAMS, setupTestDirs, cleanupTestDirs, copyFixtureFiles } from "./test_utils.ts";
 import { startSection, endSection, checkpoint, logObject } from "../utils/debug-logger.ts";
 
 // Test initialization with valid configuration

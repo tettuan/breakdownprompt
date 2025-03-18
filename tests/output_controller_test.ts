@@ -20,14 +20,14 @@
  * 4. Resource Cleanup: Test directories should be properly cleaned up
  */
 
-import { assertEquals, assertThrows } from "std/testing/asserts.ts";
+import { assertStrictEquals } from "std/testing/asserts.ts";
 import { OutputController } from "../src/output_controller.ts";
 import { TEST_CONFIG, setupTestDirs, cleanupTestDirs } from "./test_utils.ts";
 
 // Test basic initialization and instance creation
 Deno.test("OutputController - initialization", () => {
   const controller = new OutputController(TEST_CONFIG.OUTPUT_DIR, false, false);
-  assertEquals(controller instanceof OutputController, true);
+  assertStrictEquals(controller instanceof OutputController, true);
 });
 
 // Test single file output generation
@@ -37,10 +37,10 @@ Deno.test("OutputController - single file output", async () => {
   const content = "# Test Content\nThis is a test file.";
 
   const result = await controller.generateOutput(content);
-  assertEquals(result.success, true);
-  assertEquals(result.files.length, 1);
-  assertEquals(result.files[0].startsWith(TEST_CONFIG.OUTPUT_DIR), true);
-  assertEquals(result.files[0].endsWith(".md"), true);
+  assertStrictEquals(result.success, true);
+  assertStrictEquals(result.files.length, 1);
+  assertStrictEquals(result.files[0].startsWith(TEST_CONFIG.OUTPUT_DIR), true);
+  assertStrictEquals(result.files[0].endsWith(".md"), true);
 
   await cleanupTestDirs();
 });
@@ -56,10 +56,10 @@ Content for section 1
 Content for section 2`;
 
   const result = await controller.generateOutput(content);
-  assertEquals(result.success, true);
-  assertEquals(result.files.length, 2);
-  assertEquals(result.files.every(f => f.startsWith(TEST_CONFIG.OUTPUT_DIR)), true);
-  assertEquals(result.files.every(f => f.endsWith(".md")), true);
+  assertStrictEquals(result.success, true);
+  assertStrictEquals(result.files.length, 2);
+  assertStrictEquals(result.files.every(f => f.startsWith(TEST_CONFIG.OUTPUT_DIR)), true);
+  assertStrictEquals(result.files.every(f => f.endsWith(".md")), true);
 
   await cleanupTestDirs();
 });
@@ -75,10 +75,10 @@ Content for section 1
 Content for section 2`;
 
   const result = await controller.generateOutput(content);
-  assertEquals(result.success, true);
-  assertEquals(result.files.length, 2);
-  assertEquals(result.files.every(f => f.startsWith(TEST_CONFIG.OUTPUT_DIR)), true);
-  assertEquals(result.files.every(f => f.endsWith(".md")), true);
+  assertStrictEquals(result.success, true);
+  assertStrictEquals(result.files.length, 2);
+  assertStrictEquals(result.files.every(f => f.startsWith(TEST_CONFIG.OUTPUT_DIR)), true);
+  assertStrictEquals(result.files.every(f => f.endsWith(".md")), true);
 
   await cleanupTestDirs();
 });
@@ -90,7 +90,7 @@ Deno.test("OutputController - error handling", async () => {
   const content = "# Test Content";
 
   const result = await controller.generateOutput(content);
-  assertEquals(result.success, false);
-  assertEquals(result.files.length, 0);
-  assertEquals(typeof result.error, "string");
+  assertStrictEquals(result.success, false);
+  assertStrictEquals(result.files.length, 0);
+  assertStrictEquals(typeof result.error, "string");
 }); 

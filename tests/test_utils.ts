@@ -8,7 +8,6 @@
 import { getLogger } from "std/log/mod.ts";
 
 // Configure logging based on environment
-const logLevel = Deno.env.get("LOG_LEVEL") || "info";
 const logger = getLogger("test");
 
 // Test configuration constants
