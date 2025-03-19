@@ -25,5 +25,12 @@ jobs:
           rm -f deno.lock
           deno cache src/mod.ts
 
+      - name: Commit lock file
+        run: |
+          git config --global user.email "github-actions@github.com"
+          git config --global user.name "GitHub Actions"
+          git add deno.lock
+          git commit -m "chore: update deno.lock"
+
       - name: Publish to JSR
         run: deno publish 
