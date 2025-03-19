@@ -20,5 +20,10 @@ jobs:
         with:
           deno-version: v1.x
 
+      - name: Update cache
+        run: |
+          rm -f deno.lock
+          deno cache src/mod.ts
+
       - name: Publish to JSR
         run: deno publish 
