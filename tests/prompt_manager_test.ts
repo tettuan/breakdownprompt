@@ -199,7 +199,7 @@ Deno.test("PromptManager - integration with fixtures", async () => {
   console.debug("Schema section:", schemaSection);
   assert(schemaSection !== undefined, "Schema section should exist");
   const expectedSchemaPath = `${TEST_CONFIG.BASE_DIR}/schema/${TEST_PARAMS.LAYER_TYPE}.json`;
-  const schemaContent = schemaSection.split("\n").filter(line => line.trim() !== "").slice(1)[0];
+  const schemaContent = schemaSection.split("\n").filter((line) => line.trim() !== "").slice(1)[0];
   console.debug("Schema content:", schemaContent);
   assert(
     schemaContent === expectedSchemaPath,
@@ -210,7 +210,7 @@ Deno.test("PromptManager - integration with fixtures", async () => {
   console.debug("Input section:", inputSection);
   assert(inputSection !== undefined, "Input section should exist");
   const expectedInputPath = `${TEST_CONFIG.BASE_DIR}/input/${TEST_PARAMS.FROM_LAYER_TYPE}.md`;
-  const inputContent = inputSection.split("\n").filter(line => line.trim() !== "").slice(1)[0];
+  const inputContent = inputSection.split("\n").filter((line) => line.trim() !== "").slice(1)[0];
   console.debug("Input content:", inputContent);
   assert(
     inputContent === expectedInputPath,
@@ -440,7 +440,7 @@ Deno.test("PromptManager - comprehensive prompt processing", async () => {
   console.debug("Schema section:", schemaSection);
   assert(schemaSection !== undefined, "Schema section should exist");
   const expectedSchemaPath = `${TEST_CONFIG.BASE_DIR}/schema/${TEST_PARAMS.LAYER_TYPE}.json`;
-  const schemaContent = schemaSection.split("\n").filter(line => line.trim() !== "").slice(1)[0];
+  const schemaContent = schemaSection.split("\n").filter((line) => line.trim() !== "").slice(1)[0];
   console.debug("Schema content:", schemaContent);
   assert(
     schemaContent === expectedSchemaPath,
@@ -451,7 +451,7 @@ Deno.test("PromptManager - comprehensive prompt processing", async () => {
   console.debug("Input section:", inputSection);
   assert(inputSection !== undefined, "Input section should exist");
   const expectedInputPath = `${TEST_CONFIG.BASE_DIR}/input/${TEST_PARAMS.FROM_LAYER_TYPE}.md`;
-  const inputContent = inputSection.split("\n").filter(line => line.trim() !== "").slice(1)[0];
+  const inputContent = inputSection.split("\n").filter((line) => line.trim() !== "").slice(1)[0];
   console.debug("Input content:", inputContent);
   assert(
     inputContent === expectedInputPath,
