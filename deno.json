@@ -17,8 +17,9 @@
     "testing/": "jsr:@std/testing/"
   },
   "compilerOptions": {
-    "lib": ["deno.window", "dom", "esnext"],
-    "strict": true
+    "lib": ["deno.ns", "dom", "esnext"],
+    "strict": true,
+    "types": ["deno-types"]
   },
   "fmt": {
     "files": {

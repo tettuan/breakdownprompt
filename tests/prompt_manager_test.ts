@@ -20,7 +20,7 @@
  * 5. Integration: Should work correctly with actual template and input files
  */
 
-import { assert, assertRejects } from "jsr:@std/assert";
+import { assert, assertRejects } from "@std/assert";
 import { PromptManager } from "../src/prompt_manager.ts";
 import { DefaultConfig } from "../src/config.ts";
 import type { PromptParams } from "../src/types.ts";
