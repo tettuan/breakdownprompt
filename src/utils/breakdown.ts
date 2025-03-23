@@ -2,6 +2,8 @@
  * Utility functions for breaking down prompts into manageable sections.
  */
 
+import { logger } from "../../utils/logger.ts";
+
 /**
  * Breaks down a prompt into sections based on markdown headers.
  * @param content The prompt content to break down
@@ -39,9 +41,20 @@ export function breakdownByLineCount(content: string, maxLines: number): string[
 }
 
 export function splitIntoSection(content: string): string[] {
-  return content
-    .split("\n")
-    .filter((line) => line.trim() !== "") // 空行を除去
-    .join("\n")
-    .split(/(?=## )/); // 見出しで分割
+  logger.debug("Starting section split", { contentLength: content.length });
+  
+  const sections = content
+    .split(/\n\s*\n(?=^#{1,6}\s)/m)  // 空行 + 見出しで分割
+    .map(section => section.trim())   // 各セクションの前後の空白を除去
+    .filter(Boolean);                 // 空のセクションを除去
+
+  logger.debug("Section split completed", {
+    sectionCount: sections.length,
+    sections: sections.map(s => ({
+      header: s.split("\n")[0],
+      length: s.length
+    }))
+  });
+
+  return sections;
 }
