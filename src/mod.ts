@@ -5,6 +5,7 @@
 
 // Re-export all public APIs
 export * from "./types.ts";
+export { PromptManager } from "./prompt_manager.ts";
 export { breakdownByHeaders, breakdownByDelimiter, breakdownByLineCount } from "./utils/breakdown.ts";
 export { formatAsMarkdown, formatAsStructured, formatFilename } from "./utils/format.ts";
 export {
