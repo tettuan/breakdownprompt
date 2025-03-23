@@ -1,4 +1,3 @@
-/// <reference lib="deno.ns" />
 import type { OutputResult } from "./types.ts";
 
 export class OutputController {

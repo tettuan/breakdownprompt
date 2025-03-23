@@ -1,4 +1,3 @@
-/// <reference lib="deno.ns" />
 import type { Config, PromptParams, PromptResult } from "./types.ts";
 import { PromptGenerator } from "./prompt_generator.ts";
 import { OutputController } from "./output_controller.ts";

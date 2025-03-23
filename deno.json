@@ -42,6 +42,7 @@
   "publish": {
     "include": [
       "src/",
+      "utils/",
       "README.md",
       "LICENSE"
     ],
