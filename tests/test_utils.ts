@@ -1,6 +1,6 @@
 /**
  * Test Utilities
- * 
+ *
  * This file provides common utilities for testing the prompt management framework.
  * It includes logging setup and common test configurations.
  */
@@ -35,16 +35,19 @@ export async function setupTestDirs(): Promise<void> {
     // Create base directories
     await Deno.mkdir(TEST_CONFIG.BASE_DIR, { recursive: true });
     await Deno.mkdir(TEST_CONFIG.OUTPUT_DIR, { recursive: true });
-    
+
     // Create template directories
-    await Deno.mkdir(`${TEST_CONFIG.BASE_DIR}/${TEST_PARAMS.DEMONSTRATIVE_TYPE}/${TEST_PARAMS.LAYER_TYPE}`, { recursive: true });
-    
+    await Deno.mkdir(
+      `${TEST_CONFIG.BASE_DIR}/${TEST_PARAMS.DEMONSTRATIVE_TYPE}/${TEST_PARAMS.LAYER_TYPE}`,
+      { recursive: true },
+    );
+
     // Create schema directory
     await Deno.mkdir(`${TEST_CONFIG.BASE_DIR}/schema`, { recursive: true });
-    
+
     // Create input directory
     await Deno.mkdir(`${TEST_CONFIG.BASE_DIR}/input`, { recursive: true });
-    
+
     logger.debug("Test directories created successfully");
   } catch (error) {
     logger.error("Failed to create test directories:", error);
@@ -70,19 +73,19 @@ export async function copyFixtureFiles(): Promise<void> {
     // Copy template
     await Deno.copyFile(
       `${TEST_CONFIG.FIXTURES_DIR}/templates/${TEST_PARAMS.DEMONSTRATIVE_TYPE}/${TEST_PARAMS.LAYER_TYPE}/f_${TEST_PARAMS.FROM_LAYER_TYPE}.md`,
-      `${TEST_CONFIG.BASE_DIR}/${TEST_PARAMS.DEMONSTRATIVE_TYPE}/${TEST_PARAMS.LAYER_TYPE}/f_${TEST_PARAMS.FROM_LAYER_TYPE}.md`
+      `${TEST_CONFIG.BASE_DIR}/${TEST_PARAMS.DEMONSTRATIVE_TYPE}/${TEST_PARAMS.LAYER_TYPE}/f_${TEST_PARAMS.FROM_LAYER_TYPE}.md`,
     );
 
     // Copy schema
     await Deno.copyFile(
       `${TEST_CONFIG.FIXTURES_DIR}/schema/${TEST_PARAMS.LAYER_TYPE}.json`,
-      `${TEST_CONFIG.BASE_DIR}/schema/${TEST_PARAMS.LAYER_TYPE}.json`
+      `${TEST_CONFIG.BASE_DIR}/schema/${TEST_PARAMS.LAYER_TYPE}.json`,
     );
 
     // Copy input
     await Deno.copyFile(
       `${TEST_CONFIG.FIXTURES_DIR}/input/${TEST_PARAMS.FROM_LAYER_TYPE}.md`,
-      `${TEST_CONFIG.BASE_DIR}/input/${TEST_PARAMS.FROM_LAYER_TYPE}.md`
+      `${TEST_CONFIG.BASE_DIR}/input/${TEST_PARAMS.FROM_LAYER_TYPE}.md`,
     );
 
     logger.debug("Fixture files copied successfully");
@@ -100,4 +103,4 @@ export async function readFixtureContent(path: string): Promise<string> {
     logger.error(`Failed to read fixture content from ${path}:`, error);
     throw error;
   }
-} 
+}

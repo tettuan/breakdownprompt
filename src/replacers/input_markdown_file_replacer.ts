@@ -1,4 +1,4 @@
-import { VariableReplacer } from "../types.ts";
+import type { VariableReplacer } from "../types.ts";
 
 export class InputMarkdownFileReplacer implements VariableReplacer {
   replace(value: unknown): string {
@@ -14,4 +14,4 @@ export class InputMarkdownFileReplacer implements VariableReplacer {
     }
     return true;
   }
-} 
+}

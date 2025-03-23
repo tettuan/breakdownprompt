@@ -30,4 +30,4 @@ sequenceDiagram
     FileSystem-->>OutputController: write status
     OutputController-->>PromptManager: output status
     PromptManager-->>Client: result
-``` 
+```

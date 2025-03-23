@@ -46,4 +46,4 @@ jobs:
             echo "Please ensure the version in deno.json matches the latest git tag."
             exit 1
           fi
-          echo "Version check passed! Both versions are ${{ steps.get_version.outputs.version }}" 
+          echo "Version check passed! Both versions are ${{ steps.get_version.outputs.version }}"

@@ -2,7 +2,12 @@
  * Custom error class for validation errors.
  */
 export class ValidationError extends Error {
-  constructor(message: string, public fieldName: string, public expectedType: string, public actualType: string) {
+  constructor(
+    message: string,
+    public fieldName: string,
+    public expectedType: string,
+    public actualType: string,
+  ) {
     super(message);
     this.name = "ValidationError";
   }
@@ -24,7 +29,7 @@ export function validateString(value: unknown, fieldName: string): void {
       `Invalid value for ${fieldName}: expected string, got ${typeof value}`,
       fieldName,
       "string",
-      typeof value
+      typeof value,
     );
   }
   if (!value.trim()) {
@@ -32,7 +37,7 @@ export function validateString(value: unknown, fieldName: string): void {
       `${fieldName} cannot be empty`,
       fieldName,
       "non-empty string",
-      "empty string"
+      "empty string",
     );
   }
 }
@@ -49,7 +54,7 @@ export function validateBoolean(value: unknown, fieldName: string): void {
       `Invalid value for ${fieldName}: expected boolean, got ${typeof value}`,
       fieldName,
       "boolean",
-      typeof value
+      typeof value,
     );
   }
 }
@@ -66,7 +71,7 @@ export function validateFunction(value: unknown, fieldName: string): void {
       `Invalid value for ${fieldName}: expected function, got ${typeof value}`,
       fieldName,
       "function",
-      typeof value
+      typeof value,
     );
   }
 }
@@ -81,14 +86,14 @@ export function validateFunction(value: unknown, fieldName: string): void {
 export function validateNumber(
   value: unknown,
   fieldName: string,
-  options?: { min?: number; max?: number }
+  options?: { min?: number; max?: number },
 ): void {
   if (typeof value !== "number" || isNaN(value)) {
     throw new ValidationError(
       `Invalid value for ${fieldName}: expected number, got ${typeof value}`,
       fieldName,
       "number",
-      typeof value
+      typeof value,
     );
   }
 
@@ -97,7 +102,7 @@ export function validateNumber(
       `${fieldName} must be at least ${options.min}`,
       fieldName,
       `number >= ${options.min}`,
-      String(value)
+      String(value),
     );
   }
 
@@ -106,7 +111,7 @@ export function validateNumber(
       `${fieldName} must be at most ${options.max}`,
       fieldName,
       `number <= ${options.max}`,
-      String(value)
+      String(value),
     );
   }
-} 
+}

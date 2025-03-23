@@ -3,7 +3,7 @@ name: Publish to JSR
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
 
 jobs:
   publish:
@@ -33,4 +33,4 @@ jobs:
           git commit -m "chore: update deno.lock"
 
       - name: Publish to JSR
-        run: deno publish 
+        run: deno publish

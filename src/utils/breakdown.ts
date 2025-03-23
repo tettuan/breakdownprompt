@@ -30,10 +30,18 @@ export function breakdownByDelimiter(content: string, delimiter: string): string
 export function breakdownByLineCount(content: string, maxLines: number): string[] {
   const lines = content.split("\n");
   const sections: string[] = [];
-  
+
   for (let i = 0; i < lines.length; i += maxLines) {
     sections.push(lines.slice(i, i + maxLines).join("\n"));
   }
-  
+
   return sections;
-} 
+}
+
+export function splitIntoSection(content: string): string[] {
+  return content
+    .split("\n")
+    .filter((line) => line.trim() !== "") // 空行を除去
+    .join("\n")
+    .split(/(?=## )/); // 見出しで分割
+}

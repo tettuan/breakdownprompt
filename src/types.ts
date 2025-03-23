@@ -72,4 +72,4 @@ export interface PromptResult {
     /** Timestamp of generation */
     timestamp: Date;
   };
-} 
+}

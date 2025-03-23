@@ -65,7 +65,7 @@ export class PromptManager {
 
   private async loadTemplate(params: PromptParams): Promise<string> {
     const cacheKey = `${params.demonstrativeType}/${params.layerType}/${params.fromLayerType}`;
-    
+
     if (this.templateCache.has(cacheKey)) {
       const cachedTemplate = this.templateCache.get(cacheKey);
       if (!cachedTemplate) {
@@ -74,8 +74,9 @@ export class PromptManager {
       return cachedTemplate;
     }
 
-    const templatePath = `${this.baseDir}/${params.demonstrativeType}/${params.layerType}/f_${params.fromLayerType}.md`;
-    
+    const templatePath =
+      `${this.baseDir}/${params.demonstrativeType}/${params.layerType}/f_${params.fromLayerType}.md`;
+
     try {
       const template = await Deno.readTextFile(templatePath);
       if (this.templateCache.size >= this.config.cacheSize) {
@@ -94,4 +95,4 @@ export class PromptManager {
       throw new Error("Failed to load template: Unknown error");
     }
   }
-} 
+}

@@ -6,4 +6,4 @@
     "version": { "type": "string" }
   },
   "required": ["name", "description"]
-} 
+}

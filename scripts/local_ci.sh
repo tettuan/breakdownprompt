@@ -16,6 +16,6 @@ echo "Running lint..."
 deno lint
 
 echo "Running tests..."
-deno test --allow-env
+LOG_LEVEL=debug deno test --allow-env --allow-write --allow-read
 
 echo "Local checks completed successfully." 

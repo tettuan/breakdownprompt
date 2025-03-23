@@ -30,11 +30,9 @@ export function formatAsStructured(content: string, format: "json" | "yaml" = "j
     }
   }
 
-  return format === "json"
-    ? JSON.stringify(structured, null, 2)
-    : Object.entries(structured)
-        .map(([key, value]) => `${key}:\n  ${value.replace(/\n/g, "\n  ")}`)
-        .join("\n");
+  return format === "json" ? JSON.stringify(structured, null, 2) : Object.entries(structured)
+    .map(([key, value]) => `${key}:\n  ${value.replace(/\n/g, "\n  ")}`)
+    .join("\n");
 }
 
 /**
@@ -48,4 +46,4 @@ export function formatFilename(prefix: string, extension = "md", directory?: str
   const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
   const filename = `${prefix}_${timestamp}.${extension}`;
   return directory ? join(directory, filename) : filename;
-} 
+}

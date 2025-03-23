@@ -8,11 +8,11 @@
 
 ```typescript
 enum LogLevel {
-  ERROR = "error",  // エラー情報のみ
-  WARN = "warn",    // 警告情報まで
-  INFO = "info",    // 基本情報まで
-  DEBUG = "debug",  // デバッグ情報まで
-  TRACE = "trace"   // トレース情報まで
+  ERROR = "error", // エラー情報のみ
+  WARN = "warn", // 警告情報まで
+  INFO = "info", // 基本情報まで
+  DEBUG = "debug", // デバッグ情報まで
+  TRACE = "trace", // トレース情報まで
 }
 ```
 
@@ -75,4 +75,4 @@ enum LogLevel {
 
 4. **パフォーマンス**
    - ログ出力は必要最小限に
-   - 大量のデータは要約して出力 
+   - 大量のデータは要約して出力

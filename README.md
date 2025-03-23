@@ -1,6 +1,7 @@
 # Prompt Management Framework
 
-A Deno TypeScript library for managing and generating prompts from templates with variable replacement.
+A Deno TypeScript library for managing and generating prompts from templates with variable
+replacement.
 
 ## Features
 
@@ -28,7 +29,7 @@ deno add https://github.com/tettuan/breakdownprompt
 ## Usage
 
 ```typescript
-import { PromptManager, DefaultConfig } from "@tettuan/breakdownprompt";
+import { DefaultConfig, PromptManager } from "@tettuan/breakdownprompt";
 
 // Initialize the manager
 const manager = new PromptManager("./templates", new DefaultConfig());
@@ -65,16 +66,20 @@ Templates are markdown files with variables in the format `{variable_name}`. Sup
 - `{destination_path}`: Output destination path
 
 Example template:
+
 ```markdown
 # Task Implementation
 
 ## Input
+
 {input_markdown}
 
 ## Schema
+
 {schema_file}
 
 ## Output Location
+
 {destination_path}
 ```
 
@@ -160,4 +165,4 @@ deno task publish
 
 ## License
 
-MIT 
+MIT

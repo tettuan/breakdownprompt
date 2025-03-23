@@ -1,4 +1,4 @@
-import { VariableReplacer } from "../types.ts";
+import type { VariableReplacer } from "../types.ts";
 
 export class SchemaFileReplacer implements VariableReplacer {
   replace(value: unknown): string {
@@ -14,4 +14,4 @@ export class SchemaFileReplacer implements VariableReplacer {
     }
     return true;
   }
-} 
+}

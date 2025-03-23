@@ -40,19 +40,19 @@ export class OutputController {
     if (this.multipleFiles) {
       // Split content into multiple files based on headers
       const sections = content.split(/(?=^# )/m);
-      
+
       for (const section of sections) {
         if (!section.trim()) continue;
-        
+
         const headerMatch = section.match(/^# (.+)$/m);
         const filename = headerMatch
           ? `${timestamp}_${headerMatch[1].toLowerCase().replace(/\s+/g, "_")}.md`
           : `${timestamp}_section_${files.length + 1}.md`;
-        
+
         const filepath = this.structured
           ? `${this.destination}/${filename}`
           : `${this.destination}/${filename}`;
-        
+
         await Deno.writeTextFile(filepath, section.trim());
         files.push(filepath);
       }
@@ -65,4 +65,4 @@ export class OutputController {
 
     return files;
   }
-} 
+}

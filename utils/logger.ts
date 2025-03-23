@@ -4,16 +4,16 @@ export enum LogLevel {
   WARN = "warn",
   INFO = "info",
   DEBUG = "debug",
-  TRACE = "trace"
+  TRACE = "trace",
 }
 
 // 環境変数からログレベルを取得
 const getLogLevel = (): LogLevel => {
   const envLevel = Deno.env.get("LOG_LEVEL")?.toLowerCase();
   if (!envLevel) return LogLevel.INFO;
-  
+
   // 文字列からLogLevelを取得
-  const level = Object.values(LogLevel).find(l => l === envLevel);
+  const level = Object.values(LogLevel).find((l) => l === envLevel);
   return level || LogLevel.INFO;
 };
 
@@ -26,7 +26,7 @@ const levelPriority: Record<LogLevel, number> = {
   [LogLevel.WARN]: 1,
   [LogLevel.INFO]: 2,
   [LogLevel.DEBUG]: 3,
-  [LogLevel.TRACE]: 4
+  [LogLevel.TRACE]: 4,
 };
 
 // ロガー関数
@@ -56,4 +56,4 @@ export const logger = {
       console.log(`[TRACE] ${message}`, ...args);
     }
   },
-}; 
+};

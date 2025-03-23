@@ -1,4 +1,4 @@
-import { Config } from "./types.ts";
+import type { Config } from "./types.ts";
 
 export class DefaultConfig implements Config {
   constructor(
@@ -15,4 +15,4 @@ export class DefaultConfig implements Config {
     }
     return true;
   }
-} 
+}

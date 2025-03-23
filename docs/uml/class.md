@@ -66,4 +66,4 @@ classDiagram
     VariableReplacer <|.. InputMarkdownReplacer
     PromptManager --> Config
     PromptManager --> PromptParams
-``` 
+```

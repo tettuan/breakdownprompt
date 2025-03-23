@@ -9,13 +9,13 @@ import { logger } from "./logger.ts";
  */
 export function logFunction<T extends (...args: unknown[]) => ReturnType<T>>(
   name: string,
-  fn: T
+  fn: T,
 ): (...args: Parameters<T>) => ReturnType<T> {
   return (...args: Parameters<T>): ReturnType<T> => {
     logger.debug(`[ENTER] ${name} with args:`, args);
     try {
       const result = fn(...args);
-      
+
       // Promiseの場合は特別処理
       if (result instanceof Promise) {
         return result
@@ -28,7 +28,7 @@ export function logFunction<T extends (...args: unknown[]) => ReturnType<T>>(
             throw error;
           }) as ReturnType<T>;
       }
-      
+
       logger.debug(`[EXIT] ${name} returned:`, result);
       return result;
     } catch (error) {
@@ -59,7 +59,7 @@ export function logObject(obj: unknown, label = "Object"): void {
     logger.debug(`[${label}] Not an object:`, obj);
     return;
   }
-  
+
   logger.debug(`[${label}] Properties:`);
   for (const [key, value] of Object.entries(obj as Record<string, unknown>)) {
     logger.debug(`  - ${key}:`, value);
@@ -80,4 +80,4 @@ export function startSection(section: string): void {
  */
 export function endSection(section: string): void {
   logger.debug(`[END] ====== ${section} ======`);
-} 
+}
