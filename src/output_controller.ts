@@ -1,4 +1,4 @@
-import { OutputResult } from "./types.ts";
+import type { OutputResult } from "./types.ts";
 
 export class OutputController {
   constructor(

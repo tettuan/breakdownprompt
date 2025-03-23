@@ -18,4 +18,4 @@
 - All dependencies are regularly updated
 - Code is audited for security issues
 - Provenance is enabled for all releases
-- SLSA compliance is maintained 
+- SLSA compliance is maintained
