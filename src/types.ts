@@ -1,17 +1,4 @@
 /**
- * Configuration options for the prompt manager.
- * @interface Config
- */
-export interface Config {
-  /** Maximum number of templates to cache */
-  cacheSize: number;
-  /** Timeout in milliseconds for operations */
-  timeout: number;
-  /** Custom validation function */
-  validate(): boolean;
-}
-
-/**
  * Parameters for prompt generation.
  * @interface PromptParams
  */

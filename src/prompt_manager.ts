@@ -1,16 +1,15 @@
-import type { Config, PromptParams, PromptResult } from "./types.ts";
+import type { PromptParams, PromptResult } from "./types.ts";
 import { PromptGenerator } from "./prompt_generator.ts";
 import { OutputController } from "./output_controller.ts";
 
 export class PromptManager {
   private templateCache: Map<string, string>;
+  private readonly CACHE_SIZE = 100;
 
   constructor(
     private baseDir: string,
-    private config: Config,
   ) {
     this.templateCache = new Map();
-    this.config.validate();
   }
 
   public async generatePrompt(params: PromptParams): Promise<PromptResult> {
@@ -79,7 +78,7 @@ export class PromptManager {
 
     try {
       const template = await Deno.readTextFile(templatePath);
-      if (this.templateCache.size >= this.config.cacheSize) {
+      if (this.templateCache.size >= this.CACHE_SIZE) {
         // Remove oldest entry
         const firstKey = this.templateCache.keys().next().value;
         if (firstKey !== undefined) {

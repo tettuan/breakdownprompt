@@ -29,10 +29,10 @@ deno add https://github.com/tettuan/breakdownprompt
 ## Usage
 
 ```typescript
-import { DefaultConfig, PromptManager } from "@tettuan/breakdownprompt";
+import { PromptManager } from "@tettuan/breakdownprompt";
 
 // Initialize the manager
-const manager = new PromptManager("./templates", new DefaultConfig());
+const manager = new PromptManager("./templates");
 
 // Define prompt parameters
 const params = {
@@ -104,20 +104,8 @@ Main class for managing prompts.
 
 ```typescript
 class PromptManager {
-  constructor(baseDir: string, config: Config);
+  constructor(baseDir: string);
   generatePrompt(params: PromptParams): Promise<PromptResult>;
-}
-```
-
-### Config
-
-Configuration options.
-
-```typescript
-interface Config {
-  cacheSize: number;
-  timeout: number;
-  validate(): boolean;
 }
 ```
 
