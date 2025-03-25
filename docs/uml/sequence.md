@@ -7,10 +7,6 @@ sequenceDiagram
     participant OutputController
     participant FileSystem
 
-    Client->>PromptManager: initialize(base_dir, config)
-    PromptManager->>FileSystem: validateDirectory(base_dir)
-    FileSystem-->>PromptManager: directory status
-
     Client->>PromptManager: generatePrompt(params)
     PromptManager->>PromptManager: validateParams(params)
     PromptManager->>FileSystem: loadTemplate(type, layer)

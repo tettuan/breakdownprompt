@@ -12,8 +12,6 @@ const logger = getLogger("test");
 
 // Test configuration constants
 export const TEST_CONFIG = {
-  CACHE_SIZE: 10,
-  TIMEOUT: 1000,
   BASE_DIR: "./test_templates",
   OUTPUT_DIR: "./test_output",
   FIXTURES_DIR: "./tests/fixtures",

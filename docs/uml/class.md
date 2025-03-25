@@ -2,9 +2,6 @@
 classDiagram
     class PromptManager {
         -base_dir: string
-        -config: Config
-        -template_cache: Map
-        +initialize(base_dir: string, config: Config)
         +generatePrompt(params: PromptParams)
         -validateParams(params: PromptParams)
         -loadTemplate(type: string, layer: string)
@@ -43,12 +40,6 @@ classDiagram
         -checkPermissions()
     }
 
-    class Config {
-        +cache_size: number
-        +timeout: number
-        +validate()
-    }
-
     class PromptParams {
         +demonstrative_type: string
         +layer_type: string
@@ -64,6 +55,5 @@ classDiagram
     PromptGenerator --> VariableReplacer
     VariableReplacer <|.. SchemaFileReplacer
     VariableReplacer <|.. InputMarkdownReplacer
-    PromptManager --> Config
     PromptManager --> PromptParams
 ```
