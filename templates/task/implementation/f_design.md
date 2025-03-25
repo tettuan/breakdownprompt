@@ -1,9 +1,11 @@
 # Implementation Plan
 
 ## Input Design
+
 {input_markdown}
 
 ## Schema
+
 {schema_file}
 
 ## Implementation Steps
@@ -18,10 +20,12 @@
 8. Document the implementation
 
 ## Output Location
+
 {destination_path}
 
 ## Additional Notes
+
 - Follow best practices for the chosen technology stack
 - Ensure code is maintainable and well-documented
 - Consider performance implications
-- Implement proper error handling 
+- Implement proper error handling

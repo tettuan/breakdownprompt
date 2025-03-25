@@ -1,9 +1,11 @@
 # Implementation Plan
 
 ## Input Design
+
 {input_markdown}
 
 ## Schema
+
 ./examples/templates/schema/implementation.json
 
 ## Implementation Steps
@@ -18,9 +20,11 @@
 8. Document the implementation
 
 ## Output Location
+
 ./output
 
 ## Additional Notes
+
 - Follow best practices for the chosen technology stack
 - Ensure code is maintainable and well-documented
 - Consider performance implications

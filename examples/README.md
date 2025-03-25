@@ -48,4 +48,4 @@ examples/
 ## Prerequisites
 
 - Required template files are included in the `examples/templates` directory.
-- The `output` directory will be created automatically. 
+- The `output` directory will be created automatically.

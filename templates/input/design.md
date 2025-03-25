@@ -1,9 +1,11 @@
 # Design Document
 
 ## Overview
+
 This is a sample design document that will be used as input for the prompt generation.
 
 ## Components
+
 1. User Interface
    - Clean and intuitive design
    - Responsive layout
@@ -20,6 +22,7 @@ This is a sample design document that will be used as input for the prompt gener
    - Data encryption
 
 ## Technical Requirements
+
 - Modern web framework
 - RESTful API architecture
-- Scalable infrastructure 
+- Scalable infrastructure

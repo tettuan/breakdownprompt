@@ -2,7 +2,7 @@
 
 ## Input Design
 
-{input_markdown}
+./examples/templates/input/design.md
 
 ## Schema
 
