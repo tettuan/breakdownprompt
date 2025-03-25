@@ -3,19 +3,19 @@
  *
  * Purpose:
  * - Verify the core functionality of the PromptManager class
- * - Ensure proper template loading and caching
+ * - Ensure proper template loading
  * - Validate parameter handling and error cases
  *
  * Background:
  * The PromptManager is the main orchestrator of the prompt management system.
- * It handles template loading, caching, and coordination between PromptGenerator
+ * It handles template loading and coordination between PromptGenerator
  * and OutputController. These tests ensure it maintains system integrity and
  * follows the design specifications from docs/design_pattern.ja.md.
  *
  * Success Criteria:
  * 1. Initialization: Manager should be properly instantiated
  * 2. Parameter Validation: Invalid parameters should be caught early
- * 3. Template Loading: Templates should be loaded and cached correctly
+ * 3. Template Loading: Templates should be loaded correctly
  * 4. Error Handling: Appropriate errors should be thrown for invalid cases
  * 5. Integration: Should work correctly with actual template and input files
  */

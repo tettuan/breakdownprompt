@@ -3,14 +3,9 @@ import { PromptGenerator } from "./prompt_generator.ts";
 import { OutputController } from "./output_controller.ts";
 
 export class PromptManager {
-  private templateCache: Map<string, string>;
-  private readonly CACHE_SIZE = 100;
-
   constructor(
     private baseDir: string,
-  ) {
-    this.templateCache = new Map();
-  }
+  ) {}
 
   public async generatePrompt(params: PromptParams): Promise<PromptResult> {
     this.validateParams(params);
@@ -63,30 +58,11 @@ export class PromptManager {
   }
 
   private async loadTemplate(params: PromptParams): Promise<string> {
-    const cacheKey = `${params.demonstrativeType}/${params.layerType}/${params.fromLayerType}`;
-
-    if (this.templateCache.has(cacheKey)) {
-      const cachedTemplate = this.templateCache.get(cacheKey);
-      if (!cachedTemplate) {
-        throw new Error("Cache inconsistency detected");
-      }
-      return cachedTemplate;
-    }
-
     const templatePath =
       `${this.baseDir}/${params.demonstrativeType}/${params.layerType}/f_${params.fromLayerType}.md`;
 
     try {
-      const template = await Deno.readTextFile(templatePath);
-      if (this.templateCache.size >= this.CACHE_SIZE) {
-        // Remove oldest entry
-        const firstKey = this.templateCache.keys().next().value;
-        if (firstKey !== undefined) {
-          this.templateCache.delete(firstKey);
-        }
-      }
-      this.templateCache.set(cacheKey, template);
-      return template;
+      return await Deno.readTextFile(templatePath);
     } catch (error) {
       if (error instanceof Error) {
         throw new Error(`Failed to load template: ${error.message}`);
