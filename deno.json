@@ -14,7 +14,8 @@
     "@std/log": "jsr:@std/log@^0.224.14",
     "@std/testing": "jsr:@std/testing@^1.0.9",
     "std/": "jsr:@std/",
-    "testing/": "jsr:@std/testing/"
+    "testing/": "jsr:@std/testing/",
+    "@tettuan/breakdownlogger": "jsr:@tettuan/breakdownlogger@0.1.10"
   },
   "compilerOptions": {
     "lib": [

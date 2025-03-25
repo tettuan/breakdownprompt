@@ -5,10 +5,10 @@
  * It includes logging setup and common test configurations.
  */
 
-import { getLogger } from "jsr:@std/log";
+import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
 // Configure logging based on environment
-const logger = getLogger("test");
+const logger = new BreakdownLogger();
 
 // Test configuration constants
 export const TEST_CONFIG = {

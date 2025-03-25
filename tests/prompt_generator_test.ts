@@ -1,25 +1,24 @@
 import { assert, assertEquals, assertThrows } from "@std/assert";
 import { PromptGenerator } from "../src/prompt_generator.ts";
-import { checkpoint, endSection, logObject, startSection } from "../utils/debug-logger.ts";
-import { logger } from "../utils/logger.ts";
+import { BreakdownLogger } from "@tettuan/breakdownlogger";
+
+const logger = new BreakdownLogger();
 
 Deno.test("PromptGenerator - initialization", () => {
-  startSection("PromptGenerator Initialization Test");
-  checkpoint("Creating new PromptGenerator instance", {});
+  logger.info("Starting PromptGenerator Initialization Test");
   const generator = new PromptGenerator();
-  checkpoint("Instance created", { isInstance: generator instanceof PromptGenerator });
+  logger.info("PromptGenerator instance created successfully", {
+    isInstance: generator instanceof PromptGenerator,
+  });
   assertEquals(generator instanceof PromptGenerator, true);
-  logger.info("PromptGenerator instance created successfully");
-  endSection("PromptGenerator Initialization Test");
+  logger.info("PromptGenerator Initialization Test completed");
 });
 
 Deno.test("PromptGenerator - template parsing", () => {
-  startSection("Template Parsing Test");
-
   const generator = new PromptGenerator();
   const template = "Load schema from {schema_file} and save to {destination_path}";
   const result = generator.parseTemplate(template);
-  logObject(result, "Parsed Result");
+  logger.info("Parsed Result", result);
 
   // Verify the content was processed correctly
   assert(result.content !== undefined, "Result should have content");
@@ -34,17 +33,13 @@ Deno.test("PromptGenerator - template parsing", () => {
   }
 
   // Log test results
-  checkpoint("Template parsing completed successfully", {
+  logger.info("Template parsing completed successfully", {
     variableCount: variables.size,
     variables: Array.from(variables),
   });
-
-  endSection("Template Parsing Test");
 });
 
 Deno.test("PromptGenerator - variable replacement", () => {
-  startSection("Variable Replacement Test");
-
   const generator = new PromptGenerator();
   const template = "Load schema from {schema_file} and save to {destination_path}";
   const result = generator.parseTemplate(template);
@@ -54,25 +49,21 @@ Deno.test("PromptGenerator - variable replacement", () => {
   values.set("destination_path", "/path/to/output");
 
   const content = generator.replaceVariables(result, values);
-  logObject(content, "Replaced Content");
+  logger.info("Replaced Content", content);
 
   // Verify variable replacement
   assert(content.includes("/path/to/schema.json"), "Schema path should be replaced");
   assert(content.includes("/path/to/output"), "Destination path should be replaced");
 
   // Log test results
-  checkpoint("Variable replacement completed successfully", {
+  logger.info("Variable replacement completed successfully", {
     originalTemplate: template,
     replacedContent: content,
     replacedVariables: Array.from(values.keys()),
   });
-
-  endSection("Variable Replacement Test");
 });
 
 Deno.test("PromptGenerator - unknown variable", () => {
-  startSection("Unknown Variable Test");
-
   const generator = new PromptGenerator();
   const template = "Hello {unknown}!";
   const _result = generator.parseTemplate(template);
@@ -83,17 +74,13 @@ Deno.test("PromptGenerator - unknown variable", () => {
   logger.warn("Template contains unknown variable", { variable: "unknown", template });
 
   // Log test results
-  checkpoint("Unknown variable test completed successfully", {
+  logger.info("Unknown variable test completed successfully", {
     template,
     hasUnknownVariable: true,
   });
-
-  endSection("Unknown Variable Test");
 });
 
 Deno.test("PromptGenerator - invalid value type", () => {
-  startSection("Invalid Value Type Test");
-
   const generator = new PromptGenerator();
   const template = "Save to {destination_path}";
   const result = generator.parseTemplate(template);
@@ -108,17 +95,13 @@ Deno.test("PromptGenerator - invalid value type", () => {
   );
 
   // Log test results
-  checkpoint("Invalid value type test completed successfully", {
+  logger.info("Invalid value type test completed successfully", {
     expectedError: "Invalid value for variable: destination_path",
     invalidValue: 42,
   });
-
-  endSection("Invalid Value Type Test");
 });
 
 Deno.test("PromptGenerator - value validation errors", () => {
-  startSection("Value Validation Test");
-
   const generator = new PromptGenerator();
   const template = "Save to {destination_path}";
   const result = generator.parseTemplate(template);
@@ -151,9 +134,7 @@ Deno.test("PromptGenerator - value validation errors", () => {
   }
 
   // Log test results
-  checkpoint("Value validation test completed successfully", {
+  logger.info("Value validation test completed successfully", {
     testCases,
   });
-
-  endSection("Value Validation Test");
 });
