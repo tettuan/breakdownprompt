@@ -32,14 +32,7 @@ export class PromptManager {
       throw new Error(outputResult.error ?? "Output generation failed");
     }
 
-    return {
-      content,
-      metadata: {
-        template,
-        variables: result.metadata.variables,
-        timestamp: new Date(),
-      },
-    };
+    return { content };
   }
 
   private validateParams(params: PromptParams): void {

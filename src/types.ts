@@ -50,13 +50,4 @@ export interface OutputResult {
 export interface PromptResult {
   /** Generated prompt content */
   content: string;
-  /** Metadata about the generation process */
-  metadata: {
-    /** Original template string */
-    template: string;
-    /** Map of variable names to their values */
-    variables: Map<string, string>;
-    /** Timestamp of generation */
-    timestamp: Date;
-  };
 }

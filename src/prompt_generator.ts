@@ -38,14 +38,7 @@ export class PromptGenerator {
       variables.set(varName, fullMatch);
     }
 
-    return {
-      content,
-      metadata: {
-        template,
-        variables,
-        timestamp: new Date(),
-      },
-    };
+    return { content };
   }
 
   public replaceVariables(result: PromptResult, values: Map<string, unknown>): string {
