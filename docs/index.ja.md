@@ -5,32 +5,18 @@
 
 # 受け取りパラメータ一覧
 
-- base_dir
-- DemonstrativeType
-- LayerType
-- fromLayerType
-- Destination　保存先
+- prompt_file_path プロンプトファイルのパス
+- destination 保存先パス
 - MultipleFiles 複数ファイルか、単独か
 - Structured or Independent 階層か、独立
 
-# プロンプトファイルの特定
+# プロンプトファイルの取り扱い
 
-以下の受け取りパラメータを組み合わせて、特定する。
-
-- base_dir
-- DemonstrativeType
-- LayerType
-- fromLayerType
-
-## ファイル名の組み立て
-
-- dir : <base_dir>/<DemonstrativeType>/<LayerType>
-- filename : f_<from_layer_type>.md
+プロンプトファイルのパスは引数として直接受け取る。ライブラリ内でパスの組み立ては行わない。
 
 ## 宣言とパラメータ
 
-初期化時に base_dir が指定される。 プロンプト呼び出し時に、DemonstrativeType, LayerType,
-fromLayerType が指定される。
+初期化時に prompt_file_path が指定される。
 
 # プロンプトの読み込みと、パラメータ値の置換
 
@@ -86,7 +72,7 @@ this is a input markdown contents.
 
 # 出力方法の特定
 
-- Destination　保存先
+- destination 保存先パス（引数で直接指定）
 - MultipleFiles 複数ファイルか、単独か
 - Structured or Independent 階層か、独立
 
@@ -98,4 +84,5 @@ this is a input markdown contents.
 
 # テスト
 
-docs/tests.ja.md を参照する
+- コア機能の単体テストから統合機能、最終的なユースケースのカバレッジ拡大へと階層的なテストにする
+- BreakdownLoggerをテストコードへ入れてデバッグする

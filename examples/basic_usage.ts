@@ -1,3 +1,16 @@
+/**
+ * Basic Usage Example
+ *
+ * This example demonstrates the fundamental usage of @tettuan/breakdownprompt.
+ * It shows how to:
+ * 1. Initialize the PromptManager with a template directory
+ * 2. Configure basic parameters for prompt generation
+ * 3. Generate a single prompt output
+ *
+ * This is the simplest form of usage, where the prompt is generated
+ * into a single file without any special structuring or splitting.
+ */
+
 import { PromptManager } from "@tettuan/breakdownprompt";
 
 async function main() {

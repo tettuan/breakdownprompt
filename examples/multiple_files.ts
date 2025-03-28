@@ -1,3 +1,16 @@
+/**
+ * Multiple Files Output Example
+ *
+ * This example demonstrates how to use @tettuan/breakdownprompt to generate
+ * prompts that are split into multiple files. This is useful when:
+ * 1. You need to organize complex prompts into separate files
+ * 2. You want to maintain better separation of concerns
+ * 3. You need to process different parts of the prompt independently
+ *
+ * The output will be split into multiple files based on the template structure,
+ * making it easier to manage and maintain large prompts.
+ */
+
 import { PromptManager } from "@tettuan/breakdownprompt";
 
 async function main() {

@@ -1,3 +1,16 @@
+/**
+ * Structured Output Example
+ *
+ * This example demonstrates how to use @tettuan/breakdownprompt to generate
+ * prompts in a structured format. This is particularly useful when:
+ * 1. You need to process the prompt content programmatically
+ * 2. You want to maintain a specific data structure for the prompt
+ * 3. You need to integrate with other systems that expect structured data
+ *
+ * The output will be both split into multiple files and structured,
+ * providing both organization and programmatic access to the content.
+ */
+
 import { PromptManager } from "@tettuan/breakdownprompt";
 
 async function main() {
