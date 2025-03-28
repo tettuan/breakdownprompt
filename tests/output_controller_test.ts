@@ -34,7 +34,7 @@ Deno.test("OutputController - initialization", () => {
     controller instanceof OutputController,
     "Controller should be an instance of OutputController",
   );
-  logger.info("OutputController initialized successfully", {
+  logger.debug("OutputController initialized successfully", {
     outputDir: TEST_CONFIG.OUTPUT_DIR,
     multipleFiles: false,
     structured: false,
@@ -56,7 +56,7 @@ Deno.test("OutputController - single file output", async () => {
   );
   assert(result.files[0].endsWith(".md"), "File should have .md extension");
 
-  logger.info("Single file output generated successfully", {
+  logger.debug("Single file output generated successfully", {
     fileCount: result.files.length,
     filePaths: result.files,
     contentLength: content.length,
@@ -84,7 +84,7 @@ Content for section 2`;
   );
   assert(result.files.every((f) => f.endsWith(".md")), "All files should have .md extension");
 
-  logger.info("Multiple files output generated successfully", {
+  logger.debug("Multiple files output generated successfully", {
     fileCount: result.files.length,
     filePaths: result.files,
     sectionCount: content.split("# ").length - 1,
@@ -112,7 +112,7 @@ Content for section 2`;
   );
   assert(result.files.every((f) => f.endsWith(".md")), "All files should have .md extension");
 
-  logger.info("Structured output generated successfully", {
+  logger.debug("Structured output generated successfully", {
     fileCount: result.files.length,
     filePaths: result.files,
     sectionCount: content.split("# ").length - 1,
@@ -133,7 +133,7 @@ Deno.test("OutputController - error handling", async () => {
   assert(result.files.length === 0, "Should have no files");
   assert(typeof result.error === "string", "Error should be a string");
 
-  logger.warn("Error handling test completed successfully", {
+  logger.debug("Error handling test completed successfully", {
     invalidPath: testDir,
     hasError: typeof result.error === "string",
     errorMessage: result.error,

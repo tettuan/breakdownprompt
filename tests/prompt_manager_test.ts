@@ -38,10 +38,10 @@ const logger = new BreakdownLogger();
 Deno.test("PromptManager - initialization", () => {
   logger.info("Starting PromptManager Initialization Test");
   const manager = new PromptManager(TEST_CONFIG.BASE_DIR);
-  logger.info("Manager instance created", { baseDir: TEST_CONFIG.BASE_DIR });
+  logger.debug("Manager instance created", { baseDir: TEST_CONFIG.BASE_DIR });
 
   assert(manager instanceof PromptManager, "Manager should be an instance of PromptManager");
-  logger.info("Instance type verification passed", { isInstance: true });
+  logger.debug("Instance type verification passed", { isInstance: true });
 
   logger.info("PromptManager Initialization Test completed");
 });
@@ -51,7 +51,7 @@ Deno.test("PromptManager - parameter validation", async () => {
   logger.info("Starting PromptManager Parameter Validation Test");
 
   const manager = new PromptManager(TEST_CONFIG.BASE_DIR);
-  logger.info("Manager instance created", { baseDir: TEST_CONFIG.BASE_DIR });
+  logger.debug("Manager instance created", { baseDir: TEST_CONFIG.BASE_DIR });
 
   const invalidParams: PromptParams = {
     demonstrativeType: "",
@@ -64,17 +64,17 @@ Deno.test("PromptManager - parameter validation", async () => {
       return true;
     },
   };
-  logger.info("Invalid Parameters", invalidParams);
+  logger.debug("Invalid Parameters", invalidParams);
 
   await assertRejects(
     async () => {
-      logger.info("Attempting to generate prompt with invalid params", { params: invalidParams });
+      logger.debug("Attempting to generate prompt with invalid params", { params: invalidParams });
       await manager.generatePrompt(invalidParams);
     },
     Error,
     "Demonstrative type is required",
   );
-  logger.info("Expected error was thrown", { errorMessage: "Demonstrative type is required" });
+  logger.debug("Expected error was thrown", { errorMessage: "Demonstrative type is required" });
 
   logger.info("PromptManager Parameter Validation Test completed");
 });
@@ -84,10 +84,10 @@ Deno.test("PromptManager - template loading", async () => {
   logger.info("Starting PromptManager Template Loading Test");
 
   await setupTestDirs();
-  logger.info("Test directories setup completed", { baseDir: TEST_CONFIG.BASE_DIR });
+  logger.debug("Test directories setup completed", { baseDir: TEST_CONFIG.BASE_DIR });
 
   const manager = new PromptManager(TEST_CONFIG.BASE_DIR);
-  logger.info("Manager instance created", { baseDir: TEST_CONFIG.BASE_DIR });
+  logger.debug("Manager instance created", { baseDir: TEST_CONFIG.BASE_DIR });
 
   const params: PromptParams = {
     demonstrativeType: TEST_PARAMS.DEMONSTRATIVE_TYPE,
@@ -100,22 +100,22 @@ Deno.test("PromptManager - template loading", async () => {
       return true;
     },
   };
-  logger.info("Test Parameters", params);
+  logger.debug("Test Parameters", params);
 
   await assertRejects(
     async () => {
-      logger.info("Attempting to generate prompt with missing template", { params });
+      logger.debug("Attempting to generate prompt with missing template", { params });
       await manager.generatePrompt(params);
     },
     Error,
     "Failed to load template",
   );
-  logger.info("Expected template loading error was thrown", {
+  logger.debug("Expected template loading error was thrown", {
     errorMessage: "Failed to load template",
   });
 
   await cleanupTestDirs();
-  logger.info("Test directories cleaned up", { baseDir: TEST_CONFIG.BASE_DIR });
+  logger.debug("Test directories cleaned up", { baseDir: TEST_CONFIG.BASE_DIR });
 
   logger.info("PromptManager Template Loading Test completed");
 });
@@ -125,13 +125,13 @@ Deno.test("PromptManager - integration with fixtures", async () => {
   logger.info("Starting PromptManager Integration Test");
 
   await setupTestDirs();
-  logger.info("Test directories setup completed", { baseDir: TEST_CONFIG.BASE_DIR });
+  logger.debug("Test directories setup completed", { baseDir: TEST_CONFIG.BASE_DIR });
 
   await copyFixtureFiles();
-  logger.info("Fixture files copied", { baseDir: TEST_CONFIG.BASE_DIR });
+  logger.debug("Fixture files copied", { baseDir: TEST_CONFIG.BASE_DIR });
 
   const manager = new PromptManager(TEST_CONFIG.BASE_DIR);
-  logger.info("Manager instance created", { baseDir: TEST_CONFIG.BASE_DIR });
+  logger.debug("Manager instance created", { baseDir: TEST_CONFIG.BASE_DIR });
 
   const params: PromptParams = {
     demonstrativeType: TEST_PARAMS.DEMONSTRATIVE_TYPE,
@@ -144,11 +144,11 @@ Deno.test("PromptManager - integration with fixtures", async () => {
       return true;
     },
   };
-  logger.info("Test Parameters", params);
+  logger.debug("Test Parameters", { params });
 
-  logger.info("Generating prompt with valid parameters", { params });
+  logger.debug("Generating prompt with valid parameters", { params });
   const result = await manager.generatePrompt(params);
-  logger.info("Generated Result", result);
+  logger.debug("Generated Result", { result });
 
   // Verify the content was processed correctly
   assert(result.content !== undefined, "Result should have content");
@@ -177,10 +177,10 @@ Deno.test("PromptManager - integration with fixtures", async () => {
 
   // Verify the structure matches the template format
   const sections = result.content.split(/(?=\n## )/);
-  logger.debug("Sections:", sections);
+  logger.debug("Sections:", { sections });
 
   const sectionHeaders = sections.map((s) => s.trim().split("\n")[0]);
-  logger.debug("Section headers:", sectionHeaders);
+  logger.debug("Section headers:", { sectionHeaders });
   assert(sectionHeaders.some((h) => h.startsWith("## Schema")), "Should contain Schema heading");
   assert(sectionHeaders.some((h) => h.startsWith("## Input")), "Should contain Input heading");
   assert(sectionHeaders.some((h) => h.startsWith("## Output")), "Should contain Output heading");
@@ -191,19 +191,19 @@ Deno.test("PromptManager - integration with fixtures", async () => {
 
   // Verify variable replacements
   const schemaSection = sections.find((s) => s.includes("## Schema"));
-  logger.debug("Schema section:", schemaSection);
+  logger.debug("Schema section:", { schemaSection });
   assert(schemaSection !== undefined, "Schema section should exist");
   const expectedSchemaPath = `${TEST_CONFIG.BASE_DIR}/schema/${TEST_PARAMS.LAYER_TYPE}.json`;
   assert(schemaSection.includes(expectedSchemaPath), "Schema path should be replaced correctly");
 
   const inputSection = sections.find((s) => s.includes("## Input"));
-  logger.debug("Input section:", inputSection);
+  logger.debug("Input section:", { inputSection });
   assert(inputSection !== undefined, "Input section should exist");
   const expectedInputPath = `${TEST_CONFIG.BASE_DIR}/input/${TEST_PARAMS.FROM_LAYER_TYPE}.md`;
   assert(inputSection.includes(expectedInputPath), "Input path should be replaced correctly");
 
   const outputSection = sections.find((s) => s.includes("## Output"));
-  logger.debug("Output section:", outputSection);
+  logger.debug("Output section:", { outputSection });
   assert(outputSection !== undefined, "Output section should exist");
   assert(
     outputSection.includes(TEST_CONFIG.OUTPUT_DIR),
@@ -211,7 +211,7 @@ Deno.test("PromptManager - integration with fixtures", async () => {
   );
 
   await cleanupTestDirs();
-  logger.info("Test directories cleaned up", { baseDir: TEST_CONFIG.BASE_DIR });
+  logger.debug("Test directories cleaned up", { baseDir: TEST_CONFIG.BASE_DIR });
 
   logger.info("PromptManager Integration Test completed");
 });
@@ -221,13 +221,13 @@ Deno.test("PromptManager - variable replacement errors", async () => {
   logger.info("Starting Variable Replacement Error Test");
 
   await setupTestDirs();
-  logger.info("Test directories setup completed", { baseDir: TEST_CONFIG.BASE_DIR });
+  logger.debug("Test directories setup completed", { baseDir: TEST_CONFIG.BASE_DIR });
 
   await copyFixtureFiles();
-  logger.info("Fixture files copied", { baseDir: TEST_CONFIG.BASE_DIR });
+  logger.debug("Fixture files copied", { baseDir: TEST_CONFIG.BASE_DIR });
 
   const manager = new PromptManager(TEST_CONFIG.BASE_DIR);
-  logger.info("Manager instance created", { baseDir: TEST_CONFIG.BASE_DIR });
+  logger.debug("Manager instance created", { baseDir: TEST_CONFIG.BASE_DIR });
 
   const params: PromptParams = {
     demonstrativeType: TEST_PARAMS.DEMONSTRATIVE_TYPE,
@@ -240,7 +240,7 @@ Deno.test("PromptManager - variable replacement errors", async () => {
       return true;
     },
   };
-  logger.info("Test Parameters", params);
+  logger.debug("Test Parameters", { params });
 
   // Test with invalid variable
   const invalidTemplate = "Test with {invalid_variable}";
@@ -253,18 +253,20 @@ Deno.test("PromptManager - variable replacement errors", async () => {
 
   await assertRejects(
     async () => {
-      logger.info("Attempting to generate prompt with invalid template", { params: invalidParams });
+      logger.debug("Attempting to generate prompt with invalid template", {
+        params: invalidParams,
+      });
       await manager.generatePrompt(invalidParams);
     },
     Error,
     "Failed to load template",
   );
-  logger.info("Expected template loading error was thrown", {
+  logger.debug("Expected template loading error was thrown", {
     errorMessage: "Failed to load template",
   });
 
   await cleanupTestDirs();
-  logger.info("Test directories cleaned up", { baseDir: TEST_CONFIG.BASE_DIR });
+  logger.debug("Test directories cleaned up", { baseDir: TEST_CONFIG.BASE_DIR });
 
   logger.info("Variable Replacement Error Test completed");
 });
@@ -274,13 +276,13 @@ Deno.test("PromptManager - comprehensive prompt processing", async () => {
   logger.info("Starting Comprehensive Prompt Processing Test");
 
   await setupTestDirs();
-  logger.info("Test directories setup completed", { baseDir: TEST_CONFIG.BASE_DIR });
+  logger.debug("Test directories setup completed", { baseDir: TEST_CONFIG.BASE_DIR });
 
   await copyFixtureFiles();
-  logger.info("Fixture files copied", { baseDir: TEST_CONFIG.BASE_DIR });
+  logger.debug("Fixture files copied", { baseDir: TEST_CONFIG.BASE_DIR });
 
   const manager = new PromptManager(TEST_CONFIG.BASE_DIR);
-  logger.info("Manager instance created", { baseDir: TEST_CONFIG.BASE_DIR });
+  logger.debug("Manager instance created", { baseDir: TEST_CONFIG.BASE_DIR });
 
   const params: PromptParams = {
     demonstrativeType: TEST_PARAMS.DEMONSTRATIVE_TYPE,
@@ -293,11 +295,11 @@ Deno.test("PromptManager - comprehensive prompt processing", async () => {
       return true;
     },
   };
-  logger.info("Test Parameters", params);
+  logger.debug("Test Parameters", { params });
 
-  logger.info("Generating prompt with comprehensive parameters", { params });
+  logger.debug("Generating prompt with comprehensive parameters", { params });
   const result = await manager.generatePrompt(params);
-  logger.info("Generated Result", result);
+  logger.debug("Generated Result", { result });
 
   // Verify the content was processed correctly
   assert(result.content !== undefined, "Result should have content");
@@ -305,7 +307,7 @@ Deno.test("PromptManager - comprehensive prompt processing", async () => {
   // Verify the structure matches the template format
   const sections = result.content.split(/(?=\n## )/);
   const sectionHeaders = sections.map((s) => s.trim().split("\n")[0]);
-  logger.debug("Section headers:", sectionHeaders);
+  logger.debug("Section headers:", { sectionHeaders });
 
   // Verify all required sections are present
   assert(sectionHeaders.some((h) => h.startsWith("## Schema")), "Should contain Schema heading");
@@ -317,7 +319,7 @@ Deno.test("PromptManager - comprehensive prompt processing", async () => {
   );
 
   await cleanupTestDirs();
-  logger.info("Test directories cleaned up", { baseDir: TEST_CONFIG.BASE_DIR });
+  logger.debug("Test directories cleaned up", { baseDir: TEST_CONFIG.BASE_DIR });
 
   logger.info("Comprehensive Prompt Processing Test completed");
 });

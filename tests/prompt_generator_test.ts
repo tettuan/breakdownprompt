@@ -18,7 +18,7 @@ Deno.test("PromptGenerator - template parsing", () => {
   const generator = new PromptGenerator();
   const template = "Load schema from {schema_file} and save to {destination_path}";
   const result = generator.parseTemplate(template);
-  logger.info("Parsed Result", result);
+  logger.debug("Parsed Result", result);
 
   // Verify the content was processed correctly
   assert(result.content !== undefined, "Result should have content");
@@ -33,7 +33,7 @@ Deno.test("PromptGenerator - template parsing", () => {
   }
 
   // Log test results
-  logger.info("Template parsing completed successfully", {
+  logger.debug("Template parsing completed successfully", {
     variableCount: variables.size,
     variables: Array.from(variables),
   });
@@ -49,14 +49,14 @@ Deno.test("PromptGenerator - variable replacement", () => {
   values.set("destination_path", "/path/to/output");
 
   const content = generator.replaceVariables(result, values);
-  logger.info("Replaced Content", content);
+  logger.debug("Replaced Content", content);
 
   // Verify variable replacement
   assert(content.includes("/path/to/schema.json"), "Schema path should be replaced");
   assert(content.includes("/path/to/output"), "Destination path should be replaced");
 
   // Log test results
-  logger.info("Variable replacement completed successfully", {
+  logger.debug("Variable replacement completed successfully", {
     originalTemplate: template,
     replacedContent: content,
     replacedVariables: Array.from(values.keys()),
@@ -71,10 +71,10 @@ Deno.test("PromptGenerator - unknown variable", () => {
   const values = new Map<string, unknown>();
   values.set("unknown", "world");
 
-  logger.warn("Template contains unknown variable", { variable: "unknown", template });
+  logger.debug("Template contains unknown variable", { variable: "unknown", template });
 
   // Log test results
-  logger.info("Unknown variable test completed successfully", {
+  logger.debug("Unknown variable test completed successfully", {
     template,
     hasUnknownVariable: true,
   });
@@ -95,7 +95,7 @@ Deno.test("PromptGenerator - invalid value type", () => {
   );
 
   // Log test results
-  logger.info("Invalid value type test completed successfully", {
+  logger.debug("Invalid value type test completed successfully", {
     expectedError: "Invalid value for variable: destination_path",
     invalidValue: 42,
   });
@@ -134,7 +134,7 @@ Deno.test("PromptGenerator - value validation errors", () => {
   }
 
   // Log test results
-  logger.info("Value validation test completed successfully", {
+  logger.debug("Value validation test completed successfully", {
     testCases,
   });
 });
