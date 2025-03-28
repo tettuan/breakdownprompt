@@ -3,44 +3,14 @@
  * @interface PromptParams
  */
 export interface PromptParams {
-  /** Type of demonstration (e.g., 'task', 'example') */
-  demonstrativeType: string;
-  /** Target layer type (e.g., 'implementation', 'design') */
-  layerType: string;
-  /** Source layer type */
-  fromLayerType: string;
+  /** Path to the prompt template file */
+  prompt_file_path: string;
   /** Output destination path */
   destination: string;
   /** Whether to split output into multiple files */
   multipleFiles: boolean;
   /** Whether to format output as structured data */
   structured: boolean;
-  /** Custom validation function */
-  validate(): boolean;
-}
-
-/**
- * Interface for variable replacement operations.
- * @interface VariableReplacer
- */
-export interface VariableReplacer {
-  /** Replace a variable with its value */
-  replace(value: unknown): string;
-  /** Validate a variable value */
-  validate(value: unknown): boolean;
-}
-
-/**
- * Result of output operations.
- * @interface OutputResult
- */
-export interface OutputResult {
-  /** Whether the operation was successful */
-  success: boolean;
-  /** List of generated file paths */
-  files: string[];
-  /** Error message if operation failed */
-  error?: string;
 }
 
 /**
@@ -50,4 +20,28 @@ export interface OutputResult {
 export interface PromptResult {
   /** Generated prompt content */
   content: string;
+}
+
+/**
+ * Result of output generation.
+ * @interface OutputResult
+ */
+export interface OutputResult {
+  /** Whether the output was successful */
+  success: boolean;
+  /** List of generated file paths */
+  files: string[];
+  /** Error message if generation failed */
+  error?: string;
+}
+
+/**
+ * Interface for variable replacement.
+ * @interface VariableReplacer
+ */
+export interface VariableReplacer {
+  /** Replace the variable with its value */
+  replace(value: unknown): string;
+  /** Validate the replacement value */
+  validate(value: unknown): boolean;
 }

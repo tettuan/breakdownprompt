@@ -32,19 +32,14 @@ deno add https://github.com/tettuan/breakdownprompt
 import { PromptManager } from "@tettuan/breakdownprompt";
 
 // Initialize the manager
-const manager = new PromptManager("./templates");
+const manager = new PromptManager();
 
 // Define prompt parameters
 const params = {
-  demonstrativeType: "task",
-  layerType: "implementation",
-  fromLayerType: "design",
+  prompt_file_path: "./templates/example.md",
   destination: "./output",
   multipleFiles: false,
   structured: false,
-  validate() {
-    return true;
-  },
 };
 
 // Generate prompt
@@ -67,8 +62,7 @@ Templates are markdown files with variables in the format `{variable_name}`. Sup
 
 Example template:
 
-```markdown
-# Task Implementation
+# Example Template
 
 ## Input
 
@@ -81,7 +75,6 @@ Example template:
 ## Output Location
 
 {destination_path}
-```
 
 ## Directory Structure
 
@@ -104,7 +97,7 @@ Main class for managing prompts.
 
 ```typescript
 class PromptManager {
-  constructor(baseDir: string);
+  constructor();
   generatePrompt(params: PromptParams): Promise<PromptResult>;
 }
 ```
@@ -115,13 +108,10 @@ Parameters for prompt generation.
 
 ```typescript
 interface PromptParams {
-  demonstrativeType: string;
-  layerType: string;
-  fromLayerType: string;
-  destination: string;
-  multipleFiles: boolean;
-  structured: boolean;
-  validate(): boolean;
+  prompt_file_path: string; // Path to the prompt template file
+  destination: string; // Output destination path
+  multipleFiles: boolean; // Whether to split into multiple files
+  structured: boolean; // Whether to use structured output
 }
 ```
 
