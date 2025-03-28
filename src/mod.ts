@@ -8,7 +8,7 @@ export { PromptManager } from "./prompt_manager.ts";
 export type { PromptParams, PromptResult } from "./types.ts";
 
 // Version information
-export const VERSION = "0.1.2";
+export const VERSION: string = JSON.parse(Deno.readTextFileSync("./deno.json")).version;
 
 // Module metadata
 export const META = {
