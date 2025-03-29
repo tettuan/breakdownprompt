@@ -1,59 +1,103 @@
 ```mermaid
 classDiagram
     class PromptManager {
-        -base_dir: string
         +generatePrompt(params: PromptParams)
         -validateParams(params: PromptParams)
-        -loadTemplate(type: string, layer: string)
+        -loadTemplate(params: PromptParams)
+        -findUnknownVariables(template: string)
+        -logger: BreakdownLogger
     }
 
     class PromptGenerator {
         -template: string
-        -variables: Map
+        -variables: Map<string, VariableReplacer>
         +parseTemplate(template: string)
-        +replaceVariables(params: Map)
+        +replaceVariables(result: PromptResult, values: Map)
         -validateVariables()
+        -logger: BreakdownLogger
     }
 
     class VariableReplacer {
         <<interface>>
-        +replace(value: any): string
-        +validate(value: any): boolean
+        +replace(value: unknown): string
+        +validate(value: unknown): boolean
+        -logger: BreakdownLogger
     }
 
     class SchemaFileReplacer {
-        +replace(value: any): string
-        +validate(value: any): boolean
+        +replace(value: unknown): string
+        +validate(value: unknown): boolean
+        -validatePath(path: string): boolean
+        -normalizePath(path: string): string
     }
 
     class InputMarkdownReplacer {
-        +replace(value: any): string
-        +validate(value: any): boolean
+        +replace(value: unknown): string
+        +validate(value: unknown): boolean
+        -validateMarkdown(content: string): boolean
+        -sanitizeMarkdown(content: string): string
+    }
+
+    class InputMarkdownFileReplacer {
+        +replace(value: unknown): string
+        +validate(value: unknown): boolean
+        -validatePath(path: string): boolean
+        -normalizePath(path: string): string
+    }
+
+    class DestinationPathReplacer {
+        +replace(value: unknown): string
+        +validate(value: unknown): boolean
+        -validatePath(path: string): boolean
+        -normalizePath(path: string): string
     }
 
     class OutputController {
         -destination: string
-        -multiple_files: boolean
+        -multipleFiles: boolean
         -structured: boolean
         +generateOutput(content: string)
-        +validateOutput()
+        -validateOutput()
         -checkPermissions()
+        -logger: BreakdownLogger
+        -validatePath(path: string): boolean
+        -normalizePath(path: string): string
     }
 
     class PromptParams {
-        +demonstrative_type: string
-        +layer_type: string
-        +from_layer_type: string
+        +prompt_file_path: string
         +destination: string
-        +multiple_files: boolean
+        +multipleFiles: boolean
         +structured: boolean
-        +validate()
+        +input_markdown?: string
+        +schema_file?: string
+        +validate?(): boolean
+        +variables?: Map<string, unknown>
+    }
+
+    class PromptResult {
+        +content: string
+        +status: "success" | "error"
+        +error?: string
+    }
+
+    class BreakdownLogger {
+        +debug(message: string)
+        +info(message: string)
+        +warn(message: string)
+        +error(message: string)
     }
 
     PromptManager --> PromptGenerator
     PromptManager --> OutputController
+    PromptManager --> BreakdownLogger
     PromptGenerator --> VariableReplacer
+    PromptGenerator --> BreakdownLogger
     VariableReplacer <|.. SchemaFileReplacer
     VariableReplacer <|.. InputMarkdownReplacer
+    VariableReplacer <|.. InputMarkdownFileReplacer
+    VariableReplacer <|.. DestinationPathReplacer
     PromptManager --> PromptParams
+    PromptGenerator --> PromptResult
+    OutputController --> BreakdownLogger
 ```
