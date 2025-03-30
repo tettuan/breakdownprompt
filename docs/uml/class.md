@@ -2,21 +2,21 @@
 classDiagram
     namespace Application {
         class PromptManager {
-            +generatePrompt(params: PromptParams)
-            -validateParams(params: PromptParams)
-            -loadTemplate(params: PromptParams)
-            -findUnknownVariables(template: string)
+            +generatePrompt(params: PromptParams): PromptResult
+            -validateParams(params: PromptParams): boolean
+            -loadTemplate(params: PromptParams): string
+            -findUnknownVariables(template: string): string[]
             -validatePath(path: string): boolean
             -normalizePath(path: string): string
-            -writeToStdout(content: string)
+            -writeToStdout(content: string): void
         }
 
         class PromptGenerator {
             -template: string
             -variables: Map<string, VariableReplacer>
-            +parseTemplate(template: string)
-            +replaceVariables(result: PromptResult, values: Map)
-            -validateVariables()
+            +parseTemplate(template: string): void
+            +replaceVariables(result: PromptResult, values: Map<string, unknown>): void
+            -validateVariables(values: Map<string, unknown>): boolean
         }
 
         class VariableReplacer {
@@ -55,44 +55,44 @@ classDiagram
 
         class PromptParams {
             +prompt_file_path: string
-            +input_markdown?: string
-            +schema_file?: string
-            +validate?(): boolean
-            +variables?: Map<string, unknown>
+            +variables: Map<string, unknown>
         }
 
         class PromptResult {
             +content: string
             +status: "success" | "error"
-            +error?: string
+            +error: string
+            +isError(): boolean
+            +static error(message: string): PromptResult
+            +static success(content: string): PromptResult
         }
     }
 
     namespace Test {
         class BreakdownLogger {
-            +debug(message: string)
-            +info(message: string)
-            +warn(message: string)
-            +error(message: string)
+            +debug(message: string): void
+            +info(message: string): void
+            +warn(message: string): void
+            +error(message: string): void
         }
 
         class PromptManagerTest {
             -logger: BreakdownLogger
-            +testGeneratePrompt()
-            +testValidateParams()
-            +testLoadTemplate()
+            +testGeneratePrompt(): void
+            +testValidateParams(): void
+            +testLoadTemplate(): void
         }
 
         class PromptGeneratorTest {
             -logger: BreakdownLogger
-            +testParseTemplate()
-            +testReplaceVariables()
+            +testParseTemplate(): void
+            +testReplaceVariables(): void
         }
 
         class VariableReplacerTest {
             -logger: BreakdownLogger
-            +testReplace()
-            +testValidate()
+            +testReplace(): void
+            +testValidate(): void
         }
     }
 
