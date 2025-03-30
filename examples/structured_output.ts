@@ -14,14 +14,12 @@
 import { PromptManager } from "@tettuan/breakdownprompt";
 
 async function main() {
-  // Initialize template directory
-  const manager = new PromptManager("./examples/templates");
+  // Initialize PromptManager
+  const manager = new PromptManager();
 
   // Define prompt parameters
   const params = {
-    demonstrativeType: "task",
-    layerType: "implementation",
-    fromLayerType: "design",
+    prompt_file_path: "./examples/templates/structured_prompt.md",
     destination: "./output",
     multipleFiles: true,
     structured: true, // Enable structured output

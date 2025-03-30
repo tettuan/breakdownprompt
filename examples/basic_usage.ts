@@ -3,7 +3,7 @@
  *
  * This example demonstrates the fundamental usage of @tettuan/breakdownprompt.
  * It shows how to:
- * 1. Initialize the PromptManager with a template directory
+ * 1. Initialize the PromptManager
  * 2. Configure basic parameters for prompt generation
  * 3. Generate a single prompt output
  *
@@ -14,14 +14,12 @@
 import { PromptManager } from "@tettuan/breakdownprompt";
 
 async function main() {
-  // Initialize template directory
-  const manager = new PromptManager("./examples/templates");
+  // Initialize PromptManager
+  const manager = new PromptManager();
 
   // Define prompt parameters
   const params = {
-    demonstrativeType: "task",
-    layerType: "implementation",
-    fromLayerType: "design",
+    prompt_file_path: "./examples/templates/basic_prompt.md",
     destination: "./output",
     multipleFiles: false,
     structured: false,
