@@ -1,12 +1,16 @@
 # Basic Prompt Example
 
-This is a basic prompt template that demonstrates the core functionality.
+This is a basic prompt template that demonstrates variable replacement.
 
-## Input Content
+## Input Markdown
+Content from input markdown:
 {input_markdown}
 
-## Schema Reference
-{schema_file}
+## Schema
+Using schema from: {schema_file}
 
-## Output Location
-{destination_path} 
+## Input File
+Reading from: {input_markdown_file}
+
+## Output
+Will be saved to: {destination_path}

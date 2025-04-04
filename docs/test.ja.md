@@ -51,3 +51,9 @@ DEBUG=true ./scripts/local_ci.sh
   - フォーマットチェックの失敗
   - リントチェックの失敗
   - テストの失敗
+
+# 階層構造
+
+tests/fixtures/ ├── input/ # 入力用のテストファイル │ └── test.md ├── output/ #
+出力用のテストファイル │ ├── test_output.md │ ├── output__.md │ ├── structured._ │ └── ... ├──
+schema/ # スキーマファイル │ └── schema.json └── templates/ # テンプレートファイル

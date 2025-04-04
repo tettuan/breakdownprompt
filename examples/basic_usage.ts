@@ -1,14 +1,10 @@
 /**
  * Basic Usage Example
  *
- * This example demonstrates the fundamental usage of @tettuan/breakdownprompt.
- * It shows how to:
- * 1. Initialize the PromptManager
- * 2. Configure basic parameters for prompt generation
- * 3. Generate a single prompt output
- *
- * This is the simplest form of usage, where the prompt is generated
- * into a single file without any special structuring or splitting.
+ * This example demonstrates the core functionality of @tettuan/breakdownprompt:
+ * - Loading a prompt file
+ * - Replacing variables with provided values
+ * - Basic error handling
  */
 
 import { PromptManager } from "@tettuan/breakdownprompt";
@@ -17,21 +13,24 @@ async function main() {
   // Initialize PromptManager
   const manager = new PromptManager();
 
-  // Define prompt parameters
+  // Define prompt parameters with required variables
   const params = {
     prompt_file_path: "./examples/templates/basic_prompt.md",
-    destination: "./output",
-    multipleFiles: false,
-    structured: false,
+    variables: {
+      schema_file: "./examples/templates/schema/base.schema.json",
+      input_markdown: "# Sample Markdown\nThis is a sample markdown content.",
+      input_markdown_file: "./examples/templates/input/sample.md",
+      destination_path: "./examples/templates/task/output/"
+    },
     validate() {
       return true;
-    },
+    }
   };
 
   try {
     // Generate prompt
     const result = await manager.generatePrompt(params);
-    console.log("Generated prompt:", result.content);
+    console.log("Generated content:", result.content);
   } catch (error: unknown) {
     if (error instanceof Error) {
       console.error("Error generating prompt:", error.message);

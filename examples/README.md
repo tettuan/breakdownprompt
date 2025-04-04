@@ -1,51 +1,59 @@
-# Examples
+# @tettuan/breakdownprompt Examples
 
-This directory contains usage examples for `@tettuan/breakdownprompt`.
+This directory contains examples demonstrating how to use the @tettuan/breakdownprompt library.
 
-## Examples
+## Examples Overview
 
-### Basic Usage (`basic_usage.ts`)
+### 1. Basic Usage (`basic_usage.ts`)
+Demonstrates the core functionality:
+- Loading a prompt file
+- Replacing variables with provided values
+- Basic error handling
 
-A basic example that generates a prompt into a single file.
+### 2. Validation Example (`validation_example.ts`)
+Shows how to implement validation:
+- Variable validation
+- Error handling for invalid inputs
+- Path validation
+- Markdown format validation
 
-```bash
-deno run --allow-read --allow-write examples/basic_usage.ts
-```
+## Template Structure
 
-### Multiple Files Output (`multiple_files.ts`)
+The `templates/` directory contains the markdown templates used by the examples:
 
-An example that splits the prompt into multiple files.
-
-```bash
-deno run --allow-read --allow-write examples/multiple_files.ts
-```
-
-### Structured Output (`structured_output.ts`)
-
-An example that generates the prompt in a structured format.
-
-```bash
-deno run --allow-read --allow-write examples/structured_output.ts
-```
+- `basic_prompt.md`: Basic template showing variable replacement
+- `validation_prompt.md`: Template demonstrating validation scenarios
 
 ## Directory Structure
 
 ```
 examples/
-  ├── templates/
-  │   ├── task/
-  │   │   └── implementation/
-  │   │       └── f_design.md
-  │   ├── schema/
-  │   │   └── implementation.json
-  │   └── input/
-  │       └── design.md
-  ├── basic_usage.ts
-  ├── multiple_files.ts
-  └── structured_output.ts
+├── templates/
+│   ├── basic_prompt.md
+│   ├── validation_prompt.md
+│   ├── schema/
+│   ├── input/
+│   └── task/
+├── basic_usage.ts
+├── validation_example.ts
+└── README.md
 ```
 
-## Prerequisites
+## Running Examples
 
-- Required template files are included in the `examples/templates` directory.
-- The `output` directory will be created automatically.
+To run an example:
+
+```bash
+deno run --allow-read --allow-env examples/basic_usage.ts
+deno run --allow-read --allow-env examples/validation_example.ts
+```
+
+## Notes
+
+- All examples use the core variables defined in the documentation:
+  - `schema_file`
+  - `input_markdown`
+  - `input_markdown_file`
+  - `destination_path`
+- Examples demonstrate proper error handling and validation
+- Each example focuses on specific use cases and features
