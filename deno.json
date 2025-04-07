@@ -15,7 +15,8 @@
     "@std/testing": "jsr:@std/testing@^1.0.9",
     "std/": "jsr:@std/",
     "testing/": "jsr:@std/testing/",
-    "@tettuan/breakdownlogger": "jsr:@tettuan/breakdownlogger@0.1.10"
+    "@tettuan/breakdownlogger": "jsr:@tettuan/breakdownlogger@0.1.10",
+    "$std/": "https://deno.land/std@0.208.0/"
   },
   "compilerOptions": {
     "lib": [
@@ -29,16 +30,22 @@
     ]
   },
   "fmt": {
-    "files": {
-      "include": [
-        "src/",
-        "tests/"
-      ]
-    },
-    "options": {
-      "lineWidth": 100,
-      "indentWidth": 2
-    }
+    "include": [
+      "src/",
+      "tests/",
+      "docs/",
+      "*.md"
+    ],
+    "exclude": [
+      ".git/",
+      ".cursor/"
+    ],
+    "useTabs": false,
+    "lineWidth": 100,
+    "indentWidth": 2,
+    "singleQuote": false,
+    "proseWrap": "preserve",
+    "semiColons": true
   },
   "publish": {
     "include": [
