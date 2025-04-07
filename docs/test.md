@@ -104,4 +104,10 @@ tests/
 - Test data management
 - Input/output samples
 - Schema definitions
-- Template examples 
+- Template examples
+
+# Error Messages
+
+- Define application test messages as ENUMs
+- When verifying error messages in tests, use the same ENUM message when expecting the same result
+  - When verifying that error messages are different, specify different messages in the test

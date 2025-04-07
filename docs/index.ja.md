@@ -66,6 +66,8 @@ this is a input markdown contents.
 
 ### 置換処理の対象変数
 
+`./type_of_variables.ja.md` に詳細を定義している。
+
 受け取りパラメータ variables が許可している変数は次のとおり。 variables.schema_file
 でアクセス可能とする。
 
