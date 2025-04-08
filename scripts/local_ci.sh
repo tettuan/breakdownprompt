@@ -31,26 +31,69 @@ if ! deno cache --reload mod.ts; then
     exit 1
 fi
 
-# Run checks
-echo "Running format check..."
-if ! deno fmt --check; then
-    echo "Error: Format check failed"
-    enable_debug
-    exit 1
-fi
+# Function to run a single test file
+run_single_test() {
+    local test_file=$1
+    echo "Running test: $test_file"
+    if ! deno test --allow-env --allow-write --allow-read "$test_file"; then
+        echo "Error: Test failed: $test_file"
+        enable_debug
+        exit 1
+    fi
+    echo "Test passed: $test_file"
+}
 
-echo "Running lint..."
-if ! deno lint; then
-    echo "Error: Lint check failed"
-    enable_debug
-    exit 1
-fi
+# Run all tests together
+run_all_tests() {
+    echo "Running all tests together..."
+    if ! deno test --allow-env --allow-write --allow-read; then
+        echo "Error: All tests run failed"
+        enable_debug
+        exit 1
+    fi
+    echo "All tests passed successfully."
+}
 
-echo "Running tests..."
-if ! deno test --allow-env --allow-write --allow-read; then
-    echo "Error: Tests failed"
-    enable_debug
-    exit 1
-fi
+# Run lint and fmt checks
+run_checks() {
+    echo "Running format check..."
+    if ! deno fmt --check; then
+        echo "Error: Format check failed"
+        enable_debug
+        exit 1
+    fi
+
+    echo "Running lint..."
+    if ! deno lint; then
+        echo "Error: Lint check failed"
+        enable_debug
+        exit 1
+    fi
+}
+
+# Run tests one by one in directory order
+echo "Running tests one by one..."
+
+# First run tests in the main tests directory
+for test_file in tests/*_test.ts; do
+    if [ -f "$test_file" ]; then
+        run_single_test "$test_file"
+    fi
+done
+
+# Then run tests in the integration directory
+for test_file in tests/integration/*_test.ts; do
+    if [ -f "$test_file" ]; then
+        run_single_test "$test_file"
+    fi
+done
+
+# If all individual tests pass, run all tests together
+echo "All individual tests passed. Running all tests together..."
+run_all_tests
+
+# If all tests pass, run lint and fmt checks
+echo "All tests passed. Running lint and fmt checks..."
+run_checks
 
 echo "Local checks completed successfully." 
