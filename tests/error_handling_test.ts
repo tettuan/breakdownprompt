@@ -1,87 +1,120 @@
-import { assertEquals } from "https://deno.land/std@0.220.1/assert/mod.ts";
-import { join } from "https://deno.land/std@0.220.1/path/mod.ts";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { assertEquals, assertThrows } from "https://deno.land/std@0.208.0/assert/mod.ts";
 import { PromptManager } from "../src/core/prompt_manager.ts";
+import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { FileSystemError, ValidationError } from "../src/errors.ts";
+import { join } from "https://deno.land/std/path/mod.ts";
 import { cleanupTestDirs, setupTestDirs, TEST_CONFIG } from "./test_utils.ts";
-import type { PromptParams } from "../src/types/prompt_params.ts";
 
-// Setup and cleanup
-Deno.test("Error handling tests", async (t) => {
-  // Setup test environment
+const logger = new BreakdownLogger();
+
+Deno.test("Error Handling - missing template file", async () => {
   await setupTestDirs();
 
+  const manager = new PromptManager(logger);
+  const variables: Record<string, string> = {
+    schema_file: join(TEST_CONFIG.SCHEMA_DIR, "base.schema.json"),
+    input_markdown: "# Sample Markdown\nThis is a sample markdown content.",
+    input_markdown_file: join(TEST_CONFIG.INPUT_DIR, "sample.md"),
+    destination_path: join(TEST_CONFIG.OUTPUT_DIR, "output"),
+  };
+
   try {
-    // Test invalid prompt file path
-    await t.step("invalid prompt file path", async () => {
-      const logger = new BreakdownLogger();
-      const params: PromptParams = {
-        template_file: "",
-        variables: {},
-      };
-      const manager = new PromptManager(params, logger);
-
-      const result = await manager.generatePrompt();
-      assertEquals(result.success, false);
-      assertEquals(result.error, "Template file path is required");
-    });
-
-    // Test empty template
-    await t.step("empty template", async () => {
-      const logger = new BreakdownLogger();
-      const params: PromptParams = {
-        template_file: join(TEST_CONFIG.TEMPLATES_DIR, "empty.md"),
-        variables: {},
-      };
-      const manager = new PromptManager(params, logger);
-
-      const result = await manager.generatePrompt();
-      assertEquals(result.success, false);
-      assertEquals(result.error, "Failed to read template file: Template file is empty");
-    });
-
-    // Test invalid template syntax
-    await t.step("invalid template syntax", async () => {
-      const logger = new BreakdownLogger();
-      const params: PromptParams = {
-        template_file: join(TEST_CONFIG.TEMPLATES_DIR, "invalid.md"),
-        variables: {},
-      };
-      const manager = new PromptManager(params, logger);
-
-      const result = await manager.generatePrompt();
-      assertEquals(result.success, false);
-      assertEquals(result.error, "Template file not found: " + join(TEST_CONFIG.TEMPLATES_DIR, "invalid.md"));
-    });
-
-    // Test protected template
-    await t.step("protected template", async () => {
-      const logger = new BreakdownLogger();
-      const params: PromptParams = {
-        template_file: join(TEST_CONFIG.TEMPLATES_DIR, "protected.md"),
-        variables: {},
-      };
-      const manager = new PromptManager(params, logger);
-
-      const result = await manager.generatePrompt();
-      assertEquals(result.success, false);
-      assertEquals(result.error, "Template file not found: " + join(TEST_CONFIG.TEMPLATES_DIR, "protected.md"));
-    });
-
-    // Test invalid file name
-    await t.step("invalid file name", async () => {
-      const logger = new BreakdownLogger();
-      const params: PromptParams = {
-        template_file: join(TEST_CONFIG.TEMPLATES_DIR, "invalid<>:*?.md"),
-        variables: {},
-      };
-      const manager = new PromptManager(params, logger);
-
-      const result = await manager.generatePrompt();
-      assertEquals(result.success, false);
-      assertEquals(result.error, "Invalid template file path: Contains invalid characters");
-    });
-  } finally {
-    // Cleanup test environment
-    await cleanupTestDirs();
+    await manager.generatePrompt(
+      join(TEST_CONFIG.TEMPLATES_DIR, "nonexistent.md"),
+      variables,
+    );
+    throw new Error("Expected error was not thrown");
+  } catch (error) {
+    if (error instanceof FileSystemError) {
+      assertEquals(error.message, "File not found");
+    } else {
+      throw error;
+    }
   }
+
+  await cleanupTestDirs();
+});
+
+Deno.test("Error Handling - invalid file path", async () => {
+  await setupTestDirs();
+
+  const manager = new PromptManager(logger);
+  const variables: Record<string, string> = {
+    schema_file: join(TEST_CONFIG.SCHEMA_DIR, "base.schema.json"),
+    input_markdown: "# Sample Markdown\nThis is a sample markdown content.",
+    input_markdown_file: join(TEST_CONFIG.INPUT_DIR, "sample.md"),
+    destination_path: join(TEST_CONFIG.OUTPUT_DIR, "output"),
+  };
+
+  try {
+    await manager.generatePrompt(
+      "../invalid.md",
+      variables,
+    );
+    throw new Error("Expected error was not thrown");
+  } catch (error) {
+    if (error instanceof ValidationError) {
+      assertEquals(error.message, "Invalid file path: Contains directory traversal");
+    } else {
+      throw error;
+    }
+  }
+
+  await cleanupTestDirs();
+});
+
+Deno.test("Error Handling - invalid variable types", async () => {
+  await setupTestDirs();
+
+  const manager = new PromptManager(logger);
+  const variables: Record<string, any> = {
+    schema_file: join(TEST_CONFIG.SCHEMA_DIR, "base.schema.json"),
+    input_markdown: 123,
+    input_markdown_file: join(TEST_CONFIG.INPUT_DIR, "sample.md"),
+    destination_path: join(TEST_CONFIG.OUTPUT_DIR, "output"),
+  };
+
+  try {
+    await manager.generatePrompt(
+      join(TEST_CONFIG.TEMPLATES_DIR, "simple.md"),
+      variables,
+    );
+    throw new Error("Expected error was not thrown");
+  } catch (error) {
+    if (error instanceof ValidationError) {
+      assertEquals(error.message, "input_markdown must be a string");
+    } else {
+      throw error;
+    }
+  }
+
+  await cleanupTestDirs();
+});
+
+Deno.test("Error Handling - file not found", async () => {
+  await setupTestDirs();
+
+  const manager = new PromptManager(logger);
+  const variables: Record<string, string> = {
+    schema_file: join(TEST_CONFIG.SCHEMA_DIR, "nonexistent.json"),
+    input_markdown: "# Sample Markdown\nThis is a sample markdown content.",
+    input_markdown_file: join(TEST_CONFIG.INPUT_DIR, "sample.md"),
+    destination_path: join(TEST_CONFIG.OUTPUT_DIR, "output"),
+  };
+
+  try {
+    await manager.generatePrompt(
+      join(TEST_CONFIG.TEMPLATES_DIR, "definitely_does_not_exist.md"),
+      variables,
+    );
+    throw new Error("Expected error was not thrown");
+  } catch (error) {
+    if (error instanceof FileSystemError) {
+      assertEquals(error.message, "File not found");
+    } else {
+      throw error;
+    }
+  }
+
+  await cleanupTestDirs();
 });

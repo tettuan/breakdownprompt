@@ -1,17 +1,52 @@
-import type { VariableReplacer } from "../types.ts";
+import { ValidationError } from "../errors.ts";
+import type { DirectoryPath, VariableReplacer } from "../types.ts";
+import { PathValidator } from "../validation/path_validator.ts";
 
+/**
+ * DestinationPathReplacer
+ *
+ * Purpose:
+ * - Replace {destination_path} variables with validated directory paths
+ * - Ensure directory paths are valid and accessible
+ * - Prevent path traversal attacks
+ */
 export class DestinationPathReplacer implements VariableReplacer {
-  replace(value: unknown): string {
-    if (typeof value !== "string") {
-      throw new Error("Destination path must be a string");
-    }
-    return value;
+  private pathValidator: PathValidator;
+
+  constructor() {
+    this.pathValidator = new PathValidator();
   }
 
+  /**
+   * Validates a directory path according to the rules:
+   * - Must be a valid directory path
+   * - Must not contain path traversal attempts
+   * - Must be accessible
+   */
   validate(value: unknown): boolean {
     if (typeof value !== "string") {
       return false;
     }
-    return true;
+
+    return this.pathValidator.validateDirectoryPath(value);
+  }
+
+  /**
+   * Replaces a destination path variable with its value
+   * - Validates the path
+   * - Returns the normalized path
+   */
+  replace(value: unknown): string {
+    if (typeof value !== "string") {
+      throw new ValidationError("Destination path must be a string");
+    }
+
+    if (!this.validate(value)) {
+      throw new ValidationError("Invalid destination path");
+    }
+
+    // Cast to DirectoryPath type after validation
+    const directoryPath = value as DirectoryPath;
+    return directoryPath;
   }
 }

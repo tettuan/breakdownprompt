@@ -4,8 +4,10 @@
  */
 
 // Re-export public APIs
-export { PromptManager } from "./prompt_manager.ts";
-export type { PromptParams, PromptResult } from "./types.ts";
+export { PromptManager } from "./core/prompt_manager.ts";
+export type { PromptParams } from "./types/prompt_params.ts";
+export type { PromptResult } from "./types/prompt_result.ts";
+export { FileSystemError, ValidationError } from "./errors.ts";
 
 // Version information
 export const VERSION: string = JSON.parse(Deno.readTextFileSync("./deno.json")).version;

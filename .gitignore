@@ -141,3 +141,19 @@ tmp/*
 .cursor/*
 .agent/
 .agent/*
+
+# Test output directories
+test_output/
+test_fixtures/
+.test_output/
+
+# Deno
+deno.lock
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
