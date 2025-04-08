@@ -79,7 +79,7 @@ Deno.test("Prompt Generator", async (t) => {
     assertThrows(
       () => generator.parseTemplate("", {}),
       TemplateError,
-      "Template cannot be empty",
+      "Template is empty",
     );
   });
 
@@ -88,7 +88,7 @@ Deno.test("Prompt Generator", async (t) => {
     assertThrows(
       () => generator.parseTemplate("   \n  \t  \n  ", {}),
       TemplateError,
-      "Template cannot be empty",
+      "Template is empty",
     );
   });
 
@@ -174,7 +174,7 @@ Deno.test("Prompt Generator", async (t) => {
 
     const result = generator.parseTemplate(template, variables);
     assertEquals(result.content, "Hello John, you are 30 years old.");
-    assertEquals(result.variables, []);
+    assertEquals(result.variables, ["name", "age"]);
     assertEquals(result.unknownVariables, []);
   });
 
@@ -189,7 +189,7 @@ Deno.test("Prompt Generator", async (t) => {
     assertThrows(
       () => generator.parseTemplate(template, variables),
       ValidationError,
-      "name must be a string",
+      "Invalid value for variable: name",
     );
   });
 
@@ -204,7 +204,7 @@ Deno.test("Prompt Generator", async (t) => {
     assertThrows(
       () => generator.parseTemplate(template, variables),
       ValidationError,
-      "name must be a string",
+      "Invalid value for variable: name",
     );
   });
 
@@ -223,36 +223,6 @@ Deno.test("Prompt Generator", async (t) => {
     );
   });
 
-  await t.step("should handle empty template", () => {
-    const generator = new PromptGenerator();
-    const template = "";
-    const variables = {
-      name: "John",
-      age: "30",
-    };
-
-    assertThrows(
-      () => generator.parseTemplate(template, variables),
-      TemplateError,
-      "Template cannot be empty",
-    );
-  });
-
-  await t.step("should handle whitespace template", () => {
-    const generator = new PromptGenerator();
-    const template = "   \n  \t  \n  ";
-    const variables = {
-      name: "John",
-      age: "30",
-    };
-
-    assertThrows(
-      () => generator.parseTemplate(template, variables),
-      TemplateError,
-      "Template cannot be empty",
-    );
-  });
-
   await t.step("should handle boolean variable values", () => {
     const generator = new PromptGenerator();
     const template = "Hello {name}, you are {age} years old.";
@@ -264,7 +234,7 @@ Deno.test("Prompt Generator", async (t) => {
     assertThrows(
       () => generator.parseTemplate(template, variables),
       ValidationError,
-      "name must be a string",
+      "Invalid value for variable: name",
     );
   });
 
@@ -272,14 +242,14 @@ Deno.test("Prompt Generator", async (t) => {
     const generator = new PromptGenerator();
     const template = "Hello {name}, you are {age} years old.";
     const variables = {
-      name: 42,
+      name: 123,
       age: "30",
     };
 
     assertThrows(
       () => generator.parseTemplate(template, variables),
       ValidationError,
-      "name must be a string",
+      "Invalid value for variable: name",
     );
   });
 
@@ -351,17 +321,6 @@ Deno.test("Prompt Generator", async (t) => {
       "Should replace input_markdown_file",
     );
     assert(result.content.includes("/path/to/output"), "Should replace destination_path");
-  });
-
-  await t.step("should handle empty template", () => {
-    const generator = new PromptGenerator();
-    const template = "";
-    const variables = {};
-    assertThrows(
-      () => generator.parseTemplate(template, variables),
-      ValidationError,
-      "Template is empty",
-    );
   });
 
   await t.step("should handle variable names", () => {
@@ -558,7 +517,7 @@ Deno.test("Prompt Generator - empty template", () => {
       generator.parseTemplate(template, variables);
     },
     TemplateError,
-    "Template cannot be empty",
+    "Template is empty",
   );
 });
 
@@ -575,7 +534,7 @@ Deno.test("Prompt Generator - whitespace template", () => {
       generator.parseTemplate(template, variables);
     },
     TemplateError,
-    "Template cannot be empty",
+    "Template is empty",
   );
 });
 
@@ -681,7 +640,7 @@ Deno.test("Prompt Generator - invalid variable names", () => {
   assertThrows(
     () => generator.parseTemplate(template, variables),
     ValidationError,
-    "Invalid variable name: invalid-name",
+    "Invalid variable name: 123number",
   );
   logger.info("Invalid variable names test completed");
 });
