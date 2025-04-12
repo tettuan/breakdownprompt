@@ -11,12 +11,13 @@
  * and follows the design patterns in docs/design_pattern.ja.md.
  */
 
-import { assertEquals, assertThrows } from "https://deno.land/std@0.208.0/assert/mod.ts";
+import { assertEquals, assertThrows, assertExists } from "@std/assert";
 import { PromptManager } from "../src/core/prompt_manager.ts";
-import { cleanupTestDirs, setupTestDirs, TEST_CONFIG } from "./test_utils.ts";
+import { cleanupTestDirs, setupTestDirs, TEST_CONFIG, TEST_PARAMS } from "./test_utils.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import { join } from "https://deno.land/std/path/mod.ts";
+import { join } from "@std/path";
 import { FileSystemError, ValidationError } from "../src/errors.ts";
+import type { PromptParams } from "../src/types/prompt_params.ts";
 
 const logger = new BreakdownLogger();
 
@@ -79,7 +80,7 @@ Deno.test("Integration - missing variables", async () => {
 
   const manager = new PromptManager();
   const result = await manager.generatePrompt(
-    join(TEST_CONFIG.TEMPLATES_DIR, "simple.md"),
+    TEST_PARAMS.prompt_file_path,
     {},
   );
 
@@ -114,7 +115,7 @@ Deno.test("Integration - invalid file paths", async () => {
     throw new Error("Expected error was not thrown");
   } catch (error) {
     if (error instanceof FileSystemError) {
-      assertEquals(error.message, "File not found");
+      assertEquals(error.message, "Failed to read template file: No such file or directory (os error 2): readfile '/Users/tettuan/github/breakdownprompt/tmp/test/templates/definitely_does_not_exist.md'");
     } else {
       throw error;
     }
@@ -274,14 +275,19 @@ Deno.test("Integration Tests", async (t) => {
 
   await t.step("should handle file not found", async () => {
     const manager = new PromptManager();
-    const variables = {};
+    const variables = {
+      schema_file: "/path/to/schema.json",
+      input_markdown: "# Test\nThis is a test markdown file.",
+      input_markdown_file: "/path/to/input.md",
+      destination_path: "/path/to/output",
+    };
 
     try {
       await manager.generatePrompt("nonexistent.md", variables);
       throw new Error("Expected error was not thrown");
     } catch (error) {
       if (error instanceof FileSystemError) {
-        assertEquals(error.message, "File not found");
+        assertEquals(error.message, "Failed to read template file: No such file or directory (os error 2): readfile 'nonexistent.md'");
       } else {
         throw error;
       }

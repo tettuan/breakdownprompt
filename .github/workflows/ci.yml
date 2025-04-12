@@ -30,8 +30,28 @@ jobs:
       - name: Run tests with coverage
         run: deno test --coverage=coverage --allow-read --allow-write --allow-env
 
+      - name: Generate coverage report
+        run: deno coverage coverage --lcov > coverage/lcov.info
+
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
           path: coverage/
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: coverage/lcov.info
+          fail_ci_if_error: true
+
+      - name: Run test summary
+        run: |
+          deno test --json --allow-read --allow-write --allow-env > test-results.json
+          echo "::set-output name=test-results::$(cat test-results.json)"
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: test-results.json

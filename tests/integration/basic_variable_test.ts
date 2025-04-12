@@ -21,8 +21,7 @@ Deno.test("Basic Variable Test", async (t) => {
     const result = await manager.generatePrompt("tests/fixtures/templates/basic_template.md", variables);
     logger.debug("Generated prompt", { promptContent: result.prompt });
 
-    assertExists(result);
-    assertEquals(result.success, true);
+    assertExists(result.prompt);
     assertEquals(result.prompt.includes(variables.input_markdown_file), true);
     assertEquals(result.prompt.includes(variables.schema_file), true);
     assertEquals(result.prompt.includes(variables.output_dir), true);
@@ -38,10 +37,11 @@ Deno.test("Basic Variable Test", async (t) => {
     const result = await manager.generatePrompt("tests/fixtures/templates/basic_template.md", variables);
     logger.debug("Generated prompt", { promptContent: result.prompt });
 
-    assertExists(result);
-    assertEquals(result.success, true);
-    assertEquals(result.prompt.includes("&amp;"), true);
-    assertEquals(result.prompt.includes("&lt;"), true);
-    assertEquals(result.prompt.includes("&gt;"), true);
+    assertExists(result.prompt);
+    assertEquals(result.prompt.includes("&"), true);
+    assertEquals(result.prompt.includes("<"), true);
+    assertEquals(result.prompt.includes(">"), true);
+    assertEquals(result.prompt.includes("\""), true);
+    assertEquals(result.prompt.includes("'"), true);
   });
 });

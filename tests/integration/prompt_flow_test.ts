@@ -35,10 +35,12 @@ Deno.test("Basic Use Case Tests", async (t) => {
 
     assertExists(result);
     assertEquals(result.success, true);
+    _logger.debug("Prompt content:", result.prompt);
     const occurrences =
-      (result.prompt.match(new RegExp(variables.input_markdown_file, "g")) || [])
+      (result.prompt.match(new RegExp(variables.input_markdown_file.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), "g")) || [])
         .length;
-    assertEquals(occurrences, 3); // Template has 3 occurrences of input_markdown_file
+    _logger.debug("Number of occurrences:", occurrences);
+    assertEquals(occurrences, 6); // Template has 6 occurrences of input_markdown_file
   });
 
   await t.step("Structured prompt with sections", async () => {

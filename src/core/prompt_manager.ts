@@ -15,23 +15,48 @@ export class PromptManager {
     this.logger = logger;
   }
 
-  async generatePrompt(template_file: string, variables: Record<string, string> = {}): Promise<PromptResult> {
-    const params: PromptParams = {
-      template_file,
-      variables,
-    };
+  public async generatePrompt(
+    templatePath: string,
+    variables: Record<string, string> = {},
+    options: {
+      validateMarkdown?: boolean;
+      preservePlaceholders?: boolean;
+    } = {}
+  ): Promise<PromptResult> {
+    const { validateMarkdown = true, preservePlaceholders = false } = options;
 
     try {
-      await this.validateParams(params);
-      const template = await this.loadTemplate(params.template_file);
-      const prompt = this.replaceVariables(template, params.variables);
+      // Validate variables if provided
+      for (const [key, value] of Object.entries(variables)) {
+        if (typeof value !== "string") {
+          throw new ValidationError(`${key} must be a string`);
+        }
+        if (key === "input_markdown" && !this.markdownValidator.validateMarkdown(value)) {
+          throw new ValidationError("Input markdown content must be a string");
+        }
+      }
+
+      // Load and validate template
+      const template = await this.loadTemplate(templatePath);
+      if (!template) {
+        throw new Error(`Template not found: ${templatePath}`);
+      }
+
+      // Replace variables
+      const prompt = await this.replaceVariables(template, variables, preservePlaceholders);
+
+      // Validate markdown if requested
+      if (validateMarkdown) {
+        await this.validateMarkdown(prompt);
+      }
+
       return {
         success: true,
         prompt,
       };
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
-      throw error; // Re-throw the original error to maintain error types
+    } catch (error) {
+      this.logger?.error(`Failed to generate prompt: ${error instanceof Error ? error.message : String(error)}`);
+      throw error;
     }
   }
 
@@ -76,6 +101,15 @@ export class PromptManager {
   }
 
   private async loadTemplate(templateFile: string): Promise<string> {
+    // Validate template path
+    if (!/^[a-zA-Z0-9\/\-_\.]+$/.test(templateFile)) {
+      throw new ValidationError("Invalid file path: Contains invalid characters");
+    }
+
+    if (templateFile.includes("..")) {
+      throw new ValidationError("Invalid file path: Contains directory traversal");
+    }
+
     try {
       const template = await Deno.readTextFile(templateFile);
       if (!template.trim()) {
@@ -86,45 +120,68 @@ export class PromptManager {
       if (error instanceof TemplateError) {
         throw error;
       }
+      if (error instanceof Deno.errors.NotFound || (error instanceof Error && error.message.includes("No such file or directory"))) {
+        throw new FileSystemError(`Failed to read template file: ${error instanceof Error ? error.message : String(error)}`);
+      }
       const message = error instanceof Error ? error.message : String(error);
       throw new FileSystemError(`Failed to read template file: ${message}`);
     }
   }
 
-  private replaceVariables(template: string, variables: Record<string, string> = {}): string {
-    let prompt = template;
-    
-    // First, handle escaped variables (e.g., \{var\})
-    prompt = prompt.replace(/\\{([^}]+)\\}/g, (match) => {
-      return match.replace(/\\/g, '');
-    });
+  private async replaceVariables(template: string, variables: Record<string, string> = {}, preservePlaceholders = false): Promise<string> {
+    // Process line by line to preserve trailing spaces
+    const lines = template.split(/\r?\n/);
+    const processedLines = await Promise.all(lines.map(async (line) => {
+      let processedLine = line;
+      let lastIndex = 0;
+      let result = "";
 
-    // Then handle nested variables (e.g., {var_{another_var}})
-    const nestedVarRegex = /\{([^{}]+)\{([^{}]+)\}\}/g;
-    while (nestedVarRegex.test(prompt)) {
-      prompt = prompt.replace(nestedVarRegex, (match, outer, inner) => {
-        const innerValue = this.escapeSpecialChars(variables[inner] || '');
-        return `{${outer}${innerValue}}`;
+      // First pass: handle escaped variables
+      processedLine = processedLine.replace(/\\{([^{}]+)\\}/g, (match) => {
+        // Remove escape characters but preserve the braces
+        return match.replace(/\\/g, "");
       });
-    }
 
-    // Finally, replace regular variables
-    const varRegex = /\{([^{}]+)\}/g;
-    prompt = prompt.replace(varRegex, (match, key) => {
-      return this.escapeSpecialChars(variables[key] || '');
-    });
+      // Second pass: handle nested variables
+      const varRegex = /{([^{}]+)}/g;
+      let match;
 
-    // Preserve line endings and whitespace
-    return prompt;
-  }
+      while ((match = varRegex.exec(processedLine)) !== null) {
+        const [fullMatch, key] = match;
+        const matchStart = match.index;
+        const matchEnd = matchStart + fullMatch.length;
 
-  private escapeSpecialChars(value: string): string {
-    return value
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
+        // Add content before the match
+        result += processedLine.slice(lastIndex, matchStart);
+
+        // Check if this is a nested variable
+        if (key.includes("{") && key.includes("}")) {
+          // Keep the original placeholder for nested variables
+          result += fullMatch;
+        } else if (preservePlaceholders) {
+          // Keep the original placeholder if preservePlaceholders is true
+          result += fullMatch;
+        } else if (variables.hasOwnProperty(key)) {
+          // Replace the variable with its value
+          result += variables[key];
+        } else {
+          // Remove the placeholder when no value is provided
+          result += "";
+        }
+
+        lastIndex = matchEnd;
+      }
+
+      // Add any remaining content
+      result += processedLine.slice(lastIndex);
+
+      // Preserve trailing spaces
+      const trailingSpaces = line.match(/\s*$/)?.[0] || "";
+      return result + trailingSpaces;
+    }));
+
+    // Join lines with original line endings
+    return processedLines.join("\n");
   }
 
   async writePrompt(content: string, destinationPath: string): Promise<void> {
@@ -134,6 +191,24 @@ export class PromptManager {
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
       throw new FileSystemError(`Failed to write prompt file: ${message}`);
+    }
+  }
+
+  private async validateMarkdown(markdown: string): Promise<void> {
+    try {
+      // Basic markdown validation
+      if (!markdown.trim()) {
+        throw new Error("Generated prompt is empty");
+      }
+
+      // Check for unclosed code blocks
+      const codeBlockCount = (markdown.match(/```/g) || []).length;
+      if (codeBlockCount % 2 !== 0) {
+        throw new Error("Unclosed code block detected");
+      }
+    } catch (error) {
+      this.logger?.error(`Markdown validation failed: ${error instanceof Error ? error.message : String(error)}`);
+      throw error;
     }
   }
 }

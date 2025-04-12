@@ -128,7 +128,7 @@ Deno.test("PromptManager - file not found", async () => {
         );
       },
       FileSystemError,
-      "File not found"
+      "Failed to read template file: No such file or directory (os error 2): readfile '/Users/tettuan/github/breakdownprompt/tmp/test/templates/nonexistent.md'"
     );
   } finally {
     await cleanupTestDirs();

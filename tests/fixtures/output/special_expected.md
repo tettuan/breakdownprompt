@@ -106,3 +106,9 @@ Path with spaces: {input_markdown_file} Path with dots: {schema_file} Path with 
 ### Case 3: Markdown Features
 
 **Bold**: {input_markdown_file} _Italic_: {schema_file} `Code`: {destination_path}
+
+### Case 4: Trailing Spaces
+
+- &amp; Ampersand 
+- {output_dir} 
+- {input_markdown_file} and {schema_file} 

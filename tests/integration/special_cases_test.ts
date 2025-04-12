@@ -51,6 +51,10 @@ Deno.test("Special Cases Tests", async (t) => {
     logger.debug("Starting line ending test");
     const variables = {
       test_var: "value",
+      input_markdown_file: "tests/fixtures/input/sample.md",
+      schema_file: "tests/fixtures/schema/base.schema.json",
+      output_dir: "tests/fixtures/output/",
+      destination_path: "tests/fixtures/output/",
     };
     logger.debug("Variables prepared", variables);
 
@@ -64,12 +68,17 @@ Deno.test("Special Cases Tests", async (t) => {
     assertEquals(
       result.prompt.includes("&amp; Ampersand "),
       true,
-      "Trailing space not preserved for special case",
+      "Special character with trailing space not preserved",
     );
     assertEquals(
-      result.prompt.includes("{destination_path} "),
+      result.prompt.includes("tests/fixtures/output/ "),
       true,
       "Trailing space not preserved for destination path",
+    );
+    assertEquals(
+      result.prompt.includes("{input_markdown_file} and {schema_file} "),
+      true,
+      "Trailing space not preserved for variable placeholders",
     );
   });
 

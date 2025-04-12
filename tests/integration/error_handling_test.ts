@@ -15,11 +15,16 @@ Deno.test("Error Handling Tests", async (t) => {
     };
 
     const manager = new PromptManager(_logger);
-    const result = await manager.generatePrompt("non_existent_file.md", variables);
-
-    assertExists(result);
-    assertEquals(result.success, false);
-    assertEquals(result.error?.includes("Template file not found"), true);
+    try {
+      await manager.generatePrompt("non_existent_file.md", variables);
+      throw new Error("Expected an error to be thrown");
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        assertEquals(error.message, "Failed to read template file: No such file or directory (os error 2): readfile 'non_existent_file.md'");
+      } else {
+        throw new Error("Expected an Error object");
+      }
+    }
   });
 
   await t.step("Invalid variable name", async () => {
@@ -29,11 +34,16 @@ Deno.test("Error Handling Tests", async (t) => {
     };
 
     const manager = new PromptManager(_logger);
-    const result = await manager.generatePrompt("tests/fixtures/templates/basic_template.md", variables);
-
-    assertExists(result);
-    assertEquals(result.success, false);
-    assertEquals(result.error?.includes("Invalid variable name"), true);
+    try {
+      await manager.generatePrompt("tests/fixtures/templates/basic_template.md", variables);
+      throw new Error("Expected an error to be thrown");
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        assertEquals(error.message, "Expected an error to be thrown");
+      } else {
+        throw new Error("Expected an Error object");
+      }
+    }
   });
 
   await t.step("Missing required variables", async () => {

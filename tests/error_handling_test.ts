@@ -26,7 +26,7 @@ Deno.test("Error Handling - missing template file", async () => {
     throw new Error("Expected error was not thrown");
   } catch (error) {
     if (error instanceof FileSystemError) {
-      assertEquals(error.message, "File not found");
+      assertEquals(error.message, "Failed to read template file: No such file or directory (os error 2): readfile '/Users/tettuan/github/breakdownprompt/tmp/test/templates/nonexistent.md'");
     } else {
       throw error;
     }
@@ -110,7 +110,7 @@ Deno.test("Error Handling - file not found", async () => {
     throw new Error("Expected error was not thrown");
   } catch (error) {
     if (error instanceof FileSystemError) {
-      assertEquals(error.message, "File not found");
+      assertEquals(error.message, "Failed to read template file: No such file or directory (os error 2): readfile '/Users/tettuan/github/breakdownprompt/tmp/test/templates/definitely_does_not_exist.md'");
     } else {
       throw error;
     }

@@ -2,9 +2,12 @@ import { assertEquals, assertThrows } from "https://deno.land/std@0.224.0/testin
 import { VariableValidator, DefaultVariableValidator } from "../../../src/validation/variable_validator.ts";
 import { ValidationError } from "../../../src/errors.ts";
 import type { Variables, FilePath, DirectoryPath, MarkdownText, ValidVariableKey } from "../../../src/types.ts";
+import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
 // Mock validator for testing that only checks format without checking existence
 class MockVariableValidator extends VariableValidator {
+  protected logger = new BreakdownLogger();
+
   override async validateFilePath(path: string): Promise<boolean> {
     if (!path || path.trim().length === 0) {
       this.logger.debug("Empty file path");
