@@ -17,7 +17,7 @@ Deno.test("Basic Variable Test", async (t) => {
     };
     logger.debug("Variables prepared", variables);
 
-    const manager = new PromptManager(logger);
+    const manager = new PromptManager();
     const result = await manager.generatePrompt("tests/fixtures/templates/basic_template.md", variables);
     logger.debug("Generated prompt", { promptContent: result.prompt });
 
@@ -34,7 +34,7 @@ Deno.test("Basic Variable Test", async (t) => {
       test_var: "Test value with special chars: & < > \" '",
     };
 
-    const manager = new PromptManager(logger);
+    const manager = new PromptManager();
     const result = await manager.generatePrompt("tests/fixtures/templates/basic_template.md", variables);
     logger.debug("Generated prompt", { promptContent: result.prompt });
 

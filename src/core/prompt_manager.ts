@@ -1,18 +1,18 @@
-import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger@0.1.10";
 import type { PromptParams } from "../types/prompt_params.ts";
 import type { PromptResult } from "../types/prompt_result.ts";
 import { FileSystemError, ValidationError, TemplateError } from "../errors.ts";
 import { ensureFile } from "@std/fs";
 import { exists } from "@std/fs";
 import { MarkdownValidator } from "../validation/markdown_validator.ts";
+import type { BreakdownLogger } from "@tettuan/breakdownlogger";
 
 export class PromptManager {
-  private logger: BreakdownLogger;
   private markdownValidator: MarkdownValidator;
+  private logger?: BreakdownLogger;
 
-  constructor(logger: BreakdownLogger = new BreakdownLogger()) {
-    this.logger = logger;
+  constructor(logger?: BreakdownLogger) {
     this.markdownValidator = new MarkdownValidator();
+    this.logger = logger;
   }
 
   async generatePrompt(template_file: string, variables: Record<string, string> = {}): Promise<PromptResult> {
@@ -31,7 +31,6 @@ export class PromptManager {
       };
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
-      this.logger.error(`Failed to generate prompt: ${errorMessage}`);
       throw error; // Re-throw the original error to maintain error types
     }
   }
@@ -104,7 +103,7 @@ export class PromptManager {
     const nestedVarRegex = /\{([^{}]+)\{([^{}]+)\}\}/g;
     while (nestedVarRegex.test(prompt)) {
       prompt = prompt.replace(nestedVarRegex, (match, outer, inner) => {
-        const innerValue = variables[inner] || '';
+        const innerValue = this.escapeSpecialChars(variables[inner] || '');
         return `{${outer}${innerValue}}`;
       });
     }
@@ -112,11 +111,20 @@ export class PromptManager {
     // Finally, replace regular variables
     const varRegex = /\{([^{}]+)\}/g;
     prompt = prompt.replace(varRegex, (match, key) => {
-      return variables[key] || '';
+      return this.escapeSpecialChars(variables[key] || '');
     });
 
     // Preserve line endings and whitespace
     return prompt;
+  }
+
+  private escapeSpecialChars(value: string): string {
+    return value
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
 
   async writePrompt(content: string, destinationPath: string): Promise<void> {

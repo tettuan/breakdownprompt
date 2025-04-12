@@ -72,6 +72,7 @@ export async function setupTestDirs(): Promise<void> {
       TEST_CONFIG.SCHEMA_DIR,
       TEST_CONFIG.INPUT_DIR,
       TEST_CONFIG.OUTPUT_DIR,
+      TEST_PARAMS.variables.destination_path, // Create the output subdirectory
     ]
   ) {
     try {

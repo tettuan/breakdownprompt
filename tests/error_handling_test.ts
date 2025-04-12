@@ -10,7 +10,7 @@ const logger = new BreakdownLogger();
 Deno.test("Error Handling - missing template file", async () => {
   await setupTestDirs();
 
-  const manager = new PromptManager(logger);
+  const manager = new PromptManager();
   const variables: Record<string, string> = {
     schema_file: join(TEST_CONFIG.SCHEMA_DIR, "base.schema.json"),
     input_markdown: "# Sample Markdown\nThis is a sample markdown content.",
@@ -38,7 +38,7 @@ Deno.test("Error Handling - missing template file", async () => {
 Deno.test("Error Handling - invalid file path", async () => {
   await setupTestDirs();
 
-  const manager = new PromptManager(logger);
+  const manager = new PromptManager();
   const variables: Record<string, string> = {
     schema_file: join(TEST_CONFIG.SCHEMA_DIR, "base.schema.json"),
     input_markdown: "# Sample Markdown\nThis is a sample markdown content.",
@@ -66,7 +66,7 @@ Deno.test("Error Handling - invalid file path", async () => {
 Deno.test("Error Handling - invalid variable types", async () => {
   await setupTestDirs();
 
-  const manager = new PromptManager(logger);
+  const manager = new PromptManager();
   const variables: Record<string, any> = {
     schema_file: join(TEST_CONFIG.SCHEMA_DIR, "base.schema.json"),
     input_markdown: 123,
@@ -94,7 +94,7 @@ Deno.test("Error Handling - invalid variable types", async () => {
 Deno.test("Error Handling - file not found", async () => {
   await setupTestDirs();
 
-  const manager = new PromptManager(logger);
+  const manager = new PromptManager();
   const variables: Record<string, string> = {
     schema_file: join(TEST_CONFIG.SCHEMA_DIR, "nonexistent.json"),
     input_markdown: "# Sample Markdown\nThis is a sample markdown content.",

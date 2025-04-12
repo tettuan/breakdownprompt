@@ -162,6 +162,10 @@ export class PromptGenerator {
       throw new TemplateError("Template is empty");
     }
 
+    // Validate sections first
+    const sections = this.parseSections(template);
+    this.validateSectionStructure(sections);
+
     const variablePattern = /{([^}]+)}/g;
     const matches = template.matchAll(variablePattern);
     const variableNames = [...new Set([...matches].map((match) => match[1]))];

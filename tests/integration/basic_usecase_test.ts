@@ -14,7 +14,7 @@ Deno.test("Basic Use Case Tests", async (t) => {
       input_markdown: "# Sample Content\nThis is a test markdown content.",
     };
 
-    const manager = new PromptManager(_logger);
+    const manager = new PromptManager();
     const result = await manager.generatePrompt("tests/fixtures/templates/basic_template.md", variables);
 
     assertExists(result);
@@ -35,7 +35,7 @@ Deno.test("Basic Use Case Tests", async (t) => {
       input_markdown: "# Sample Content\nThis is a test markdown content.",
     };
 
-    const manager = new PromptManager(_logger);
+    const manager = new PromptManager();
     const result = await manager.generatePrompt("tests/fixtures/templates/file_template.md", variables);
 
     assertExists(result);
@@ -56,7 +56,7 @@ Deno.test("Basic Use Case Tests", async (t) => {
       input_markdown: "# Sample Content\nThis is a test markdown content.",
     };
 
-    const manager = new PromptManager(_logger);
+    const manager = new PromptManager();
     const result = await manager.generatePrompt("tests/fixtures/templates/markdown_template.md", variables);
 
     assertExists(result);

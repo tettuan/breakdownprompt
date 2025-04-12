@@ -21,24 +21,64 @@ import {
  * Base class for variable validation
  * Provides common validation functionality
  */
-export class VariableValidator {
-  /**
-   * Validates a variable name according to the rules:
-   * - Must start with a letter
-   * - Can only contain letters, numbers, and underscores
-   * - Case sensitive
-   */
-  validateKey(key: string): boolean {
-    if (!key) return false;
-    return /^[a-zA-Z][a-zA-Z0-9_]*$/.test(key);
+export abstract class VariableValidator {
+  constructor() {
+    // Remove the logger initialization
   }
 
   /**
-   * Validates a complete set of variables
-   * - Checks each variable name
-   * - Validates each variable value according to its type
+   * Validates a variable name according to the rules:
+   * - Only alphanumeric characters and underscores are allowed
+   * - Must start with a letter
+   * - Case sensitive
    */
-  validateVariables(variables: Variables): boolean {
+  validateKey(key: string): key is ValidVariableKey {
+    if (!key || key.trim().length === 0) {
+      return false;
+    }
+
+    // Must start with a letter
+    if (!/^[a-zA-Z]/.test(key)) {
+      return false;
+    }
+
+    // Only alphanumeric characters and underscores allowed
+    if (!/^[a-zA-Z0-9_]+$/.test(key)) {
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * Validates a file path
+   * - Must not be empty
+   * - Must be a valid file path format
+   * - Must exist and be readable
+   */
+  abstract validateFilePath(path: string): Promise<boolean>;
+
+  /**
+   * Validates a directory path
+   * - Must not be empty
+   * - Must be a valid directory path format
+   * - Must exist and be writable
+   */
+  abstract validateDirectoryPath(path: string): Promise<boolean>;
+
+  /**
+   * Validates markdown text
+   * - Must not be empty
+   * - Must be valid markdown format
+   */
+  abstract validateMarkdownText(text: string): text is MarkdownText;
+
+  /**
+   * Validates a set of variables
+   * - All variable names must be valid
+   * - All variable values must be valid
+   */
+  async validateVariables(variables: Record<string, unknown>): Promise<boolean> {
     try {
       for (const [key, value] of Object.entries(variables)) {
         if (!this.validateKey(key)) {
@@ -46,7 +86,22 @@ export class VariableValidator {
         }
 
         if (typeof value !== "string") {
-          throw new ValidationError(`Invalid value for variable: ${key}`);
+          throw new ValidationError(`Invalid value type for variable ${key}: expected string`);
+        }
+
+        // Type-specific validation
+        if (key === "schema_file" || key === "input_markdown_file") {
+          if (!await this.validateFilePath(value)) {
+            throw new ValidationError(`Invalid file path for ${key}: ${value}`);
+          }
+        } else if (key === "destination_path") {
+          if (!await this.validateDirectoryPath(value)) {
+            throw new ValidationError(`Invalid directory path for ${key}: ${value}`);
+          }
+        } else if (key === "input_markdown") {
+          if (!this.validateMarkdownText(value)) {
+            throw new ValidationError(`Invalid markdown content for ${key}`);
+          }
         }
       }
       return true;
@@ -65,39 +120,85 @@ export class VariableValidator {
  */
 export class DefaultVariableValidator extends VariableValidator implements IVariableValidator {
   /**
-   * Validates a variable key
-   * - Must start with a letter
-   * - Can only contain letters, numbers, and underscores
-   * - Case sensitive
-   */
-  override validateKey(key: string): key is ValidVariableKey {
-    return super.validateKey(key);
-  }
-
-  /**
    * Validates a file path
    * - Must not be empty
    * - Must be a valid file path format
+   * - Must exist and be readable
    */
-  validateFilePath(path: string): path is FilePath {
+  override async validateFilePath(path: string): Promise<boolean> {
     if (!path || path.trim().length === 0) {
       return false;
     }
-    // Basic path validation - can be enhanced with more specific rules
-    return /^[a-zA-Z0-9\/\._-]+$/.test(path);
+
+    // Basic path format validation
+    if (!/^[a-zA-Z0-9\/\._-]+$/.test(path)) {
+      return false;
+    }
+
+    try {
+      // Check if file exists and is readable
+      const fileInfo = await Deno.stat(path);
+      if (!fileInfo.isFile) {
+        return false;
+      }
+
+      // Check read permission
+      try {
+        const file = await Deno.open(path, { read: true });
+        try {
+          return true;
+        } finally {
+          file.close();
+        }
+      } catch (error) {
+        return false;
+      }
+    } catch (error) {
+      if (error instanceof Deno.errors.NotFound) {
+      } else {
+      }
+      return false;
+    }
   }
 
   /**
    * Validates a directory path
    * - Must not be empty
    * - Must be a valid directory path format
+   * - Must exist and be writable
    */
-  validateDirectoryPath(path: string): path is DirectoryPath {
+  override async validateDirectoryPath(path: string): Promise<boolean> {
     if (!path || path.trim().length === 0) {
       return false;
     }
-    // Basic path validation - can be enhanced with more specific rules
-    return /^[a-zA-Z0-9\/\._-]+$/.test(path);
+
+    // Basic path format validation
+    if (!/^[a-zA-Z0-9\/\._-]+$/.test(path)) {
+      return false;
+    }
+
+    try {
+      // Check if directory exists
+      const dirInfo = await Deno.stat(path);
+      if (!dirInfo.isDirectory) {
+        return false;
+      }
+
+      // Check write permission
+      try {
+        const testFile = `${path}/.write_test_${Date.now()}`;
+        await Deno.writeTextFile(testFile, "");
+        await Deno.remove(testFile);
+        return true;
+      } catch (error) {
+        return false;
+      }
+    } catch (error) {
+      if (error instanceof Deno.errors.NotFound) {
+      } else {
+      }
+      return false;
+    }
   }
 
   /**
@@ -105,11 +206,18 @@ export class DefaultVariableValidator extends VariableValidator implements IVari
    * - Must not be empty
    * - Must be valid markdown format
    */
-  validateMarkdownText(text: string): text is MarkdownText {
+  override validateMarkdownText(text: string): text is MarkdownText {
     if (!text || text.trim().length === 0) {
       return false;
     }
-    // Basic markdown validation - can be enhanced with more specific rules
+
+    // Basic markdown validation
+    // Check for common markdown elements
+    const hasMarkdownElements = /^#|^\s*[-*+]\s|^\s*\d+\.\s|^\s*>\s|^\s*`|^\s*\*\*|^\s*__|^\s*\[|^\s*!\[/.test(text);
+    if (!hasMarkdownElements) {
+      return false;
+    }
+
     return true;
   }
 }

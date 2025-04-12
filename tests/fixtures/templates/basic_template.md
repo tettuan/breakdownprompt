@@ -46,3 +46,12 @@ The result will be saved to ./{output_dir}.
 
 - Output to ./{output_dir}
 - Content from {input_markdown}
+
+## Special Characters Test
+
+This section tests special character handling:
+- & becomes &amp;
+- < becomes &lt;
+- > becomes &gt;
+- " becomes &quot;
+- ' becomes &#39;

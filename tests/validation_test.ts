@@ -11,18 +11,18 @@
  * and follows the design patterns in docs/design_pattern.ja.md.
  */
 
-import { assertEquals, assertThrows } from "https://deno.land/std@0.208.0/assert/mod.ts";
+import { assertEquals, assertRejects } from "https://deno.land/std@0.208.0/assert/mod.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { ValidationError } from "../src/errors.ts";
 import { cleanupTestDirs, setupTestDirs, TEST_PARAMS } from "./test_utils.ts";
-import { VariableValidator } from "../src/validation/variable_validator.ts";
+import { DefaultVariableValidator } from "../src/validation/variable_validator.ts";
 import { PathValidator } from "../src/validation/path_validator.ts";
 import { MarkdownValidator } from "../src/validation/markdown_validator.ts";
 
 const logger = new BreakdownLogger();
 
 Deno.test("Variable name validation", async () => {
-  const validator = new VariableValidator();
+  const validator = new DefaultVariableValidator();
 
   // Valid variable names
   assertEquals(validator.validateKey("validName"), true);
@@ -75,10 +75,11 @@ Deno.test("Basic markdown content validation", async () => {
 });
 
 Deno.test("Complete variable set validation", async () => {
-  const validator = new VariableValidator();
+  await setupTestDirs();
+  const validator = new DefaultVariableValidator();
 
   // Valid variable set
-  assertEquals(validator.validateVariables(TEST_PARAMS.variables), true);
+  assertEquals(await validator.validateVariables(TEST_PARAMS.variables), true);
 
   // Invalid variable set
   const invalidVariables = {
@@ -86,11 +87,13 @@ Deno.test("Complete variable set validation", async () => {
     schema_file: 123, // Invalid type
   };
 
-  assertThrows(
-    () => validator.validateVariables(invalidVariables),
+  await assertRejects(
+    async () => await validator.validateVariables(invalidVariables),
     ValidationError,
-    "Invalid value for variable: schema_file",
+    "Invalid value type for variable schema_file: expected string",
   );
+
+  await cleanupTestDirs();
 });
 
 Deno.test("Detailed markdown content validation", async () => {

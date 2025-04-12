@@ -28,15 +28,14 @@ export type DirectoryPath = string & {
 };
 
 /**
- * MarkdownText represents valid markdown text
+ * MarkdownText represents valid markdown content
  */
 export type MarkdownText = string & {
   readonly _type: "markdown_text";
 };
 
 /**
- * Variables represents the collection of all possible variables
- * All keys are optional (Partial)
+ * Variables represents a set of variables with their values
  */
 export type Variables = Partial<{
   [K in ValidVariableKey]: FilePath | DirectoryPath | MarkdownText;
@@ -47,7 +46,8 @@ export type Variables = Partial<{
  */
 export interface VariableValidator {
   validateKey(key: string): key is ValidVariableKey;
-  validateFilePath(path: string): path is FilePath;
-  validateDirectoryPath(path: string): path is DirectoryPath;
+  validateFilePath(path: string): Promise<boolean>;
+  validateDirectoryPath(path: string): Promise<boolean>;
   validateMarkdownText(text: string): text is MarkdownText;
+  validateVariables(variables: Variables): Promise<boolean>;
 } 
