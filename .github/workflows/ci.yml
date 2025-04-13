@@ -39,12 +39,6 @@ jobs:
           name: coverage-report
           path: coverage/
 
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
-        with:
-          file: coverage/lcov.info
-          fail_ci_if_error: true
-
       - name: Run test summary
         run: |
           deno test --json --allow-read --allow-write --allow-env > test-results.json
