@@ -64,7 +64,7 @@ export type DirectoryPath = string & {
 
 /**
  * Markdown text type.
- * Ensures value is valid markdown format.
+ * Ensures value is valid markdown content.
  */
 export type MarkdownText = string & {
   readonly _type: "markdown_text";
@@ -73,9 +73,7 @@ export type MarkdownText = string & {
 
 /**
  * Variables type.
- * All keys are optional (Partial type).
- * Keys must conform to ValidVariableKey.
- * Values must be FilePath, DirectoryPath, or MarkdownText.
+ * Maps valid variable keys to their corresponding value types.
  */
 export type Variables = Partial<
   {
@@ -83,10 +81,43 @@ export type Variables = Partial<
   }
 >;
 
+/**
+ * Interface for validating variables.
+ * Provides methods for validating different types of variables.
+ */
 export interface VariableValidator {
+  /**
+   * Validates a file path.
+   * @param path - The path to validate
+   * @returns Promise that resolves to true if the path is valid
+   */
   validateFilePath(path: string): Promise<boolean>;
+
+  /**
+   * Validates a directory path.
+   * @param path - The path to validate
+   * @returns Promise that resolves to true if the path is valid
+   */
   validateDirectoryPath(path: string): Promise<boolean>;
+
+  /**
+   * Validates markdown text.
+   * @param text - The text to validate
+   * @returns true if the text is valid markdown
+   */
   validateMarkdownText(text: string): text is MarkdownText;
+
+  /**
+   * Validates a variable key.
+   * @param key - The key to validate
+   * @returns true if the key is valid
+   */
   validateKey(key: string): boolean;
+
+  /**
+   * Validates a set of variables.
+   * @param variables - The variables to validate
+   * @returns Promise that resolves to true if all variables are valid
+   */
   validateVariables(variables: Record<string, unknown>): Promise<boolean>;
 }

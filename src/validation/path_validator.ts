@@ -7,6 +7,10 @@
  * - Prevent path traversal attacks
  */
 
+/**
+ * A class for validating file and directory paths.
+ * Provides methods to ensure paths are secure and valid.
+ */
 export class PathValidator {
   /**
    * Validates a file path according to the rules:

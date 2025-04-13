@@ -7,6 +7,10 @@
  * - Check for basic markdown structure
  */
 
+/**
+ * A class for validating markdown content.
+ * Provides methods to ensure markdown content meets basic requirements.
+ */
 export class MarkdownValidator {
   /**
    * Validates markdown content according to the rules:

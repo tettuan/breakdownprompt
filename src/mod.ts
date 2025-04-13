@@ -9,10 +9,21 @@ export type { PromptParams } from "./types/prompt_params.ts";
 export type { PromptResult } from "./types/prompt_result.ts";
 export { FileSystemError, ValidationError } from "./errors.ts";
 
-// Version information
+/**
+ * The current version of the package, read from deno.json.
+ * @constant
+ */
 export const VERSION: string = JSON.parse(Deno.readTextFileSync("./deno.json")).version;
 
-// Module metadata
+/**
+ * Metadata about the package.
+ * @constant
+ * @property {string} name - The package name
+ * @property {string} description - A brief description of the package
+ * @property {string} homepage - The package's homepage URL
+ * @property {string} license - The package's license
+ * @property {string} author - The package's author
+ */
 export const META = {
   name: "@tettuan/breakdownprompt",
   description:

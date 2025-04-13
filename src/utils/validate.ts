@@ -44,9 +44,9 @@ export function validateString(value: unknown, fieldName: string): void {
 
 /**
  * Validates a boolean value.
- * @param value The value to validate
- * @param fieldName The name of the field being validated
- * @throws {ValidationError} If validation fails
+ * @param value - The value to validate
+ * @param fieldName - The name of the field being validated
+ * @throws {ValidationError} If the value is not a boolean
  */
 export function validateBoolean(value: unknown, fieldName: string): void {
   if (typeof value !== "boolean") {

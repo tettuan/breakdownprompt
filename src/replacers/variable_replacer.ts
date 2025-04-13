@@ -22,13 +22,26 @@ export interface VariableReplacerResult {
   error?: string;
 }
 
+/**
+ * Base class for replacing variables in templates.
+ * Provides common functionality for variable replacement and validation.
+ */
 export class VariableReplacer {
   private variables: Record<string, string>;
 
+  /**
+   * Creates a new VariableReplacer instance
+   * @param options - Configuration options for variable replacement
+   */
   constructor(options: VariableReplacerOptions) {
     this.variables = options.variables;
   }
 
+  /**
+   * Replaces variables in a template with their corresponding values
+   * @param template - The template string containing variables to replace
+   * @returns Result containing the replaced template and any errors
+   */
   replace(template: string): VariableReplacerResult {
     try {
       let result = template;

@@ -16,7 +16,15 @@ import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
 const logger = new BreakdownLogger();
 
-// Test configuration
+/**
+ * Configuration for test directories and paths.
+ * @constant
+ * @property {string} BASE_DIR - Base directory for all test files
+ * @property {string} TEMPLATES_DIR - Directory for template files
+ * @property {string} SCHEMA_DIR - Directory for schema files
+ * @property {string} INPUT_DIR - Directory for input files
+ * @property {string} OUTPUT_DIR - Directory for output files
+ */
 export const TEST_CONFIG = {
   BASE_DIR: join(Deno.cwd(), "tmp", "test"),
   TEMPLATES_DIR: join(Deno.cwd(), "tmp", "test", "templates"),
@@ -25,7 +33,20 @@ export const TEST_CONFIG = {
   OUTPUT_DIR: join(Deno.cwd(), "tmp", "test", "output"),
 };
 
-// Test parameters
+/**
+ * Test parameters and sample data for testing.
+ * @constant
+ * @property {string} prompt_file_path - Path to a sample prompt template
+ * @property {string} test_dir - Directory containing test files
+ * @property {string} empty_file_path - Path to an empty file
+ * @property {string} whitespace_file_path - Path to a file containing only whitespace
+ * @property {string} no_permission_file_path - Path to a file with restricted permissions
+ * @property {Object} variables - Sample variables for testing
+ * @property {string} variables.schema_file - Path to a sample schema file
+ * @property {string} variables.input_markdown - Sample markdown content
+ * @property {string} variables.input_markdown_file - Path to a sample markdown file
+ * @property {string} variables.destination_path - Path for output files
+ */
 export const TEST_PARAMS = {
   prompt_file_path: join(TEST_CONFIG.TEMPLATES_DIR, "simple.md"),
   test_dir: TEST_CONFIG.TEMPLATES_DIR,

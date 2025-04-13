@@ -16,13 +16,23 @@
 import { TemplateError, ValidationError } from "./errors.ts";
 import type { PromptResult } from "./types.ts";
 
+/** Represents a section in a markdown template with its title, content, and heading level */
 interface Section {
   title: string;
   content: string;
   level: number;
 }
 
+/**
+ * A class that generates prompts from templates by replacing variables with their values.
+ * It handles validation, parsing, and formatting of the output.
+ */
 export class PromptGenerator {
+  /**
+   * Validates that a template is not empty and has valid structure
+   * @param template - The template string to validate
+   * @throws {TemplateError} If the template is empty
+   */
   validateTemplate(template: string): void {
     if (!template || template.trim() === "") {
       throw new TemplateError("Template is empty");
@@ -32,6 +42,11 @@ export class PromptGenerator {
     this.validateSectionStructure(sections);
   }
 
+  /**
+   * Validates that each section in the template has non-empty content
+   * @param sections - Array of sections to validate
+   * @throws {ValidationError} If any section has empty content
+   */
   validateSectionStructure(sections: Section[]): void {
     for (const section of sections) {
       const hasContent = section.content.trim() !== "";
@@ -41,23 +56,44 @@ export class PromptGenerator {
     }
   }
 
+  /**
+   * Checks if a variable name follows the allowed format
+   * @param name - The variable name to validate
+   * @returns true if the name is valid, false otherwise
+   */
   isValidVariableName(name: string): boolean {
     // Allow letters, numbers, underscores, hyphens, dots, spaces, and brackets
     return /^[a-zA-Z][a-zA-Z0-9_\-.\s\[\]]*$/.test(name);
   }
 
+  /**
+   * Validates that a variable value is not null, undefined, or empty
+   * @param name - The name of the variable being validated
+   * @param value - The value to validate
+   * @throws {ValidationError} If the value is invalid
+   */
   validateVariableValue(name: string, value: unknown): void {
     if (value === null || value === undefined || typeof value !== "string" || value.trim() === "") {
       throw new ValidationError(`Invalid value for variable: ${name}`);
     }
   }
 
+  /**
+   * Validates that a variable name is not empty and follows the allowed format
+   * @param name - The variable name to validate
+   * @throws {ValidationError} If the name is invalid
+   */
   validateVariableName(name: string): void {
     if (!this.isValidVariableName(name)) {
       throw new ValidationError(`Invalid variable name: ${name}`);
     }
   }
 
+  /**
+   * Validates all variables in a record
+   * @param variables - The variables to validate
+   * @throws {ValidationError} If any variable is invalid
+   */
   validateVariables(variables: Record<string, unknown>): void {
     for (const name of Object.keys(variables)) {
       this.validateVariableName(name);
@@ -67,6 +103,11 @@ export class PromptGenerator {
     }
   }
 
+  /**
+   * Parses a template into sections based on markdown headers
+   * @param template - The template string to parse
+   * @returns Array of sections with their titles, content, and heading levels
+   */
   parseSections(template: string): Section[] {
     const lines = template.split("\n");
     const sections: Section[] = [];
@@ -102,6 +143,12 @@ export class PromptGenerator {
     return sections;
   }
 
+  /**
+   * Parses a template and replaces variables with their values
+   * @param template - The template string to parse
+   * @param variables - The variables to replace in the template
+   * @returns The parsed and processed prompt result
+   */
   parseTemplate(template: string, variables: Record<string, unknown>): PromptResult {
     if (!template || template.trim() === "") {
       throw new TemplateError("Template is empty");
@@ -144,6 +191,11 @@ export class PromptGenerator {
     };
   }
 
+  /**
+   * Escapes special characters in a string for use in a regular expression
+   * @param str - The string to escape
+   * @returns The escaped string
+   */
   private escapeRegExp(str: string): string {
     return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   }

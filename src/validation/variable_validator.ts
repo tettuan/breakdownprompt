@@ -114,15 +114,17 @@ export abstract class VariableValidator implements IVariableValidator {
 }
 
 /**
- * Default implementation of VariableValidator
- * Validates variable keys, file paths, directory paths, and markdown text
+ * Default implementation of the VariableValidator interface.
+ * Provides concrete validation logic for file paths, directory paths, and markdown text.
  */
 export class DefaultVariableValidator extends VariableValidator {
   /**
-   * Validates a file path
-   * - Must not be empty
-   * - Must be a valid file path format
-   * - Must exist and be readable
+   * Validates a file path according to the rules:
+   * - Must be a non-empty string
+   * - Must not contain invalid characters
+   * - Must be a valid file path
+   * @param path - The file path to validate
+   * @returns Promise that resolves to true if the path is valid
    */
   public override async validateFilePath(path: string): Promise<boolean> {
     try {
@@ -150,10 +152,12 @@ export class DefaultVariableValidator extends VariableValidator {
   }
 
   /**
-   * Validates a directory path
-   * - Must not be empty
-   * - Must be a valid directory path format
-   * - Must exist and be writable
+   * Validates a directory path according to the rules:
+   * - Must be a non-empty string
+   * - Must not contain invalid characters
+   * - Must be a valid directory path
+   * @param path - The directory path to validate
+   * @returns Promise that resolves to true if the path is valid
    */
   public override async validateDirectoryPath(path: string): Promise<boolean> {
     try {
@@ -175,9 +179,11 @@ export class DefaultVariableValidator extends VariableValidator {
   }
 
   /**
-   * Validates markdown text
-   * - Must not be empty
-   * - Must be valid markdown format
+   * Validates markdown text according to the rules:
+   * - Must be a non-empty string
+   * - Must be valid markdown content
+   * @param text - The markdown text to validate
+   * @returns true if the text is valid markdown
    */
   public override validateMarkdownText(text: string): text is MarkdownText {
     if (!text) {

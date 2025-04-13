@@ -38,6 +38,11 @@ export function breakdownByLineCount(content: string, maxLines: number): string[
   return sections;
 }
 
+/**
+ * Splits content into sections based on empty lines followed by markdown headers.
+ * @param content - The content to split into sections
+ * @returns An array of sections, each trimmed of whitespace and non-empty
+ */
 export function splitIntoSection(content: string): string[] {
   return content
     .split(/\n\s*\n(?=^#{1,6}\s)/m) // 空行 + 見出しで分割
