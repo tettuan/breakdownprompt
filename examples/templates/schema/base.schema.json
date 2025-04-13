@@ -1,0 +1,14 @@
+{
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "The title of the document"
+    },
+    "content": {
+      "type": "string",
+      "description": "The main content of the document"
+    }
+  },
+  "required": ["title", "content"]
+} 

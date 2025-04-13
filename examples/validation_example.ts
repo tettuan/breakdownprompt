@@ -14,48 +14,17 @@ async function main() {
   const manager = new PromptManager();
 
   // Example with invalid paths and markdown
-  const params = {
-    prompt_file_path: "./examples/templates/validation_prompt.md",
-    variables: {
-      schema_file: "./non/existent/path/schema.json",
-      input_markdown: "Invalid markdown without proper heading",
-      input_markdown_file: "./non/existent/input.md",
-      destination_path: "./examples/templates/task/output/"
-    },
-    validate() {
-      // Custom validation logic
-      const errors: string[] = [];
-      
-      // Check if schema file exists
-      try {
-        Deno.statSync(params.variables.schema_file);
-      } catch {
-        errors.push(`Schema file not found: ${params.variables.schema_file}`);
-      }
-
-      // Check if input markdown has proper heading
-      if (!params.variables.input_markdown.includes("#")) {
-        errors.push("Input markdown must start with a heading");
-      }
-
-      // Check if input file exists
-      try {
-        Deno.statSync(params.variables.input_markdown_file);
-      } catch {
-        errors.push(`Input file not found: ${params.variables.input_markdown_file}`);
-      }
-
-      if (errors.length > 0) {
-        console.error("Validation errors:", errors);
-        return false;
-      }
-      return true;
-    }
+  const template = "./examples/templates/validation_prompt.md";
+  const variables = {
+    schema_file: "./non/existent/path/schema.json",
+    input_markdown: "Invalid markdown without proper heading",
+    input_markdown_file: "./non/existent/input.md",
+    destination_path: "./examples/templates/task/output/"
   };
 
   try {
-    const result = await manager.generatePrompt(params);
-    console.log("Generated content:", result.content);
+    const result = await manager.generatePrompt(template, variables);
+    console.log("Generated content:", result.prompt);
   } catch (error: unknown) {
     if (error instanceof Error) {
       console.error("Error generating prompt:", error.message);
