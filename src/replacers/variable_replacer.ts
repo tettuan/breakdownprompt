@@ -1,12 +1,24 @@
 import type { ValidationError as _ValidationError } from "../errors.ts";
 
+/**
+ * Options for variable replacement.
+ * @interface VariableReplacerOptions
+ */
 export interface VariableReplacerOptions {
+  /** Variables to use for replacement */
   variables: Record<string, string>;
 }
 
+/**
+ * Result of variable replacement operation.
+ * @interface VariableReplacerResult
+ */
 export interface VariableReplacerResult {
+  /** Whether the replacement was successful */
   success: boolean;
+  /** The prompt with variables replaced */
   prompt: string;
+  /** Error message if the replacement failed */
   error?: string;
 }
 

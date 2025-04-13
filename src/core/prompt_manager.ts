@@ -10,15 +10,30 @@ import type { exists as _exists } from "@std/fs";
 import { MarkdownValidator } from "../validation/markdown_validator.ts";
 import type { BreakdownLogger } from "@tettuan/breakdownlogger";
 
+/**
+ * A class for managing and generating prompts from templates with variable replacement.
+ * Handles template loading, variable validation, and prompt generation.
+ */
 export class PromptManager {
   private markdownValidator: MarkdownValidator;
   private logger?: BreakdownLogger;
 
+  /**
+   * Creates a new PromptManager instance.
+   * @param logger Optional logger for debug output
+   */
   constructor(logger?: BreakdownLogger) {
     this.markdownValidator = new MarkdownValidator();
     this.logger = logger;
   }
 
+  /**
+   * Generates a prompt by replacing variables in a template.
+   * @param template The template string containing variable placeholders
+   * @param variables A record of variable names and their replacement values
+   * @returns A promise that resolves to an object containing success status and the generated prompt
+   * @throws {ValidationError} If template or variables are invalid
+   */
   public async generatePrompt(
     template: string,
     variables: Record<string, string>,
@@ -75,6 +90,11 @@ export class PromptManager {
     }
   }
 
+  /**
+   * Validates the input parameters for prompt generation.
+   * @param params The parameters to validate
+   * @throws {ValidationError} If parameters are invalid
+   */
   private async validateParams(params: PromptParams): Promise<void> {
     if (!params.template_file) {
       throw new ValidationError("Template file path is required");
@@ -115,6 +135,12 @@ export class PromptManager {
     }
   }
 
+  /**
+   * Loads a template from a file.
+   * @param templateFile Path to the template file
+   * @returns A promise that resolves to the template content
+   * @throws {FileSystemError} If the file cannot be read
+   */
   private async loadTemplate(templateFile: string): Promise<string> {
     try {
       const content = await Deno.readTextFile(templateFile);
@@ -130,6 +156,13 @@ export class PromptManager {
     }
   }
 
+  /**
+   * Replaces variables in a template with their values.
+   * @param template The template string
+   * @param variables Variables to replace
+   * @param _preservePlaceholders Whether to preserve placeholders for unknown variables
+   * @returns The template with variables replaced
+   */
   private replaceVariables(
     template: string,
     variables: Record<string, string>,
@@ -150,6 +183,12 @@ export class PromptManager {
     return result;
   }
 
+  /**
+   * Writes the generated prompt to a file.
+   * @param content The prompt content to write
+   * @param destinationPath Path where the prompt should be written
+   * @throws {FileSystemError} If the file cannot be written
+   */
   async writePrompt(content: string, destinationPath: string): Promise<void> {
     // Validate destination path
     if (!destinationPath || destinationPath.trim() === "") {
@@ -206,6 +245,11 @@ export class PromptManager {
     }
   }
 
+  /**
+   * Validates markdown content.
+   * @param markdown The markdown content to validate
+   * @throws {ValidationError} If the markdown is invalid
+   */
   private validateMarkdown(markdown: string): Promise<void> {
     if (!markdown || typeof markdown !== "string") {
       return Promise.reject(new ValidationError("Invalid markdown content"));

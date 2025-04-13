@@ -1,67 +1,58 @@
-# Prompt Management Framework
+# BreakdownPrompt
 
-A Deno TypeScript library for managing and generating prompts from templates with variable
-replacement.
+A Deno TypeScript library for managing and generating prompts from templates with variable replacement.
 
-## Features
+## Quick Start
 
-- Dynamic prompt template management
-- Variable replacement with type validation
-- Support for multiple output formats
-- Template caching for improved performance
-- Structured and unstructured output options
-- Comprehensive error handling
-
-## Installation
-
-### From JSR
+### Installation
 
 ```bash
 deno add @tettuan/breakdownprompt
 ```
 
-### From GitHub
-
-```bash
-deno add https://github.com/tettuan/breakdownprompt
-```
-
-## Usage
+### Basic Usage
 
 ```typescript
 import { PromptManager } from "@tettuan/breakdownprompt";
 
-// Initialize the manager
 const manager = new PromptManager();
 
-// Define prompt parameters
-const params = {
-  prompt_file_path: "./templates/example.md",
-  destination: "./output",
-  multipleFiles: false,
-  structured: false,
-};
+const result = await manager.generatePrompt({
+  template_file: "./templates/example.md",
+  variables: {
+    schema_file: "./schema/implementation.json",
+    input_markdown: "# Design Document\n\nContent here",
+    input_markdown_file: "./input/design.md",
+    destination_path: "./output",
+  },
+});
 
-// Generate prompt
-try {
-  const result = await manager.generatePrompt(params);
-  console.log("Generated prompt:", result.content);
-} catch (error) {
-  console.error("Error generating prompt:", error.message);
+if (result.success) {
+  console.log("Generated prompt:", result.prompt);
 }
 ```
 
-## Template Format
+## Features
+
+- Dynamic prompt template management
+- Variable replacement with type validation
+- Comprehensive error handling
+- Debug logging support
+
+## Usage Guide
+
+### Template Format
 
 Templates are markdown files with variables in the format `{variable_name}`. Supported variables:
 
-- `{schema_file}`: Path to the schema file
-- `{input_markdown}`: Content of the input markdown
-- `{input_markdown_file}`: Path to the input markdown file
-- `{destination_path}`: Output destination path
+- `{schema_file}`: Path to the schema file (must be a valid file path)
+- `{input_markdown}`: Content of the input markdown (must be valid markdown)
+- `{input_markdown_file}`: Path to the input markdown file (must be a valid file path)
+- `{destination_path}`: Output destination path (must be a valid directory path)
 
 Example template:
 
+```markdown
 # Example Template
 
 ## Input
@@ -75,18 +66,54 @@ Example template:
 ## Output Location
 
 {destination_path}
-
-## Directory Structure
-
 ```
-templates/
-  ├── task/
-  │   └── implementation/
-  │       └── f_design.md
-  ├── schema/
-  │   └── implementation.json
-  └── input/
-      └── design.md
+
+### Advanced Usage
+
+#### Debug Logging
+
+```typescript
+import { PromptManager } from "@tettuan/breakdownprompt";
+import { BreakdownLogger } from "@tettuan/breakdownlogger";
+
+const logger = new BreakdownLogger();
+const manager = new PromptManager(logger);
+
+const params = {
+  template_file: "./templates/example.md",
+  variables: {
+    schema_file: "./schema/implementation.json",
+    input_markdown: "# Design Document\n\nContent here",
+    input_markdown_file: "./input/design.md",
+    destination_path: "./output",
+  },
+  debug: true,
+};
+
+const result = await manager.generatePrompt(params);
+```
+
+#### Error Handling
+
+```typescript
+try {
+  const result = await manager.generatePrompt(params);
+  if (result.success) {
+    console.log("Generated prompt:", result.prompt);
+  } else {
+    console.error("Error:", result.error);
+  }
+} catch (error) {
+  if (error instanceof ValidationError) {
+    console.error("Validation error:", error.message);
+  } else if (error instanceof TemplateError) {
+    console.error("Template error:", error.message);
+  } else if (error instanceof FileSystemError) {
+    console.error("File system error:", error.message);
+  } else {
+    console.error("Unexpected error:", error.message);
+  }
+}
 ```
 
 ## API Reference
@@ -97,7 +124,7 @@ Main class for managing prompts.
 
 ```typescript
 class PromptManager {
-  constructor();
+  constructor(logger?: BreakdownLogger);
   generatePrompt(params: PromptParams): Promise<PromptResult>;
 }
 ```
@@ -108,38 +135,100 @@ Parameters for prompt generation.
 
 ```typescript
 interface PromptParams {
-  prompt_file_path: string; // Path to the prompt template file
-  destination: string; // Output destination path
-  multipleFiles: boolean; // Whether to split into multiple files
-  structured: boolean; // Whether to use structured output
+  template_file: string; // Path to the template file
+  variables: Record<string, string>; // Variables for replacement
+  debug?: boolean; // Optional: Enable debug logging
 }
 ```
 
-## Development
+### PromptResult
 
-### Running Tests
+Result of prompt generation.
 
-```bash
-deno task test
+```typescript
+interface PromptResult {
+  success: boolean; // Whether the operation was successful
+  prompt?: string; // Generated prompt content
+  error?: string; // Error message if failed
+  content?: string; // Alternative content field
+  variables?: string[]; // List of variables found
+  unknownVariables?: string[]; // List of unknown variables
+}
 ```
 
-### Code Formatting
+## For Developers
+
+### Development Setup
+
+1. Clone the repository:
 
 ```bash
-deno task fmt
+git clone https://github.com/tettuan/breakdownprompt.git
+cd breakdownprompt
 ```
 
-### Linting
+2. Install dependencies:
 
 ```bash
-deno task lint
+deno cache --reload deps.ts
 ```
 
-### Publishing to JSR
+### Development Workflow
+
+#### Running Tests
+
+```bash
+deno test --allow-env --allow-write --allow-read
+```
+
+For debugging:
+
+```bash
+LOG_LEVEL=debug deno test --allow-env --allow-write --allow-read
+```
+
+#### Code Quality
+
+Formatting:
+
+```bash
+deno fmt
+```
+
+Linting:
+
+```bash
+deno lint
+```
+
+#### Publishing
+
+To publish to JSR:
 
 ```bash
 deno task publish
 ```
+
+### Project Structure
+
+```
+src/
+  ├── core/           # Core functionality
+  ├── types/          # Type definitions
+  ├── validation/     # Validation logic
+  ├── replacers/      # Variable replacers
+  └── errors.ts       # Error definitions
+tests/                # Test files
+docs/                 # Documentation
+```
+
+### Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Run tests and ensure they pass
+5. Submit a pull request
 
 ## License
 
