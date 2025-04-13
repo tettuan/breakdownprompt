@@ -1,6 +1,7 @@
 # User Guide
 
 ## Table of Contents
+
 1. [Introduction](#introduction)
 2. [Installation](#installation)
 3. [Quick Start](#quick-start)
@@ -44,8 +45,8 @@ const params = {
     schema_file: "./schemas/example.json",
     input_markdown: "# Example Content",
     input_markdown_file: "./input/example.md",
-    destination_path: "./output"
-  }
+    destination_path: "./output",
+  },
 };
 
 // Generate the prompt
@@ -79,12 +80,15 @@ Templates are markdown files that can include variables in the format `{variable
 # Project Documentation
 
 ## Input Content
+
 {input_markdown}
 
 ## Schema Definition
+
 {schema_file}
 
 ## Output Location
+
 {destination_path}
 ```
 
@@ -100,7 +104,7 @@ const params = {
   variables: {
     // ... variables ...
   },
-  multipleFiles: true
+  multipleFiles: true,
 };
 ```
 
@@ -114,7 +118,7 @@ const params = {
   variables: {
     // ... variables ...
   },
-  structured: true
+  structured: true,
 };
 ```
 
@@ -160,8 +164,8 @@ Enable debug logging:
 
 ```typescript
 const manager = new PromptManager({
-  debug: true
+  debug: true,
 });
 ```
 
-Check the console output for detailed information about the processing steps. 
+Check the console output for detailed information about the processing steps.

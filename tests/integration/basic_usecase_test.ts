@@ -1,7 +1,7 @@
 import { assertEquals, assertExists } from "@std/assert";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { PromptManager } from "../../src/core/prompt_manager.ts";
-import type { PromptParams } from "../../src/types/prompt_params.ts";
+import type { PromptParams as _PromptParams } from "../../src/types/prompt_params.ts";
 
 const _logger = new BreakdownLogger();
 
@@ -15,7 +15,10 @@ Deno.test("Basic Use Case Tests", async (t) => {
     };
 
     const manager = new PromptManager();
-    const result = await manager.generatePrompt("tests/fixtures/templates/basic_template.md", variables);
+    const result = await manager.generatePrompt(
+      "tests/fixtures/templates/basic_template.md",
+      variables,
+    );
 
     assertExists(result);
     assertEquals(result.success, true);
@@ -36,7 +39,10 @@ Deno.test("Basic Use Case Tests", async (t) => {
     };
 
     const manager = new PromptManager();
-    const result = await manager.generatePrompt("tests/fixtures/templates/file_template.md", variables);
+    const result = await manager.generatePrompt(
+      "tests/fixtures/templates/file_template.md",
+      variables,
+    );
 
     assertExists(result);
     assertEquals(result.success, true);
@@ -57,7 +63,10 @@ Deno.test("Basic Use Case Tests", async (t) => {
     };
 
     const manager = new PromptManager();
-    const result = await manager.generatePrompt("tests/fixtures/templates/markdown_template.md", variables);
+    const result = await manager.generatePrompt(
+      "tests/fixtures/templates/markdown_template.md",
+      variables,
+    );
 
     assertExists(result);
     assertEquals(result.success, true);

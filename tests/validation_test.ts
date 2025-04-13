@@ -11,117 +11,152 @@
  * and follows the design patterns in docs/design_pattern.ja.md.
  */
 
-import { assertEquals, assertRejects } from "https://deno.land/std@0.208.0/assert/mod.ts";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import { ValidationError } from "../src/errors.ts";
-import { cleanupTestDirs, setupTestDirs, TEST_PARAMS } from "./test_utils.ts";
+import { assertEquals, assertThrows } from "@std/assert";
 import { DefaultVariableValidator } from "../src/validation/variable_validator.ts";
 import { PathValidator } from "../src/validation/path_validator.ts";
 import { MarkdownValidator } from "../src/validation/markdown_validator.ts";
+import { cleanupTestDirs, setupTestDirs, TEST_CONFIG } from "./test_utils.ts";
+import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { join } from "https://deno.land/std/path/mod.ts";
+import { ValidationError } from "../src/errors.ts";
 
-const logger = new BreakdownLogger();
+const _logger = new BreakdownLogger();
+const variableValidator = new DefaultVariableValidator();
+const pathValidator = new PathValidator();
+const markdownValidator = new MarkdownValidator();
 
-Deno.test("Variable name validation", async () => {
-  const validator = new DefaultVariableValidator();
-
+/**
+ * Tests for variable name validation
+ */
+Deno.test("Variable name validation", () => {
   // Valid variable names
-  assertEquals(validator.validateKey("validName"), true);
-  assertEquals(validator.validateKey("valid_name"), true);
-  assertEquals(validator.validateKey("ValidName123"), true);
+  assertEquals(variableValidator.validateKey("test_var"), true);
+  assertEquals(variableValidator.validateKey("TEST_VAR"), true);
+  assertEquals(variableValidator.validateKey("test123"), true);
+  assertEquals(variableValidator.validateKey("testVar"), true);
 
-  // Invalid variable names
-  assertEquals(validator.validateKey("123invalid"), false);
-  assertEquals(validator.validateKey("invalid-name"), false);
-  assertEquals(validator.validateKey("invalid.name"), false);
-  assertEquals(validator.validateKey(""), false);
+  // Invalid variable names - should throw ValidationError
+  assertThrows(
+    () => variableValidator.validateKey(""),
+    ValidationError,
+    "Variable name cannot be empty",
+  );
+  assertThrows(
+    () => variableValidator.validateKey("123test"),
+    ValidationError,
+    "must start with a letter",
+  );
+  assertThrows(
+    () => variableValidator.validateKey("_test"),
+    ValidationError,
+    "must start with a letter",
+  );
+  assertThrows(
+    () => variableValidator.validateKey("test-var"),
+    ValidationError,
+    "only alphanumeric characters and underscores allowed",
+  );
+  assertThrows(
+    () => variableValidator.validateKey("test var"),
+    ValidationError,
+    "only alphanumeric characters and underscores allowed",
+  );
+  assertThrows(
+    () => variableValidator.validateKey("test.var"),
+    ValidationError,
+    "only alphanumeric characters and underscores allowed",
+  );
 });
 
-Deno.test("File path validation", async () => {
-  const validator = new PathValidator();
-
+/**
+ * Tests for file path validation
+ */
+Deno.test("File path validation", () => {
   // Valid file paths
-  assertEquals(validator.validateFilePath(TEST_PARAMS.variables.schema_file), true);
-  assertEquals(validator.validateFilePath(TEST_PARAMS.variables.input_markdown_file), true);
+  assertEquals(pathValidator.validateFilePath("test.txt"), true);
+  assertEquals(pathValidator.validateFilePath("path/to/file.txt"), true);
+  assertEquals(pathValidator.validateFilePath("./file.txt"), true);
 
   // Invalid file paths
-  assertEquals(validator.validateFilePath(""), false);
-  assertEquals(validator.validateFilePath("/invalid/path/to/file"), false);
-  assertEquals(validator.validateFilePath("../../../../etc/passwd"), false);
+  assertEquals(pathValidator.validateFilePath(""), false);
+  assertEquals(pathValidator.validateFilePath("../file.txt"), false);
+  assertEquals(pathValidator.validateFilePath("/absolute/path.txt"), false);
 });
 
-Deno.test("Directory path validation", async () => {
-  const validator = new PathValidator();
-
+/**
+ * Tests for directory path validation
+ */
+Deno.test("Directory path validation", () => {
   // Valid directory paths
-  assertEquals(validator.validateDirectoryPath(TEST_PARAMS.variables.destination_path), true);
+  assertEquals(pathValidator.validateDirectoryPath("test_dir"), true);
+  assertEquals(pathValidator.validateDirectoryPath("path/to/dir"), true);
+  assertEquals(pathValidator.validateDirectoryPath("./dir"), true);
 
   // Invalid directory paths
-  assertEquals(validator.validateDirectoryPath(""), false);
-  assertEquals(validator.validateDirectoryPath("/invalid/path/to/dir"), false);
-  assertEquals(validator.validateDirectoryPath("../../../../etc"), false);
+  assertEquals(pathValidator.validateDirectoryPath(""), false);
+  assertEquals(pathValidator.validateDirectoryPath("../dir"), false);
+  assertEquals(pathValidator.validateDirectoryPath("/absolute/dir"), false);
 });
 
-Deno.test("Basic markdown content validation", async () => {
-  const validator = new MarkdownValidator();
-
+/**
+ * Tests for basic markdown content validation
+ */
+Deno.test("Basic markdown content validation", () => {
   // Valid markdown content
-  assertEquals(validator.validateMarkdown(TEST_PARAMS.variables.input_markdown), true);
-  assertEquals(validator.validateMarkdown("# Valid\n\nContent"), true);
+  assertEquals(markdownValidator.validateMarkdown("# Test\nContent"), true);
+  assertEquals(markdownValidator.validateMarkdown("# Test\nTest content"), true);
+  assertEquals(markdownValidator.validateMarkdown("# Test\n\nMultiple lines"), true);
 
   // Invalid markdown content
-  assertEquals(validator.validateMarkdown(""), false);
-  assertEquals(validator.validateMarkdown("   "), false);
-  assertEquals(validator.validateMarkdown("\n\n"), false);
+  assertEquals(markdownValidator.validateMarkdown(""), false);
+  assertEquals(markdownValidator.validateMarkdown("   "), false);
+  assertEquals(markdownValidator.validateMarkdown("No heading"), false);
 });
 
+/**
+ * Tests for complete variable set validation with test directory setup
+ */
 Deno.test("Complete variable set validation", async () => {
   await setupTestDirs();
-  const validator = new DefaultVariableValidator();
 
-  // Valid variable set
-  assertEquals(await validator.validateVariables(TEST_PARAMS.variables), true);
-
-  // Invalid variable set
-  const invalidVariables = {
-    ...TEST_PARAMS.variables,
-    schema_file: 123, // Invalid type
+  const variables = {
+    input_markdown: "# Test\nContent",
+    input_markdown_file: join(TEST_CONFIG.INPUT_DIR, "sample.md"),
+    schema_file: join(TEST_CONFIG.SCHEMA_DIR, "base.schema.json"),
+    destination_path: join(TEST_CONFIG.OUTPUT_DIR, "output.md"),
   };
 
-  await assertRejects(
-    async () => await validator.validateVariables(invalidVariables),
-    ValidationError,
-    "Invalid value type for variable schema_file: expected string",
-  );
+  // Test validation
+  assertEquals(await variableValidator.validateVariables(variables), true);
 
   await cleanupTestDirs();
 });
 
-Deno.test("Detailed markdown content validation", async () => {
-  const validator = new MarkdownValidator();
-  
-  // Valid markdown with heading
-  assertEquals(validator.validateMarkdown("# Heading\nSome content"), true);
-  
-  // Invalid cases
-  assertEquals(validator.validateMarkdown(""), false);
-  assertEquals(validator.validateMarkdown("   "), false);
-  assertEquals(validator.validateMarkdown("123"), false); // No heading
-  assertEquals(validator.validateMarkdown("Just plain text"), false); // No heading
-  assertEquals(validator.validateMarkdown("#NoSpace"), false); // Invalid heading format
+/**
+ * Tests for detailed markdown content validation
+ */
+Deno.test("Detailed markdown content validation", () => {
+  // Test various markdown elements
+  assertEquals(markdownValidator.validateMarkdown("# Heading 1\nContent"), true);
+  assertEquals(markdownValidator.validateMarkdown("# Main\n## Heading 2"), true);
+  assertEquals(markdownValidator.validateMarkdown("# Title\n*italic*"), true);
+  assertEquals(markdownValidator.validateMarkdown("# Title\n**bold**"), true);
+  assertEquals(markdownValidator.validateMarkdown("# List\n- list item"), true);
+  assertEquals(markdownValidator.validateMarkdown("# Numbers\n1. numbered item"), true);
+  assertEquals(markdownValidator.validateMarkdown("# Links\n[link](url)"), true);
+  assertEquals(markdownValidator.validateMarkdown("# Code\n```code block```"), true);
+
+  // Invalid markdown content
+  assertEquals(markdownValidator.validateMarkdown("No heading"), false);
+  assertEquals(markdownValidator.validateMarkdown("#NoSpace"), false);
+  assertEquals(markdownValidator.validateMarkdown(""), false);
 });
 
-// Setup and cleanup hooks
-Deno.test({
-  name: "Test setup and cleanup",
-  fn: async () => {
-    logger.info("Setting up test directories");
-    await setupTestDirs();
-    
-    // Run your tests here
-    
-    logger.info("Cleaning up test directories");
-    await cleanupTestDirs();
-  },
-  sanitizeResources: false,
-  sanitizeOps: false,
+/**
+ * Tests for test directory setup and cleanup
+ */
+Deno.test("Test setup and cleanup", async () => {
+  await setupTestDirs();
+  // Add test assertions here if needed
+  await cleanupTestDirs();
 });

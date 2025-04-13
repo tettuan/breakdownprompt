@@ -8,43 +8,42 @@
  */
 
 import { ValidationError } from "../errors.ts";
-import type { Variables } from "../types.ts";
-import {
-  ValidVariableKey,
-  FilePath,
-  DirectoryPath,
+import type {
+  DirectoryPath as _DirectoryPath,
+  FilePath as _FilePath,
   MarkdownText,
-  VariableValidator as IVariableValidator,
-} from "../types/variables.ts";
+  Variables,
+} from "../types.ts";
+import type { ValidVariableKey as _ValidVariableKey } from "../types.ts";
+import type { VariableValidator as IVariableValidator } from "../types.ts";
+
+// Re-export ValidationError
+export { ValidationError };
+
+const INVALID_PATH_CHARS = /[<>"|?*\\]/;
 
 /**
  * Base class for variable validation
  * Provides common validation functionality
  */
-export abstract class VariableValidator {
-  constructor() {
-    // Remove the logger initialization
-  }
-
+export abstract class VariableValidator implements IVariableValidator {
   /**
    * Validates a variable name according to the rules:
    * - Only alphanumeric characters and underscores are allowed
    * - Must start with a letter
    * - Case sensitive
    */
-  validateKey(key: string): key is ValidVariableKey {
-    if (!key || key.trim().length === 0) {
-      return false;
+  validateKey(key: string): boolean {
+    if (!key) {
+      throw new ValidationError("Variable name cannot be empty");
     }
 
-    // Must start with a letter
     if (!/^[a-zA-Z]/.test(key)) {
-      return false;
+      throw new ValidationError("must start with a letter");
     }
 
-    // Only alphanumeric characters and underscores allowed
     if (!/^[a-zA-Z0-9_]+$/.test(key)) {
-      return false;
+      throw new ValidationError("only alphanumeric characters and underscores allowed");
     }
 
     return true;
@@ -56,7 +55,7 @@ export abstract class VariableValidator {
    * - Must be a valid file path format
    * - Must exist and be readable
    */
-  abstract validateFilePath(path: string): Promise<boolean>;
+  public abstract validateFilePath(path: string): Promise<boolean>;
 
   /**
    * Validates a directory path
@@ -64,53 +63,53 @@ export abstract class VariableValidator {
    * - Must be a valid directory path format
    * - Must exist and be writable
    */
-  abstract validateDirectoryPath(path: string): Promise<boolean>;
+  public abstract validateDirectoryPath(path: string): Promise<boolean>;
 
   /**
    * Validates markdown text
    * - Must not be empty
    * - Must be valid markdown format
    */
-  abstract validateMarkdownText(text: string): text is MarkdownText;
+  public abstract validateMarkdownText(text: string): text is MarkdownText;
 
   /**
    * Validates a set of variables
    * - All variable names must be valid
    * - All variable values must be valid
    */
-  async validateVariables(variables: Record<string, unknown>): Promise<boolean> {
-    try {
-      for (const [key, value] of Object.entries(variables)) {
-        if (!this.validateKey(key)) {
+  public async validateVariables(variables: Variables): Promise<boolean> {
+    for (const [key, value] of Object.entries(variables)) {
+      try {
+        this.validateKey(key);
+      } catch (error) {
+        if (error instanceof ValidationError) {
           throw new ValidationError(`Invalid variable name: ${key}`);
         }
-
-        if (typeof value !== "string") {
-          throw new ValidationError(`Invalid value type for variable ${key}: expected string`);
-        }
-
-        // Type-specific validation
-        if (key === "schema_file" || key === "input_markdown_file") {
-          if (!await this.validateFilePath(value)) {
-            throw new ValidationError(`Invalid file path for ${key}: ${value}`);
-          }
-        } else if (key === "destination_path") {
-          if (!await this.validateDirectoryPath(value)) {
-            throw new ValidationError(`Invalid directory path for ${key}: ${value}`);
-          }
-        } else if (key === "input_markdown") {
-          if (!this.validateMarkdownText(value)) {
-            throw new ValidationError(`Invalid markdown content for ${key}`);
-          }
-        }
-      }
-      return true;
-    } catch (error) {
-      if (error instanceof ValidationError) {
         throw error;
       }
-      throw new ValidationError("Unknown validation error");
+
+      if (typeof value !== "string") {
+        throw new ValidationError(`Invalid value type for variable ${key}: expected string`);
+      }
+
+      if (!value || value.trim().length === 0) {
+        throw new ValidationError(`Value for key '${key}' cannot be empty`);
+      }
+
+      if (key === "schema_file" || key === "input_markdown_file") {
+        await this.validateFilePath(value);
+      }
+
+      if (key === "destination_path") {
+        await this.validateFilePath(value);
+      }
+
+      if (key === "input_markdown") {
+        this.validateMarkdownText(value);
+      }
     }
+
+    return true;
   }
 }
 
@@ -118,46 +117,35 @@ export abstract class VariableValidator {
  * Default implementation of VariableValidator
  * Validates variable keys, file paths, directory paths, and markdown text
  */
-export class DefaultVariableValidator extends VariableValidator implements IVariableValidator {
+export class DefaultVariableValidator extends VariableValidator {
   /**
    * Validates a file path
    * - Must not be empty
    * - Must be a valid file path format
    * - Must exist and be readable
    */
-  override async validateFilePath(path: string): Promise<boolean> {
-    if (!path || path.trim().length === 0) {
-      return false;
-    }
-
-    // Basic path format validation
-    if (!/^[a-zA-Z0-9\/\._-]+$/.test(path)) {
-      return false;
-    }
-
+  public override async validateFilePath(path: string): Promise<boolean> {
     try {
-      // Check if file exists and is readable
+      if (!path || path.trim().length === 0) {
+        throw new ValidationError(`Invalid file path: ${path}`);
+      }
+
+      // Check for invalid characters
+      if (INVALID_PATH_CHARS.test(path)) {
+        throw new ValidationError(`Invalid file path: ${path}`);
+      }
+
+      // Check if path exists and is a file
       const fileInfo = await Deno.stat(path);
       if (!fileInfo.isFile) {
-        return false;
+        throw new ValidationError(`Path is not a file: ${path}`);
       }
-
-      // Check read permission
-      try {
-        const file = await Deno.open(path, { read: true });
-        try {
-          return true;
-        } finally {
-          file.close();
-        }
-      } catch (error) {
-        return false;
-      }
+      return true;
     } catch (error) {
-      if (error instanceof Deno.errors.NotFound) {
-      } else {
+      if (error instanceof ValidationError) {
+        throw error;
       }
-      return false;
+      throw new ValidationError(`Invalid file path: ${path}`);
     }
   }
 
@@ -167,36 +155,21 @@ export class DefaultVariableValidator extends VariableValidator implements IVari
    * - Must be a valid directory path format
    * - Must exist and be writable
    */
-  override async validateDirectoryPath(path: string): Promise<boolean> {
-    if (!path || path.trim().length === 0) {
-      return false;
-    }
-
-    // Basic path format validation
-    if (!/^[a-zA-Z0-9\/\._-]+$/.test(path)) {
-      return false;
-    }
-
+  public override async validateDirectoryPath(path: string): Promise<boolean> {
     try {
-      // Check if directory exists
-      const dirInfo = await Deno.stat(path);
-      if (!dirInfo.isDirectory) {
+      if (!path || path.trim().length === 0) {
         return false;
       }
 
-      // Check write permission
-      try {
-        const testFile = `${path}/.write_test_${Date.now()}`;
-        await Deno.writeTextFile(testFile, "");
-        await Deno.remove(testFile);
-        return true;
-      } catch (error) {
+      // Check for invalid characters
+      if (INVALID_PATH_CHARS.test(path)) {
         return false;
       }
-    } catch (error) {
-      if (error instanceof Deno.errors.NotFound) {
-      } else {
-      }
+
+      // Check if path exists and is a directory
+      const dirInfo = await Deno.stat(path);
+      return dirInfo.isDirectory;
+    } catch (_error) {
       return false;
     }
   }
@@ -206,18 +179,10 @@ export class DefaultVariableValidator extends VariableValidator implements IVari
    * - Must not be empty
    * - Must be valid markdown format
    */
-  override validateMarkdownText(text: string): text is MarkdownText {
-    if (!text || text.trim().length === 0) {
-      return false;
+  public override validateMarkdownText(text: string): text is MarkdownText {
+    if (!text) {
+      throw new ValidationError("Markdown text cannot be empty");
     }
-
-    // Basic markdown validation
-    // Check for common markdown elements
-    const hasMarkdownElements = /^#|^\s*[-*+]\s|^\s*\d+\.\s|^\s*>\s|^\s*`|^\s*\*\*|^\s*__|^\s*\[|^\s*!\[/.test(text);
-    if (!hasMarkdownElements) {
-      return false;
-    }
-
     return true;
   }
 }

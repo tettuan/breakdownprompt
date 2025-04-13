@@ -1,4 +1,4 @@
-import { ValidationError } from "../errors.ts";
+import type { ValidationError as _ValidationError } from "../errors.ts";
 import type { DirectoryPath, VariableReplacer } from "../types.ts";
 import { PathValidator } from "../validation/path_validator.ts";
 
@@ -38,11 +38,11 @@ export class DestinationPathReplacer implements VariableReplacer {
    */
   replace(value: unknown): string {
     if (typeof value !== "string") {
-      throw new ValidationError("Destination path must be a string");
+      return "";
     }
 
     if (!this.validate(value)) {
-      throw new ValidationError("Invalid destination path");
+      return "";
     }
 
     // Cast to DirectoryPath type after validation

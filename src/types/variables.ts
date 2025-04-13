@@ -37,9 +37,11 @@ export type MarkdownText = string & {
 /**
  * Variables represents a set of variables with their values
  */
-export type Variables = Partial<{
-  [K in ValidVariableKey]: FilePath | DirectoryPath | MarkdownText;
-}>;
+export type Variables = Partial<
+  {
+    [K in ValidVariableKey]: FilePath | DirectoryPath | MarkdownText;
+  }
+>;
 
 /**
  * Interface for validating variables
@@ -50,4 +52,4 @@ export interface VariableValidator {
   validateDirectoryPath(path: string): Promise<boolean>;
   validateMarkdownText(text: string): text is MarkdownText;
   validateVariables(variables: Variables): Promise<boolean>;
-} 
+}

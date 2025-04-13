@@ -50,6 +50,7 @@ export type ValidVariableKey = string & {
  */
 export type FilePath = string & {
   readonly _type: "file_path";
+  readonly _brand: unique symbol;
 };
 
 /**
@@ -58,6 +59,7 @@ export type FilePath = string & {
  */
 export type DirectoryPath = string & {
   readonly _type: "directory_path";
+  readonly _brand: unique symbol;
 };
 
 /**
@@ -66,6 +68,7 @@ export type DirectoryPath = string & {
  */
 export type MarkdownText = string & {
   readonly _type: "markdown_text";
+  readonly _brand: unique symbol;
 };
 
 /**
@@ -80,41 +83,10 @@ export type Variables = Partial<
   }
 >;
 
-/**
- * Custom error types for the application.
- */
-
-export class PromptError extends Error {
-  constructor(message: string, public readonly code: string) {
-    super(message);
-    this.name = "PromptError";
-  }
-}
-
-export class TemplateError extends PromptError {
-  constructor(message: string) {
-    super(message, "TEMPLATE_ERROR");
-    this.name = "TemplateError";
-  }
-}
-
-export class VariableError extends PromptError {
-  constructor(message: string) {
-    super(message, "VARIABLE_ERROR");
-    this.name = "VariableError";
-  }
-}
-
-export class FileSystemError extends PromptError {
-  constructor(message: string) {
-    super(message, "FILE_SYSTEM_ERROR");
-    this.name = "FileSystemError";
-  }
-}
-
-export class ValidationError extends PromptError {
-  constructor(message: string) {
-    super(message, "VALIDATION_ERROR");
-    this.name = "ValidationError";
-  }
+export interface VariableValidator {
+  validateFilePath(path: string): Promise<boolean>;
+  validateDirectoryPath(path: string): Promise<boolean>;
+  validateMarkdownText(text: string): text is MarkdownText;
+  validateKey(key: string): boolean;
+  validateVariables(variables: Record<string, unknown>): Promise<boolean>;
 }

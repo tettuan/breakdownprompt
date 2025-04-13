@@ -1,8 +1,12 @@
 import type { PromptParams } from "../types/prompt_params.ts";
-import type { PromptResult } from "../types/prompt_result.ts";
-import { FileSystemError, ValidationError, TemplateError } from "../errors.ts";
+import type { PromptResult as _PromptResult } from "../types/prompt_result.ts";
+import {
+  FileSystemError,
+  type TemplateError as _TemplateError,
+  ValidationError,
+} from "../errors.ts";
 import { ensureFile } from "@std/fs";
-import { exists } from "@std/fs";
+import type { exists as _exists } from "@std/fs";
 import { MarkdownValidator } from "../validation/markdown_validator.ts";
 import type { BreakdownLogger } from "@tettuan/breakdownlogger";
 
@@ -16,47 +20,58 @@ export class PromptManager {
   }
 
   public async generatePrompt(
-    templatePath: string,
-    variables: Record<string, string> = {},
-    options: {
-      validateMarkdown?: boolean;
-      preservePlaceholders?: boolean;
-    } = {}
-  ): Promise<PromptResult> {
-    const { validateMarkdown = true, preservePlaceholders = false } = options;
-
+    template: string,
+    variables: Record<string, string>,
+  ): Promise<{ success: boolean; prompt: string }> {
     try {
-      // Validate variables if provided
+      // Validate template path
+      if (!template || template.trim() === "") {
+        throw new ValidationError("Template file path is empty");
+      }
+
+      // Validate path characters
+      if (!/^[a-zA-Z0-9\/\-_\.]+$/.test(template)) {
+        throw new ValidationError("Invalid file path: Contains invalid characters");
+      }
+
+      // Prevent directory traversal
+      if (
+        template.includes("..") || template.startsWith("/") || template.startsWith("\\")
+      ) {
+        throw new ValidationError("Invalid file path: Contains directory traversal");
+      }
+
+      // Validate variables
       for (const [key, value] of Object.entries(variables)) {
+        if (!/^[a-zA-Z0-9_]+$/.test(key)) {
+          throw new ValidationError(`Invalid variable name: ${key}`);
+        }
         if (typeof value !== "string") {
           throw new ValidationError(`${key} must be a string`);
         }
-        if (key === "input_markdown" && !this.markdownValidator.validateMarkdown(value)) {
-          throw new ValidationError("Input markdown content must be a string");
+
+        // Validate file paths in variables
+        if (key.endsWith("_file") || key.endsWith("_path")) {
+          // Validate path characters
+          if (!/^[a-zA-Z0-9\/\-_\.]+$/.test(value)) {
+            throw new ValidationError(`Invalid file path in ${key}: Contains invalid characters`);
+          }
+
+          // Prevent directory traversal
+          if (value.includes("..") || value.startsWith("/") || value.startsWith("\\")) {
+            throw new ValidationError(`Invalid file path in ${key}: Contains directory traversal`);
+          }
         }
       }
 
-      // Load and validate template
-      const template = await this.loadTemplate(templatePath);
-      if (!template) {
-        throw new Error(`Template not found: ${templatePath}`);
-      }
-
-      // Replace variables
-      const prompt = await this.replaceVariables(template, variables, preservePlaceholders);
-
-      // Validate markdown if requested
-      if (validateMarkdown) {
-        await this.validateMarkdown(prompt);
-      }
-
-      return {
-        success: true,
-        prompt,
-      };
+      const content = await this.loadTemplate(template);
+      const prompt = this.replaceVariables(content, variables);
+      return { success: true, prompt };
     } catch (error) {
-      this.logger?.error(`Failed to generate prompt: ${error instanceof Error ? error.message : String(error)}`);
-      throw error;
+      if (error instanceof ValidationError || error instanceof FileSystemError) {
+        throw error;
+      }
+      throw new FileSystemError(`Template not found: ${template}`);
     }
   }
 
@@ -101,114 +116,100 @@ export class PromptManager {
   }
 
   private async loadTemplate(templateFile: string): Promise<string> {
-    // Validate template path
-    if (!/^[a-zA-Z0-9\/\-_\.]+$/.test(templateFile)) {
-      throw new ValidationError("Invalid file path: Contains invalid characters");
-    }
-
-    if (templateFile.includes("..")) {
-      throw new ValidationError("Invalid file path: Contains directory traversal");
-    }
-
     try {
-      const template = await Deno.readTextFile(templateFile);
-      if (!template.trim()) {
-        throw new TemplateError("Template cannot be empty");
+      const content = await Deno.readTextFile(templateFile);
+      if (!content || content.trim() === "") {
+        throw new ValidationError("Template is empty");
       }
-      return template;
-    } catch (error: unknown) {
-      if (error instanceof TemplateError) {
-        throw error;
+      return content;
+    } catch (error) {
+      if (error instanceof Deno.errors.NotFound) {
+        throw new FileSystemError(`Template not found: ${templateFile}`);
       }
-      if (error instanceof Deno.errors.NotFound || (error instanceof Error && error.message.includes("No such file or directory"))) {
-        throw new FileSystemError(`Failed to read template file: ${error instanceof Error ? error.message : String(error)}`);
-      }
-      const message = error instanceof Error ? error.message : String(error);
-      throw new FileSystemError(`Failed to read template file: ${message}`);
+      throw error;
     }
   }
 
-  private async replaceVariables(template: string, variables: Record<string, string> = {}, preservePlaceholders = false): Promise<string> {
-    // Process line by line to preserve trailing spaces
-    const lines = template.split(/\r?\n/);
-    const processedLines = await Promise.all(lines.map(async (line) => {
-      let processedLine = line;
-      let lastIndex = 0;
-      let result = "";
-
-      // First pass: handle escaped variables
-      processedLine = processedLine.replace(/\\{([^{}]+)\\}/g, (match) => {
-        // Remove escape characters but preserve the braces
-        return match.replace(/\\/g, "");
-      });
-
-      // Second pass: handle nested variables
-      const varRegex = /{([^{}]+)}/g;
-      let match;
-
-      while ((match = varRegex.exec(processedLine)) !== null) {
-        const [fullMatch, key] = match;
-        const matchStart = match.index;
-        const matchEnd = matchStart + fullMatch.length;
-
-        // Add content before the match
-        result += processedLine.slice(lastIndex, matchStart);
-
-        // Check if this is a nested variable
-        if (key.includes("{") && key.includes("}")) {
-          // Keep the original placeholder for nested variables
-          result += fullMatch;
-        } else if (preservePlaceholders) {
-          // Keep the original placeholder if preservePlaceholders is true
-          result += fullMatch;
-        } else if (variables.hasOwnProperty(key)) {
-          // Replace the variable with its value
-          result += variables[key];
-        } else {
-          // Remove the placeholder when no value is provided
-          result += "";
-        }
-
-        lastIndex = matchEnd;
-      }
-
-      // Add any remaining content
-      result += processedLine.slice(lastIndex);
-
-      // Preserve trailing spaces
-      const trailingSpaces = line.match(/\s*$/)?.[0] || "";
-      return result + trailingSpaces;
-    }));
-
-    // Join lines with original line endings
-    return processedLines.join("\n");
+  private replaceVariables(
+    template: string,
+    variables: Record<string, string>,
+    _preservePlaceholders = false,
+  ): string {
+    let result = template;
+    for (const [key, value] of Object.entries(variables)) {
+      const placeholder = `{${key}}`;
+      // Only escape special characters for non-markdown variables
+      const escapedValue = key === "input_markdown" ? value : value
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+      result = result.replace(new RegExp(placeholder, "g"), escapedValue);
+    }
+    return result;
   }
 
   async writePrompt(content: string, destinationPath: string): Promise<void> {
+    // Validate destination path
+    if (!destinationPath || destinationPath.trim() === "") {
+      throw new ValidationError("Empty destination path");
+    }
+
+    // Validate path characters
+    if (!/^[a-zA-Z0-9\/\-_\.]+$/.test(destinationPath)) {
+      throw new ValidationError("Invalid destination path: Contains invalid characters");
+    }
+
+    // Prevent directory traversal
+    if (
+      destinationPath.includes("..") || destinationPath.startsWith("/") ||
+      destinationPath.startsWith("\\")
+    ) {
+      throw new ValidationError("Invalid destination path: Contains directory traversal");
+    }
+
     try {
+      // Check if parent directory exists and is writable
+      const parentDir = destinationPath.substring(0, destinationPath.lastIndexOf("/"));
+      try {
+        const dirInfo = await Deno.stat(parentDir);
+        if (!dirInfo.isDirectory) {
+          throw new FileSystemError("Parent path is not a directory");
+        }
+      } catch (error: unknown) {
+        if (error instanceof Deno.errors.NotFound) {
+          throw new FileSystemError("Parent directory not found");
+        }
+        if (error instanceof Deno.errors.PermissionDenied) {
+          throw new FileSystemError("Permission denied");
+        }
+        throw new FileSystemError(
+          `Failed to access parent directory: ${
+            error instanceof Error ? error.message : String(error)
+          }`,
+        );
+      }
+
       await ensureFile(destinationPath);
       await Deno.writeTextFile(destinationPath, content);
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : String(error);
-      throw new FileSystemError(`Failed to write prompt file: ${message}`);
+      if (error instanceof Deno.errors.NotFound) {
+        throw new FileSystemError("Failed to create file: Directory not found");
+      }
+      if (error instanceof Deno.errors.PermissionDenied) {
+        throw new FileSystemError("Permission denied");
+      }
+      throw new FileSystemError(
+        `Failed to write prompt file: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
-  private async validateMarkdown(markdown: string): Promise<void> {
-    try {
-      // Basic markdown validation
-      if (!markdown.trim()) {
-        throw new Error("Generated prompt is empty");
-      }
-
-      // Check for unclosed code blocks
-      const codeBlockCount = (markdown.match(/```/g) || []).length;
-      if (codeBlockCount % 2 !== 0) {
-        throw new Error("Unclosed code block detected");
-      }
-    } catch (error) {
-      this.logger?.error(`Markdown validation failed: ${error instanceof Error ? error.message : String(error)}`);
-      throw error;
+  private validateMarkdown(markdown: string): Promise<void> {
+    if (!markdown || typeof markdown !== "string") {
+      return Promise.reject(new ValidationError("Invalid markdown content"));
     }
+    return Promise.resolve();
   }
 }

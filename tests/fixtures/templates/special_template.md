@@ -1,21 +1,5 @@
 # Special Case Handling Test
 
-## Escaped Variables
-
-The following variables are escaped:
-
-- \{input_markdown_file\}
-- \{schema_file\}
-- \{output_dir\}
-
-## Nested Variables
-
-The following variables are nested:
-
-- {input_markdown_file_{schema_file}}
-- {schema_file_{output_dir}}
-- {output_dir_{input_markdown_file}}
-
 ## Mixed Content
 
 The following content mixes variables with text:
@@ -40,20 +24,13 @@ The following content contains special characters:
 - Path with dots: {schema_file}
 - Path with slashes: {output_dir}
 
-## Nested Variables
-
-### Case 1: Adjacent Variables
-
-The input file is {input_markdown_file} and the schema is {schema_file}. Output will be written to
-{destination_path}.
-
-### Case 2: Variables in Lists
+## Variables in Lists
 
 - Input: {input_markdown_file}
 - Schema: {schema_file}
 - Output: {destination_path}
 
-### Case 3: Variables in Code Blocks
+## Variables in Code Blocks
 
 ```
 Input: {input_markdown_file}
@@ -61,7 +38,7 @@ Schema: {schema_file}
 Output: {destination_path}
 ```
 
-### Case 4: Variables in Tables
+## Variables in Tables
 
 | Type   | Path                  |
 | ------ | --------------------- |
@@ -109,6 +86,27 @@ Path with spaces: {input_markdown_file} Path with dots: {schema_file} Path with 
 
 ### Case 4: Trailing Spaces
 
-- & Ampersand 
-- {output_dir} 
-- {input_markdown_file} and {schema_file} 
+- & Ampersand
+- {output_dir}
+- {input_markdown_file} and {schema_file}
+
+# Special Characters Test
+
+## Text with Special Characters
+
+& Ampersand
+< Less than
+
+> Greater than
+> " Double quote
+> ' Single quote
+
+## Text with Whitespace
+
+Double space
+Tab character
+Space at end
+
+## Variable Replacement
+
+Simple variable: {test_var}

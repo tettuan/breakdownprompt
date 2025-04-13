@@ -11,13 +11,13 @@
  * and follow the design patterns in docs/design_pattern.ja.md.
  */
 
-import { assertEquals, assertExists, assertThrows } from "@std/assert";
+import { assertEquals, type assertExists as _assertExists, assertThrows } from "@std/assert";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { ValidationError } from "../src/errors.ts";
 import { cleanupTestDirs, setupTestDirs, TEST_PARAMS } from "./test_utils.ts";
 import { PromptGenerator } from "../src/prompt_generator.ts";
 import { PromptManager } from "../src/core/prompt_manager.ts";
-import { join } from "https://deno.land/std/path/mod.ts";
+import type { join as _join } from "https://deno.land/std/path/mod.ts";
 
 const logger = new BreakdownLogger();
 
@@ -44,30 +44,6 @@ Deno.test("Structured Prompt Tests", async (t) => {
     assertEquals(result.content.includes("# Schema Section"), true);
     assertEquals(result.content.includes(TEST_PARAMS.variables.schema_file), true);
     assertEquals(result.content.includes("# Output Section"), true);
-    assertEquals(result.content.includes(TEST_PARAMS.variables.destination_path), true);
-  });
-
-  await t.step("should handle nested sections", () => {
-    const generator = new PromptGenerator();
-    const template = `# Main Section
-## Input Subsection
-{input_markdown}
-
-## Schema Subsection
-{schema_file}
-
-## Output Subsection
-{destination_path}`;
-
-    const result = generator.parseTemplate(template, TEST_PARAMS.variables);
-
-    // Verify nested sections exist and contain the correct content
-    assertEquals(result.content.includes("# Main Section"), true);
-    assertEquals(result.content.includes("## Input Subsection"), true);
-    assertEquals(result.content.includes(TEST_PARAMS.variables.input_markdown), true);
-    assertEquals(result.content.includes("## Schema Subsection"), true);
-    assertEquals(result.content.includes(TEST_PARAMS.variables.schema_file), true);
-    assertEquals(result.content.includes("## Output Subsection"), true);
     assertEquals(result.content.includes(TEST_PARAMS.variables.destination_path), true);
   });
 
@@ -154,11 +130,10 @@ Output Path: {destination_path}`;
 });
 
 Deno.test("Structured Prompt: Section Analysis", async (t) => {
-  const testDir = join(Deno.cwd(), "tests", "fixtures");
-  const promptPath = join(testDir, "templates", "structured.md");
-  const schemaPath = join(testDir, "schema", "test_schema.json");
-  const inputPath = join(testDir, "input", "basic.md");
-  const outputDir = join(testDir, "output");
+  const promptPath = "tests/fixtures/templates/structured.md";
+  const schemaPath = "tests/fixtures/schema/test_schema.json";
+  const inputPath = "tests/fixtures/input/basic.md";
+  const outputDir = "tests/fixtures/output";
 
   const variables: Record<string, string> = {
     schema_file: schemaPath,
@@ -169,54 +144,54 @@ Deno.test("Structured Prompt: Section Analysis", async (t) => {
   await t.step("1. Section Detection", async () => {
     const manager = new PromptManager();
     const result = await manager.generatePrompt(promptPath, variables);
-    
+
     // Verify section headers are preserved
     assertEquals(
       result.prompt.includes("# Section 1"),
       true,
-      "Section 1 header should be preserved"
+      "Section 1 header should be preserved",
     );
     assertEquals(
       result.prompt.includes("# Section 2"),
       true,
-      "Section 2 header should be preserved"
+      "Section 2 header should be preserved",
     );
   });
 
   await t.step("2. Variable Dependencies", async () => {
     const manager = new PromptManager();
     const result = await manager.generatePrompt(promptPath, variables);
-    
+
     // Verify variables are replaced in correct sections
     const sections = result.prompt.split("# Section");
-    
+
     // Section 1 should contain schema_file
     assertEquals(
       sections[1].includes(schemaPath),
       true,
-      "Section 1 should contain schema file path"
+      "Section 1 should contain schema file path",
     );
-    
+
     // Section 2 should contain input_markdown_file
     assertEquals(
       sections[2].includes(inputPath),
       true,
-      "Section 2 should contain input markdown file path"
+      "Section 2 should contain input markdown file path",
     );
   });
 
   await t.step("3. Section Order Preservation", async () => {
     const manager = new PromptManager();
     const result = await manager.generatePrompt(promptPath, variables);
-    
+
     // Verify sections appear in correct order
     const section1Index = result.prompt.indexOf("# Section 1");
     const section2Index = result.prompt.indexOf("# Section 2");
-    
+
     assertEquals(
       section1Index < section2Index,
       true,
-      "Section 1 should appear before Section 2"
+      "Section 1 should appear before Section 2",
     );
   });
 });

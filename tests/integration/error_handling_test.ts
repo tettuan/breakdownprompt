@@ -1,63 +1,137 @@
-import { assertEquals, assertExists } from "@std/assert";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
+/**
+ * Integration tests for error handling in the prompt generation system.
+ * These tests verify that appropriate errors are thrown for various invalid inputs.
+ */
+
+import { assertRejects } from "@std/assert";
 import { PromptManager } from "../../src/core/prompt_manager.ts";
-import type { PromptParams } from "../../src/types/prompt_params.ts";
+import { cleanupTestDirs, setupTestDirs } from "../test_utils.ts";
+import type { DirectoryPath as _DirectoryPath, FilePath as _FilePath } from "../../src/types.ts";
+import {
+  FileSystemError as _FileSystemError,
+  ValidationError as _ValidationError,
+} from "../../src/errors.ts";
+import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 
-const _logger = new BreakdownLogger();
+const logger = new _BreakdownLogger();
+const promptManager = new PromptManager(logger);
 
-Deno.test("Error Handling Tests", async (t) => {
-  await t.step("Invalid template file path", async () => {
-    const variables = {
-      schema_file: "tests/fixtures/schema/test_schema.json",
-      input_markdown: "# Test",
-      input_markdown_file: "tests/fixtures/input/basic.md",
-      output_dir: "tests/fixtures/output",
-    };
+/**
+ * Tests that attempting to use a non-existent template file results in a FileSystemError.
+ * This ensures proper error handling when template files are missing.
+ */
+Deno.test("Error handling - missing template file", async () => {
+  logger.info("Starting test: Error handling - missing template file");
+  await setupTestDirs();
 
-    const manager = new PromptManager(_logger);
-    try {
-      await manager.generatePrompt("non_existent_file.md", variables);
-      throw new Error("Expected an error to be thrown");
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        assertEquals(error.message, "Failed to read template file: No such file or directory (os error 2): readfile 'non_existent_file.md'");
-      } else {
-        throw new Error("Expected an Error object");
-      }
-    }
+  const variables = {
+    input_markdown: "test",
+    input_markdown_file: "test.md",
+    schema_file: "schema.json",
+    destination_path: "output.md",
+  };
+
+  logger.debug("Attempting to generate prompt with non-existent template", {
+    template: "non_existent_template.md",
+    variables,
   });
 
-  await t.step("Invalid variable name", async () => {
-    const variables = {
-      "invalid@variable": "test", // Invalid variable name with special character
-      schema_file: "tests/fixtures/schema/test_schema.json",
-    };
+  await assertRejects(
+    () => promptManager.generatePrompt("non_existent_template.md", variables),
+    _FileSystemError,
+    "Template not found",
+  );
 
-    const manager = new PromptManager(_logger);
-    try {
-      await manager.generatePrompt("tests/fixtures/templates/basic_template.md", variables);
-      throw new Error("Expected an error to be thrown");
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        assertEquals(error.message, "Expected an error to be thrown");
-      } else {
-        throw new Error("Expected an Error object");
-      }
-    }
+  await cleanupTestDirs();
+  logger.info("Test completed successfully");
+});
+
+/**
+ * Tests that attempting to use a template path with directory traversal results in a ValidationError.
+ * This ensures security by preventing access to files outside the allowed directories.
+ */
+Deno.test("Error handling - invalid template path", async () => {
+  logger.info("Starting test: Error handling - invalid template path");
+  await setupTestDirs();
+
+  const variables = {
+    input_markdown: "test",
+    input_markdown_file: "test.md",
+    schema_file: "schema.json",
+    destination_path: "output.md",
+  };
+
+  logger.debug("Attempting to generate prompt with invalid template path", {
+    template: "../invalid/path.md",
+    variables,
   });
 
-  await t.step("Missing required variables", async () => {
-    const variables = {}; // Missing required variables
+  await assertRejects(
+    () => promptManager.generatePrompt("../invalid/path.md", variables),
+    _ValidationError,
+    "Invalid file path: Contains directory traversal",
+  );
 
-    const manager = new PromptManager(_logger);
-    const result = await manager.generatePrompt("tests/fixtures/templates/basic_template.md", variables);
+  await cleanupTestDirs();
+  logger.info("Test completed successfully");
+});
 
-    assertExists(result);
-    assertEquals(result.success, true);
-    // Variables should be replaced with empty strings when missing
-    assertEquals(result.prompt.includes("{schema_file}"), false);
-    assertEquals(result.prompt.includes("{input_markdown}"), false);
-    assertEquals(result.prompt.includes("{input_markdown_file}"), false);
-    assertEquals(result.prompt.includes("{output_dir}"), false);
+/**
+ * Tests that attempting to use invalid variable types results in a ValidationError.
+ * This ensures type safety by validating variable values before processing.
+ */
+Deno.test("Error handling - invalid variables", async () => {
+  logger.info("Starting test: Error handling - invalid variables");
+  await setupTestDirs();
+
+  const variables = {
+    input_markdown: 123 as unknown as string, // Invalid type
+    input_markdown_file: "test.md",
+    schema_file: "schema.json",
+    destination_path: "output.md",
+  };
+
+  logger.debug("Attempting to generate prompt with invalid variables", {
+    template: "simple.md",
+    variables,
   });
+
+  await assertRejects(
+    () => promptManager.generatePrompt("simple.md", variables),
+    _ValidationError,
+    "input_markdown must be a string",
+  );
+
+  await cleanupTestDirs();
+  logger.info("Test completed successfully");
+});
+
+/**
+ * Tests that attempting to use an empty template path results in a ValidationError.
+ * This ensures that empty or invalid template paths are properly handled.
+ */
+Deno.test("Error handling - empty template", async () => {
+  logger.info("Starting test: Error handling - empty template");
+  await setupTestDirs();
+
+  const variables = {
+    input_markdown: "test",
+    input_markdown_file: "test.md",
+    schema_file: "schema.json",
+    destination_path: "output.md",
+  };
+
+  logger.debug("Attempting to generate prompt with empty template", {
+    template: "",
+    variables,
+  });
+
+  await assertRejects(
+    () => promptManager.generatePrompt("", variables),
+    _ValidationError,
+    "Template file path is empty",
+  );
+
+  await cleanupTestDirs();
+  logger.info("Test completed successfully");
 });

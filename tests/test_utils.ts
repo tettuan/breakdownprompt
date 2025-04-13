@@ -36,7 +36,7 @@ export const TEST_PARAMS = {
     schema_file: join(TEST_CONFIG.SCHEMA_DIR, "base.schema.json"),
     input_markdown: "# Sample Markdown\nThis is a sample markdown content.",
     input_markdown_file: join(TEST_CONFIG.INPUT_DIR, "sample.md"),
-    destination_path: join(TEST_CONFIG.OUTPUT_DIR, "output"),
+    destination_path: join(TEST_CONFIG.OUTPUT_DIR, "output.md"),
   },
 };
 
@@ -72,10 +72,15 @@ export async function setupTestDirs(): Promise<void> {
       TEST_CONFIG.SCHEMA_DIR,
       TEST_CONFIG.INPUT_DIR,
       TEST_CONFIG.OUTPUT_DIR,
-      TEST_PARAMS.variables.destination_path, // Create the output subdirectory
     ]
   ) {
     try {
+      // Clean up existing directory if it exists
+      try {
+        await Deno.remove(dir, { recursive: true });
+      } catch (_error) {
+        // Ignore error if directory doesn't exist
+      }
       await Deno.mkdir(dir, { recursive: true });
       await Deno.chmod(dir, 0o777);
       logger.debug("Created directory", { path: dir });
@@ -148,6 +153,16 @@ export async function setupTestDirs(): Promise<void> {
     await Deno.chmod(join(TEST_CONFIG.INPUT_DIR, "sample.md"), 0o644);
     logger.debug("Created input markdown file", {
       path: join(TEST_CONFIG.INPUT_DIR, "sample.md"),
+    });
+
+    // Create output file
+    await Deno.writeTextFile(
+      join(TEST_CONFIG.OUTPUT_DIR, "output.md"),
+      "# Output\nThis is a placeholder output file.",
+    );
+    await Deno.chmod(join(TEST_CONFIG.OUTPUT_DIR, "output.md"), 0o644);
+    logger.debug("Created output file", {
+      path: join(TEST_CONFIG.OUTPUT_DIR, "output.md"),
     });
 
     // Create no permission file - only if it doesn't exist

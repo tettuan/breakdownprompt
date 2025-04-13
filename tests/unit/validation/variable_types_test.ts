@@ -1,13 +1,13 @@
 import { assertEquals, assertNotEquals } from "https://deno.land/std/testing/asserts.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import {
-  ValidVariableKey,
+import type {
+  DirectoryPath as _DirectoryPath,
   FilePath,
-  DirectoryPath,
   MarkdownText,
+  ValidVariableKey,
   Variables,
   VariableValidator,
-} from "../../../src/types/variables.ts";
+} from "../../../src/types.ts";
 
 const logger = new BreakdownLogger();
 
@@ -17,14 +17,12 @@ class MockVariableValidator implements VariableValidator {
     return /^[a-zA-Z][a-zA-Z0-9_]*$/.test(key);
   }
 
-  async validateFilePath(path: string): Promise<boolean> {
-    logger.debug(`Validating file path: ${path}`);
-    return path.length > 0;
+  validateFilePath(path: string): Promise<boolean> {
+    return Promise.resolve(path.length > 0);
   }
 
-  async validateDirectoryPath(path: string): Promise<boolean> {
-    logger.debug(`Validating directory path: ${path}`);
-    return path.length > 0;
+  validateDirectoryPath(path: string): Promise<boolean> {
+    return Promise.resolve(path.length > 0);
   }
 
   validateMarkdownText(text: string): text is MarkdownText {
@@ -32,9 +30,8 @@ class MockVariableValidator implements VariableValidator {
     return text.length > 0;
   }
 
-  async validateVariables(variables: Variables): Promise<boolean> {
-    logger.debug(`Validating variables: ${JSON.stringify(variables)}`);
-    return true;
+  validateVariables(variables: Variables): Promise<boolean> {
+    return Promise.resolve(Object.keys(variables).length > 0);
   }
 }
 
@@ -129,4 +126,4 @@ Deno.test("Variable Types - Variables", async (t) => {
       assertNotEquals(variables, undefined);
     }
   });
-}); 
+});

@@ -27,15 +27,3 @@ result will be saved to {output_dir}.
 
 - Using {input_markdown_file} for input
 - Output to {output_dir}
-
-## Nested Structure
-
-### Subsection 1
-
-- Using {input_markdown_file} for input
-- Following {schema_file} for validation
-
-### Subsection 2
-
-- Output to {destination_path}
-- Content from {input_markdown}

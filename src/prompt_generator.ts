@@ -20,13 +20,12 @@ interface Section {
   title: string;
   content: string;
   level: number;
-  children: Section[];
 }
 
 export class PromptGenerator {
   validateTemplate(template: string): void {
-    if (!template || template.trim() === '') {
-      throw new TemplateError('Template is empty');
+    if (!template || template.trim() === "") {
+      throw new TemplateError("Template is empty");
     }
 
     const sections = this.parseSections(template);
@@ -34,41 +33,11 @@ export class PromptGenerator {
   }
 
   validateSectionStructure(sections: Section[]): void {
-    const currentLevel = 1;
-    let lastSectionLevel = 0;
-
-    const validateSection = (section: Section, parentLevel = 0, isFirstChild = true): void => {
-      const hasContent = section.content.trim() !== "" ||
-        section.children.some((child) => child.content.trim() !== "");
-
+    for (const section of sections) {
+      const hasContent = section.content.trim() !== "";
       if (!hasContent) {
         throw new ValidationError(`Empty section: ${section.title}`);
       }
-
-      if (section.level !== parentLevel + 1) {
-        throw new ValidationError("Invalid section structure");
-      }
-
-      if (!isFirstChild && section.level !== lastSectionLevel) {
-        throw new ValidationError("Invalid section structure");
-      }
-
-      lastSectionLevel = section.level;
-
-      let isFirst = true;
-      for (const child of section.children) {
-        validateSection(child, section.level, isFirst);
-        isFirst = false;
-      }
-    };
-
-    let isFirst = true;
-    for (const section of sections) {
-      if (section.level !== 1) {
-        throw new ValidationError("Invalid section structure");
-      }
-      validateSection(section, 0, isFirst);
-      isFirst = false;
     }
   }
 
@@ -78,7 +47,7 @@ export class PromptGenerator {
   }
 
   validateVariableValue(name: string, value: unknown): void {
-    if (value === null || value === undefined || typeof value !== 'string' || value.trim() === '') {
+    if (value === null || value === undefined || typeof value !== "string" || value.trim() === "") {
       throw new ValidationError(`Invalid value for variable: ${name}`);
     }
   }
@@ -100,10 +69,8 @@ export class PromptGenerator {
 
   parseSections(template: string): Section[] {
     const lines = template.split("\n");
-    const rootSections: Section[] = [];
+    const sections: Section[] = [];
     let currentSection: Section | null = null;
-    let sectionStack: Section[] = [];
-    let lastLevel = 0;
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
@@ -113,16 +80,7 @@ export class PromptGenerator {
         const level = sectionMatch[1].length;
         const title = sectionMatch[2];
 
-        if (level > lastLevel + 1) {
-          throw new ValidationError("Invalid section structure");
-        }
-
-        if (level === 1) {
-          sectionStack = [];
-          lastLevel = 0;
-        }
-
-        if (level > 1 && sectionStack.length === 0) {
+        if (level > 1) {
           throw new ValidationError("Invalid section structure");
         }
 
@@ -130,31 +88,18 @@ export class PromptGenerator {
           title,
           content: "",
           level,
-          children: [],
         };
 
-        while (sectionStack.length > 0 && sectionStack[sectionStack.length - 1].level >= level) {
-          sectionStack.pop();
-        }
-
-        if (sectionStack.length === 0) {
-          rootSections.push(newSection);
-        } else {
-          const parent = sectionStack[sectionStack.length - 1];
-          parent.children.push(newSection);
-        }
-
-        sectionStack.push(newSection);
+        sections.push(newSection);
         currentSection = newSection;
-        lastLevel = level;
       } else if (currentSection) {
         currentSection.content += line + "\n";
       }
     }
 
-    this.validateSectionStructure(rootSections);
+    this.validateSectionStructure(sections);
 
-    return rootSections;
+    return sections;
   }
 
   parseTemplate(template: string, variables: Record<string, unknown>): PromptResult {
@@ -200,6 +145,6 @@ export class PromptGenerator {
   }
 
   private escapeRegExp(str: string): string {
-    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   }
 }

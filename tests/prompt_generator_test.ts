@@ -371,17 +371,18 @@ Deno.test("PromptGenerator - variable replacement", () => {
   const generator = new PromptGenerator();
   const template = `
 # Sample Template
+This is a sample template for testing variable replacement.
 
-## Schema
+# Schema
 {schema_file}
 
-## Input
+# Input
 {input_markdown}
 
-## Input File
+# Input File
 {input_markdown_file}
 
-## Output
+# Output
 {destination_path}
 `;
 

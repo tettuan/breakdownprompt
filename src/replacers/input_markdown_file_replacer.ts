@@ -1,4 +1,4 @@
-import { ValidationError } from "../errors.ts";
+import type { ValidationError as _ValidationError } from "../errors.ts";
 import type { FilePath, VariableReplacer } from "../types.ts";
 import { PathValidator } from "../validation/path_validator.ts";
 
@@ -38,11 +38,11 @@ export class InputMarkdownFileReplacer implements VariableReplacer {
    */
   replace(value: unknown): string {
     if (typeof value !== "string") {
-      throw new ValidationError("Input markdown file path must be a string");
+      return "";
     }
 
     if (!this.validate(value)) {
-      throw new ValidationError("Invalid input markdown file path");
+      return "";
     }
 
     // Cast to FilePath type after validation

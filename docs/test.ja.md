@@ -24,9 +24,9 @@ DEBUG=true ./scripts/local_ci.sh
 - `DEBUG=true` を指定すると、スクリプト開始時からデバッグモードが有効
 - 以下のエラー時に自動的にデバッグモードが有効になります：
   - deno.lock の再生成失敗
+  - テストの失敗
   - フォーマットチェックの失敗
   - リントチェックの失敗
-  - テストの失敗
 
 # テスト階層構造
 
@@ -56,7 +56,6 @@ tests/
 │
 ├── security/              # セキュリティテスト
 │   ├── path_injection_test.ts # パスインジェクション
-│   ├── file_access_test.ts   # ファイルアクセス
 │   └── input_validation_test.ts # 入力検証
 │
 └── fixtures/              # テスト用データ
@@ -96,7 +95,6 @@ tests/
 ### 4. セキュリティテスト (security/)
 
 - パスインジェクション対策
-- ファイルアクセス制御
 - 入力検証
 
 ### 5. テストフィクスチャ (fixtures/)
