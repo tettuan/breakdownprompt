@@ -1,0 +1,444 @@
+[0m[38;5;245mrunning 10 tests from ./tests/integration/basic_integration_test.ts[0m
+Integration - complete workflow with all variables ...
+[0m[38;5;245m------- output -------[0m
+[2025-04-13T00:12:51.566Z] [INFO] Starting test: complete workflow with all variables
+[2025-04-13T00:12:51.575Z] [INFO] Setting up test directories
+[2025-04-13T00:12:51.578Z] [INFO] Test directories setup completed
+[2025-04-13T00:12:51.579Z] [INFO] Cleaning up test directories
+[2025-04-13T00:12:51.581Z] [INFO] Test directories cleanup completed
+[2025-04-13T00:12:51.581Z] [INFO] Test completed successfully
+[0m[38;5;245m----- output end -----[0m
+Integration - complete workflow with all variables ... [0m[32mok[0m [0m[38;5;245m(15ms)[0m
+Integration - partial variables ...
+[0m[38;5;245m------- output -------[0m
+[2025-04-13T00:12:51.581Z] [INFO] Starting test: partial variables
+[2025-04-13T00:12:51.581Z] [INFO] Setting up test directories
+[2025-04-13T00:12:51.583Z] [INFO] Test directories setup completed
+[2025-04-13T00:12:51.583Z] [INFO] Cleaning up test directories
+[2025-04-13T00:12:51.583Z] [INFO] Test directories cleanup completed
+[2025-04-13T00:12:51.583Z] [INFO] Test completed successfully
+[0m[38;5;245m----- output end -----[0m
+Integration - partial variables ... [0m[32mok[0m [0m[38;5;245m(2ms)[0m
+Integration - missing variables ...
+[0m[38;5;245m------- output -------[0m
+[2025-04-13T00:12:51.584Z] [INFO] Starting test: missing variables
+[2025-04-13T00:12:51.584Z] [INFO] Setting up test directories
+[2025-04-13T00:12:51.585Z] [INFO] Test directories setup completed
+[2025-04-13T00:12:51.585Z] [INFO] Cleaning up test directories
+[2025-04-13T00:12:51.586Z] [INFO] Test directories cleanup completed
+[2025-04-13T00:12:51.586Z] [INFO] Test completed successfully
+[0m[38;5;245m----- output end -----[0m
+Integration - missing variables ... [0m[32mok[0m [0m[38;5;245m(2ms)[0m
+Integration - invalid file paths ...
+[0m[38;5;245m------- output -------[0m
+[2025-04-13T00:12:51.586Z] [INFO] Starting test: invalid file paths
+[2025-04-13T00:12:51.586Z] [INFO] Setting up test directories
+[2025-04-13T00:12:51.587Z] [INFO] Test directories setup completed
+[2025-04-13T00:12:51.587Z] [INFO] Cleaning up test directories
+[2025-04-13T00:12:51.588Z] [INFO] Test directories cleanup completed
+[2025-04-13T00:12:51.588Z] [INFO] Test completed successfully
+[0m[38;5;245m----- output end -----[0m
+Integration - invalid file paths ... [0m[32mok[0m [0m[38;5;245m(2ms)[0m
+Integration - invalid variable values ...
+[0m[38;5;245m------- output -------[0m
+[2025-04-13T00:12:51.588Z] [INFO] Starting test: invalid variable values
+[2025-04-13T00:12:51.588Z] [INFO] Setting up test directories
+[2025-04-13T00:12:51.589Z] [INFO] Test directories setup completed
+[2025-04-13T00:12:51.589Z] [INFO] Cleaning up test directories
+[2025-04-13T00:12:51.590Z] [INFO] Test directories cleanup completed
+[2025-04-13T00:12:51.590Z] [INFO] Test completed successfully
+[0m[38;5;245m----- output end -----[0m
+Integration - invalid variable values ... [0m[32mok[0m [0m[38;5;245m(1ms)[0m
+Integration - complex templates ...
+[0m[38;5;245m------- output -------[0m
+[2025-04-13T00:12:51.590Z] [INFO] Starting test: complex templates
+[2025-04-13T00:12:51.590Z] [INFO] Setting up test directories
+[2025-04-13T00:12:51.592Z] [INFO] Test directories setup completed
+[2025-04-13T00:12:51.592Z] [INFO] Cleaning up test directories
+[2025-04-13T00:12:51.592Z] [INFO] Test directories cleanup completed
+[2025-04-13T00:12:51.592Z] [INFO] Test completed successfully
+[0m[38;5;245m----- output end -----[0m
+Integration - complex templates ... [0m[32mok[0m [0m[38;5;245m(2ms)[0m
+Integration - empty variables ...
+[0m[38;5;245m------- output -------[0m
+[2025-04-13T00:12:51.593Z] [INFO] Starting test: empty variables
+[2025-04-13T00:12:51.593Z] [INFO] Setting up test directories
+[2025-04-13T00:12:51.594Z] [INFO] Test directories setup completed
+[2025-04-13T00:12:51.594Z] [INFO] Cleaning up test directories
+[2025-04-13T00:12:51.595Z] [INFO] Test directories cleanup completed
+[2025-04-13T00:12:51.595Z] [INFO] Test completed successfully
+[0m[38;5;245m----- output end -----[0m
+Integration - empty variables ... [0m[32mok[0m [0m[38;5;245m(2ms)[0m
+Integration - whitespace in variables ...
+[0m[38;5;245m------- output -------[0m
+[2025-04-13T00:12:51.595Z] [INFO] Starting test: whitespace in variables
+[2025-04-13T00:12:51.595Z] [INFO] Setting up test directories
+[2025-04-13T00:12:51.596Z] [INFO] Test directories setup completed
+[2025-04-13T00:12:51.596Z] [INFO] Cleaning up test directories
+[2025-04-13T00:12:51.597Z] [INFO] Test directories cleanup completed
+[2025-04-13T00:12:51.597Z] [INFO] Test completed successfully
+[0m[38;5;245m----- output end -----[0m
+Integration - whitespace in variables ... [0m[32mok[0m [0m[38;5;245m(2ms)[0m
+Integration - file not found ...
+[0m[38;5;245m------- output -------[0m
+[2025-04-13T00:12:51.597Z] [INFO] Starting test: file not found
+[2025-04-13T00:12:51.597Z] [INFO] Setting up test directories
+[2025-04-13T00:12:51.599Z] [INFO] Test directories setup completed
+[2025-04-13T00:12:51.599Z] [INFO] Cleaning up test directories
+[2025-04-13T00:12:51.599Z] [INFO] Test directories cleanup completed
+[2025-04-13T00:12:51.599Z] [INFO] Test completed successfully
+[0m[38;5;245m----- output end -----[0m
+Integration - file not found ... [0m[32mok[0m [0m[38;5;245m(2ms)[0m
+Integration - invalid file path ...
+[0m[38;5;245m------- output -------[0m
+[2025-04-13T00:12:51.599Z] [INFO] Starting test: invalid file path
+[2025-04-13T00:12:51.599Z] [INFO] Setting up test directories
+[2025-04-13T00:12:51.601Z] [INFO] Test directories setup completed
+[2025-04-13T00:12:51.601Z] [INFO] Cleaning up test directories
+[2025-04-13T00:12:51.602Z] [INFO] Test directories cleanup completed
+[2025-04-13T00:12:51.602Z] [INFO] Test completed successfully
+[0m[38;5;245m----- output end -----[0m
+Integration - invalid file path ... [0m[32mok[0m [0m[38;5;245m(2ms)[0m
+[0m[38;5;245mrunning 1 test from ./tests/integration/basic_usecase_test.ts[0m
+Basic Use Case Tests ...
+  Single template with basic variable replacement ... [0m[32mok[0m [0m[38;5;245m(1ms)[0m
+  Single template with file path variables ... [0m[32mok[0m [0m[38;5;245m(1ms)[0m
+  Single template with markdown content ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+Basic Use Case Tests ... [0m[32mok[0m [0m[38;5;245m(2ms)[0m
+[0m[38;5;245mrunning 1 test from ./tests/integration/basic_variable_test.ts[0m
+Basic Variable Test ...
+  Basic variable replacement ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  Special characters ... [0m[32mok[0m [0m[38;5;245m(1ms)[0m
+Basic Variable Test ... [0m[32mok[0m [0m[38;5;245m(1ms)[0m
+[0m[38;5;245mrunning 4 tests from ./tests/integration/error_handling/file_errors_test.ts[0m
+Error handling - missing template file ... [0m[32mok[0m [0m[38;5;245m(1ms)[0m
+Error handling - empty template ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+File error handling - missing template file ...
+[0m[38;5;245m------- post-test output -------[0m
+[2025-04-13T00:12:51.673Z] [INFO] Starting test: File error handling - missing template file
+[2025-04-13T00:12:51.673Z] [INFO] Setting up test directories
+[2025-04-13T00:12:51.676Z] [INFO] Test directories setup completed
+[2025-04-13T00:12:51.676Z] [INFO] Cleaning up test directories
+[2025-04-13T00:12:51.676Z] [INFO] Test directories cleanup completed
+[2025-04-13T00:12:51.677Z] [INFO] Test completed successfully
+[0m[38;5;245m----- post-test output end -----[0m
+File error handling - missing template file ... [0m[32mok[0m [0m[38;5;245m(3ms)[0m
+File error handling - empty template file ...
+[0m[38;5;245m------- post-test output -------[0m
+[2025-04-13T00:12:51.677Z] [INFO] Starting test: File error handling - empty template file
+[2025-04-13T00:12:51.677Z] [INFO] Setting up test directories
+[2025-04-13T00:12:51.678Z] [INFO] Test directories setup completed
+[2025-04-13T00:12:51.678Z] [INFO] Cleaning up test directories
+[2025-04-13T00:12:51.679Z] [INFO] Test directories cleanup completed
+[2025-04-13T00:12:51.679Z] [INFO] Test completed successfully
+[0m[38;5;245m----- post-test output end -----[0m
+File error handling - empty template file ... [0m[32mok[0m [0m[38;5;245m(2ms)[0m
+[0m[38;5;245mrunning 2 tests from ./tests/integration/error_handling/path_errors_test.ts[0m
+Path error handling - directory traversal ...
+[0m[38;5;245m------- post-test output -------[0m
+[2025-04-13T00:12:51.704Z] [INFO] Starting test: Path error handling - directory traversal
+[2025-04-13T00:12:51.704Z] [INFO] Setting up test directories
+[2025-04-13T00:12:51.707Z] [INFO] Test directories setup completed
+[2025-04-13T00:12:51.707Z] [INFO] Cleaning up test directories
+[2025-04-13T00:12:51.708Z] [INFO] Test directories cleanup completed
+[2025-04-13T00:12:51.708Z] [INFO] Test completed successfully
+[0m[38;5;245m----- post-test output end -----[0m
+Path error handling - directory traversal ... [0m[32mok[0m [0m[38;5;245m(3ms)[0m
+Path error handling - invalid characters ...
+[0m[38;5;245m------- post-test output -------[0m
+[2025-04-13T00:12:51.708Z] [INFO] Starting test: Path error handling - invalid characters
+[2025-04-13T00:12:51.708Z] [INFO] Setting up test directories
+[2025-04-13T00:12:51.710Z] [INFO] Test directories setup completed
+[2025-04-13T00:12:51.710Z] [INFO] Cleaning up test directories
+[2025-04-13T00:12:51.710Z] [INFO] Test directories cleanup completed
+[2025-04-13T00:12:51.710Z] [INFO] Test completed successfully
+[0m[38;5;245m----- post-test output end -----[0m
+Path error handling - invalid characters ... [0m[32mok[0m [0m[38;5;245m(2ms)[0m
+[0m[38;5;245mrunning 2 tests from ./tests/integration/error_handling/variable_errors_test.ts[0m
+Variable error handling - invalid variable name ...
+[0m[38;5;245m------- post-test output -------[0m
+[2025-04-13T00:12:51.735Z] [INFO] Starting test: Variable error handling - invalid variable name
+[2025-04-13T00:12:51.735Z] [INFO] Setting up test directories
+[2025-04-13T00:12:51.737Z] [INFO] Test directories setup completed
+[2025-04-13T00:12:51.738Z] [INFO] Cleaning up test directories
+[2025-04-13T00:12:51.738Z] [INFO] Test directories cleanup completed
+[2025-04-13T00:12:51.738Z] [INFO] Test completed successfully
+[0m[38;5;245m----- post-test output end -----[0m
+Variable error handling - invalid variable name ... [0m[32mok[0m [0m[38;5;245m(3ms)[0m
+Variable error handling - non-string value ...
+[0m[38;5;245m------- post-test output -------[0m
+[2025-04-13T00:12:51.739Z] [INFO] Starting test: Variable error handling - non-string value
+[2025-04-13T00:12:51.739Z] [INFO] Setting up test directories
+[2025-04-13T00:12:51.740Z] [INFO] Test directories setup completed
+[2025-04-13T00:12:51.740Z] [INFO] Cleaning up test directories
+[2025-04-13T00:12:51.741Z] [INFO] Test directories cleanup completed
+[2025-04-13T00:12:51.741Z] [INFO] Test completed successfully
+[0m[38;5;245m----- post-test output end -----[0m
+Variable error handling - non-string value ... [0m[32mok[0m [0m[38;5;245m(2ms)[0m
+[0m[38;5;245mrunning 4 tests from ./tests/integration/error_handling_test.ts[0m
+Error handling - missing template file ...
+[0m[38;5;245m------- post-test output -------[0m
+[2025-04-13T00:12:51.766Z] [INFO] Starting test: Error handling - missing template file
+[2025-04-13T00:12:51.766Z] [INFO] Setting up test directories
+[2025-04-13T00:12:51.769Z] [INFO] Test directories setup completed
+[2025-04-13T00:12:51.769Z] [INFO] Cleaning up test directories
+[2025-04-13T00:12:51.770Z] [INFO] Test directories cleanup completed
+[2025-04-13T00:12:51.770Z] [INFO] Test completed successfully
+[0m[38;5;245m----- post-test output end -----[0m
+Error handling - missing template file ... [0m[32mok[0m [0m[38;5;245m(4ms)[0m
+Error handling - invalid template path ...
+[0m[38;5;245m------- post-test output -------[0m
+[2025-04-13T00:12:51.770Z] [INFO] Starting test: Error handling - invalid template path
+[2025-04-13T00:12:51.770Z] [INFO] Setting up test directories
+[2025-04-13T00:12:51.772Z] [INFO] Test directories setup completed
+[2025-04-13T00:12:51.772Z] [INFO] Cleaning up test directories
+[2025-04-13T00:12:51.772Z] [INFO] Test directories cleanup completed
+[2025-04-13T00:12:51.772Z] [INFO] Test completed successfully
+[0m[38;5;245m----- post-test output end -----[0m
+Error handling - invalid template path ... [0m[32mok[0m [0m[38;5;245m(2ms)[0m
+Error handling - invalid variables ...
+[0m[38;5;245m------- post-test output -------[0m
+[2025-04-13T00:12:51.772Z] [INFO] Starting test: Error handling - invalid variables
+[2025-04-13T00:12:51.772Z] [INFO] Setting up test directories
+[2025-04-13T00:12:51.774Z] [INFO] Test directories setup completed
+[2025-04-13T00:12:51.774Z] [INFO] Cleaning up test directories
+[2025-04-13T00:12:51.775Z] [INFO] Test directories cleanup completed
+[2025-04-13T00:12:51.775Z] [INFO] Test completed successfully
+[0m[38;5;245m----- post-test output end -----[0m
+Error handling - invalid variables ... [0m[32mok[0m [0m[38;5;245m(2ms)[0m
+Error handling - empty template ...
+[0m[38;5;245m------- post-test output -------[0m
+[2025-04-13T00:12:51.775Z] [INFO] Starting test: Error handling - empty template
+[2025-04-13T00:12:51.775Z] [INFO] Setting up test directories
+[2025-04-13T00:12:51.776Z] [INFO] Test directories setup completed
+[2025-04-13T00:12:51.776Z] [INFO] Cleaning up test directories
+[2025-04-13T00:12:51.777Z] [INFO] Test directories cleanup completed
+[2025-04-13T00:12:51.777Z] [INFO] Test completed successfully
+[0m[38;5;245m----- post-test output end -----[0m
+Error handling - empty template ... [0m[32mok[0m [0m[38;5;245m(2ms)[0m
+[0m[38;5;245mrunning 1 test from ./tests/integration/file_integration_test.ts[0m
+File Integration Tests ...
+  should process template with file paths ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  should handle relative paths ... [0m[32mok[0m [0m[38;5;245m(1ms)[0m
+File Integration Tests ... [0m[32mok[0m [0m[38;5;245m(1ms)[0m
+[0m[38;5;245mrunning 1 test from ./tests/integration/prompt_flow_test.ts[0m
+Basic Use Case Tests ...
+  Basic prompt generation with all variables ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  Multiple variable occurrences ... [0m[32mok[0m [0m[38;5;245m(1ms)[0m
+  Structured prompt with sections ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+Basic Use Case Tests ... [0m[32mok[0m [0m[38;5;245m(2ms)[0m
+[0m[38;5;245mrunning 5 tests from ./tests/integration/prompt_manager_test.ts[0m
+PromptManager - basic functionality ...
+[0m[38;5;245m------- post-test output -------[0m
+[2025-04-13T00:12:51.849Z] [INFO] Setting up test directories
+[2025-04-13T00:12:51.852Z] [INFO] Test directories setup completed
+[2025-04-13T00:12:51.853Z] [INFO] Cleaning up test directories
+[2025-04-13T00:12:51.853Z] [INFO] Test directories cleanup completed
+[0m[38;5;245m----- post-test output end -----[0m
+PromptManager - basic functionality ... [0m[32mok[0m [0m[38;5;245m(4ms)[0m
+PromptManager - should generate prompt with valid parameters ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+PromptManager - should handle invalid variable types ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+PromptManager - should handle empty variables ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+PromptManager - should handle template with multiple sections ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+[0m[38;5;245mrunning 1 test from ./tests/integration/special_cases_test.ts[0m
+Special Cases Integration Tests ...
+  should handle empty variables ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  should handle special characters in variables ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  should handle template with multiple sections ... [0m[32mok[0m [0m[38;5;245m(1ms)[0m
+Special Cases Integration Tests ... [0m[32mok[0m [0m[38;5;245m(1ms)[0m
+[0m[38;5;245mrunning 1 test from ./tests/integration/structured_prompt_test.ts[0m
+Structured Prompt Processing Tests ...
+  Section structure parsing ... [0m[32mok[0m [0m[38;5;245m(1ms)[0m
+  Variable dependency handling ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+Structured Prompt Processing Tests ... [0m[32mok[0m [0m[38;5;245m(1ms)[0m
+[0m[38;5;245mrunning 1 test from ./tests/integration/template_link_test.ts[0m
+Template Linking Tests ...
+  should handle linked templates with shared variables ... [0m[32mok[0m [0m[38;5;245m(1ms)[0m
+  should handle template with multiple variable references ... [0m[32mok[0m [0m[38;5;245m(1ms)[0m
+Template Linking Tests ... [0m[32mok[0m [0m[38;5;245m(1ms)[0m
+[0m[38;5;245mrunning 21 tests from ./tests/prompt_generator_test.ts[0m
+Prompt Generator ...
+[0m[38;5;245m------- post-test output -------[0m
+[2025-04-13T00:12:51.944Z] [INFO] Setting up test directories
+[2025-04-13T00:12:51.946Z] [INFO] Test directories setup completed
+[0m[38;5;245m----- post-test output end -----[0m
+  should parse template with variables ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  should detect unknown variables ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  should replace variables ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  should handle missing variables ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  should handle null or undefined values ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  should handle empty template ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  should handle whitespace-only template ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  should handle multiple occurrences of the same variable ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  should handle variables with spaces ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  should handle variables with special characters ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  should handle variables with numbers ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  should handle variables with mixed case ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  should handle variables with underscores ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  should handle variables with hyphens ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  should handle variables with dots ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  should handle variables with brackets ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  should replace variables in template ... [0m[32mok[0m [0m[38;5;245m(1ms)[0m
+  should handle invalid variable values ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  should handle null variable values ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  should handle invalid variable names ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  should handle boolean variable values ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  should handle number variable values ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  should detect variables in template ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  should handle variable replacement ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  should handle variable validation ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  should handle variable names ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+[0m[38;5;245m------- post-test output -------[0m
+[2025-04-13T00:12:51.951Z] [INFO] Cleaning up test directories
+[2025-04-13T00:12:51.952Z] [INFO] Test directories cleanup completed
+[0m[38;5;245m----- post-test output end -----[0m
+Prompt Generator ... [0m[32mok[0m [0m[38;5;245m(9ms)[0m
+PromptGenerator - initialization ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+PromptGenerator - template parsing ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+PromptGenerator - variable replacement ...
+[0m[38;5;245m------- post-test output -------[0m
+[2025-04-13T00:12:51.953Z] [INFO] Starting variable replacement test
+[2025-04-13T00:12:51.953Z] [INFO] Variable replacement test completed
+[0m[38;5;245m----- post-test output end -----[0m
+PromptGenerator - variable replacement ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+PromptGenerator - unknown variable ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+PromptGenerator - invalid value type ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+PromptGenerator - value validation errors ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+PromptGenerator - variable replacement with all specified variables ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+PromptGenerator - variable naming rules ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+PromptGenerator - variable uniqueness ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+PromptGenerator - optional variables ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+Prompt Generator - basic variable replacement ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+Prompt Generator - invalid variable values ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+Prompt Generator - empty template ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+Prompt Generator - whitespace template ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+Prompt Generator - boolean variable values ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+Prompt Generator - number variable values ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+Prompt Generator - template parsing ...
+[0m[38;5;245m------- post-test output -------[0m
+[2025-04-13T00:12:51.954Z] [INFO] Starting template parsing test
+[0m[38;5;245m----- post-test output end -----[0m
+Prompt Generator - template parsing ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+Prompt Generator - partial variable replacement ...
+[0m[38;5;245m------- post-test output -------[0m
+[2025-04-13T00:12:51.954Z] [INFO] Starting partial variable replacement test
+[2025-04-13T00:12:51.954Z] [INFO] Partial variable replacement test completed
+[0m[38;5;245m----- post-test output end -----[0m
+Prompt Generator - partial variable replacement ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+Prompt Generator - invalid variable names ...
+[0m[38;5;245m------- post-test output -------[0m
+[2025-04-13T00:12:51.954Z] [INFO] Starting invalid variable names test
+[2025-04-13T00:12:51.954Z] [INFO] Invalid variable names test completed
+[0m[38;5;245m----- post-test output end -----[0m
+Prompt Generator - invalid variable names ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+Prompt Generator - variable name validation ...
+[0m[38;5;245m------- post-test output -------[0m
+[2025-04-13T00:12:51.954Z] [INFO] Starting variable name validation test
+[2025-04-13T00:12:51.954Z] [INFO] Variable name validation test completed
+[0m[38;5;245m----- post-test output end -----[0m
+Prompt Generator - variable name validation ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+[0m[38;5;245mrunning 2 tests from ./tests/structured_prompt_test.ts[0m
+Structured Prompt Tests ...
+[0m[38;5;245m------- post-test output -------[0m
+[2025-04-13T00:12:51.980Z] [INFO] Setting up test directories
+[2025-04-13T00:12:51.981Z] [INFO] Setting up test directories
+[2025-04-13T00:12:51.984Z] [INFO] Test directories setup completed
+[0m[38;5;245m----- post-test output end -----[0m
+  should parse structured prompt with sections ... [0m[32mok[0m [0m[38;5;245m(1ms)[0m
+  should handle section-specific variables ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  should handle empty sections ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  should handle invalid section structure ... [0m[32mok[0m [0m[38;5;245m(1ms)[0m
+[0m[38;5;245m------- post-test output -------[0m
+[2025-04-13T00:12:51.986Z] [INFO] Cleaning up test directories
+[2025-04-13T00:12:51.986Z] [INFO] Cleaning up test directories
+[2025-04-13T00:12:51.987Z] [INFO] Test directories cleanup completed
+[0m[38;5;245m----- post-test output end -----[0m
+Structured Prompt Tests ... [0m[32mok[0m [0m[38;5;245m(6ms)[0m
+Structured Prompt: Section Analysis ...
+  1. Section Detection ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  2. Variable Dependencies ... [0m[32mok[0m [0m[38;5;245m(1ms)[0m
+  3. Section Order Preservation ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+Structured Prompt: Section Analysis ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+[0m[38;5;245mrunning 1 test from ./tests/system/end_to_end_test.ts[0m
+End-to-end test ...
+[0m[38;5;245m------- post-test output -------[0m
+[2025-04-13T00:12:52.013Z] [INFO] Setting up test directories
+[2025-04-13T00:12:52.016Z] [INFO] Test directories setup completed
+[0m[38;5;245m----- post-test output end -----[0m
+  1. Initialize PromptManager ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  2. Generate prompt with valid parameters ... [0m[32mok[0m [0m[38;5;245m(1ms)[0m
+[0m[38;5;245m------- post-test output -------[0m
+[2025-04-13T00:12:52.017Z] [INFO] Cleaning up test directories
+[2025-04-13T00:12:52.018Z] [INFO] Test directories cleanup completed
+[0m[38;5;245m----- post-test output end -----[0m
+End-to-end test ... [0m[32mok[0m [0m[38;5;245m(5ms)[0m
+[0m[38;5;245mrunning 0 tests from ./tests/unit/validation/validation_test.ts[0m
+[0m[38;5;245mrunning 5 tests from ./tests/unit/validation/variable_types_test.ts[0m
+Variable Types - ValidVariableKey ...
+  should validate correct variable keys ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  should reject invalid variable keys ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+Variable Types - ValidVariableKey ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+Variable Types - FilePath ...
+  should validate file paths ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  should reject empty file paths ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+Variable Types - FilePath ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+Variable Types - DirectoryPath ...
+  should validate directory paths ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  should reject empty directory paths ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+Variable Types - DirectoryPath ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+Variable Types - MarkdownText ...
+  should validate markdown text ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  should reject empty markdown text ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+Variable Types - MarkdownText ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+Variable Types - Variables ...
+  should allow partial variables ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+Variable Types - Variables ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+[0m[38;5;245mrunning 1 test from ./tests/unit/validation/variable_validator_test.ts[0m
+VariableValidator ...
+  validateKey ...
+    should validate correct variable keys ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+    should reject invalid variable keys ... [0m[32mok[0m [0m[38;5;245m(1ms)[0m
+  validateKey ... [0m[32mok[0m [0m[38;5;245m(1ms)[0m
+  validateFilePath ...
+    should validate correct file paths ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+    should reject invalid file paths ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  validateFilePath ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  validateDirectoryPath ...
+    should validate correct directory paths ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+    should reject invalid directory paths ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  validateDirectoryPath ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  validateMarkdownText ...
+    should validate correct markdown text ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+    should reject invalid markdown text ... [0m[32mok[0m [0m[38;5;245m(1ms)[0m
+  validateMarkdownText ... [0m[32mok[0m [0m[38;5;245m(1ms)[0m
+  validateVariables ...
+    should validate correct variables ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+    should throw ValidationError for invalid variable names ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+    should throw ValidationError for non-string values ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  validateVariables ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+VariableValidator ... [0m[32mok[0m [0m[38;5;245m(2ms)[0m
+[0m[38;5;245mrunning 7 tests from ./tests/validation_test.ts[0m
+Variable name validation ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+File path validation ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+Directory path validation ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+Basic markdown content validation ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+Complete variable set validation ...
+[0m[38;5;245m------- post-test output -------[0m
+[2025-04-13T00:12:52.092Z] [INFO] Setting up test directories
+[2025-04-13T00:12:52.094Z] [INFO] Test directories setup completed
+[2025-04-13T00:12:52.095Z] [INFO] Cleaning up test directories
+[2025-04-13T00:12:52.095Z] [INFO] Test directories cleanup completed
+[0m[38;5;245m----- post-test output end -----[0m
+Complete variable set validation ... [0m[32mok[0m [0m[38;5;245m(3ms)[0m
+Detailed markdown content validation ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+Test setup and cleanup ...
+[0m[38;5;245m------- post-test output -------[0m
+[2025-04-13T00:12:52.095Z] [INFO] Setting up test directories
+[2025-04-13T00:12:52.097Z] [INFO] Test directories setup completed
+[2025-04-13T00:12:52.097Z] [INFO] Cleaning up test directories
+[2025-04-13T00:12:52.098Z] [INFO] Test directories cleanup completed
+[0m[38;5;245m----- post-test output end -----[0m
+Test setup and cleanup ... [0m[32mok[0m [0m[38;5;245m(2ms)[0m
+
+[0m[32mok[0m | 71 passed (77 steps) | 0 failed [0m[38;5;245m(534ms)[0m
+

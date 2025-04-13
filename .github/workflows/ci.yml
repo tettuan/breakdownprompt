@@ -41,7 +41,7 @@ jobs:
 
       - name: Run test summary
         run: |
-          deno test --json --allow-read --allow-write --allow-env > test-results.json
+          deno test --allow-read --allow-write --allow-env -- --json > test-results.json
           echo "::set-output name=test-results::$(cat test-results.json)"
 
       - name: Upload test results
