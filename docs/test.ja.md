@@ -56,15 +56,15 @@ tests/
 │
 └── 00_fixtures/              # テスト用データ
     ├── 01_prompts/           # プロンプトファイル
-    │   ├── 01_basic.md
-    │   ├── 02_with_variables.md
-    │   └── 03_invalid/
+    │   ├── 01_basic.md       # 基本的なプロンプト
+    │   ├── 02_with_variables.md  # 変数を含むプロンプト
+    │   └── 03_invalid/       # 無効なプロンプト
     ├── 02_variables/         # 変数データ
-    │   ├── 01_valid.json
-    │   └── 02_invalid.json
+    │   ├── 01_valid.json     # 有効な変数セット
+    │   └── 02_invalid.json   # 無効な変数セット
     └── 03_expected/          # 期待出力
-        ├── 01_basic_output.md
-        └── 02_variable_output.md
+        ├── 01_basic_output.md    # 基本的な出力例
+        └── 02_variable_output.md # 変数置換後の出力例
 ```
 
 ## テスト実行順序の説明
