@@ -13,7 +13,7 @@ Deno.test("Template Linking Tests", async (t) => {
       output_dir: "tests/fixtures/output",
     };
 
-    const manager = new PromptManager(_logger);
+    const manager = new PromptManager();
     const result = await manager.generatePrompt(
       "tests/fixtures/templates/valid_prompt.md",
       variables,
@@ -35,7 +35,7 @@ Deno.test("Template Linking Tests", async (t) => {
       output_dir: "tests/fixtures/output",
     };
 
-    const manager = new PromptManager(_logger);
+    const manager = new PromptManager();
     const result = await manager.generatePrompt(
       "tests/fixtures/templates/valid_prompt.md",
       variables,

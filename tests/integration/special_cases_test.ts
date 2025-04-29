@@ -13,7 +13,7 @@ Deno.test("Special Cases Integration Tests", async (t) => {
       output_dir: "test/output",
     };
 
-    const manager = new PromptManager(_logger);
+    const manager = new PromptManager();
     const result = await manager.generatePrompt(
       "tests/fixtures/templates/basic_template.md",
       variables,
@@ -35,7 +35,7 @@ Deno.test("Special Cases Integration Tests", async (t) => {
       output_dir: "test/output",
     };
 
-    const manager = new PromptManager(_logger);
+    const manager = new PromptManager();
     const result = await manager.generatePrompt(
       "tests/fixtures/templates/basic_template.md",
       variables,
@@ -54,7 +54,7 @@ Deno.test("Special Cases Integration Tests", async (t) => {
       output_dir: "test/output",
     };
 
-    const manager = new PromptManager(_logger);
+    const manager = new PromptManager();
     const result = await manager.generatePrompt(
       "tests/fixtures/templates/structured.md",
       variables,

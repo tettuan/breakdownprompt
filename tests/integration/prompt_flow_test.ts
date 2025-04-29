@@ -14,7 +14,7 @@ Deno.test("Basic Use Case Tests", async (t) => {
       output_dir: "tests/fixtures/output",
     };
 
-    const manager = new PromptManager(_logger);
+    const manager = new PromptManager();
     const result = await manager.generatePrompt(
       "tests/fixtures/templates/basic_template.md",
       variables,
@@ -33,7 +33,7 @@ Deno.test("Basic Use Case Tests", async (t) => {
       input_markdown_file: "tests/fixtures/input/basic.md",
     };
 
-    const manager = new PromptManager(_logger);
+    const manager = new PromptManager();
     const result = await manager.generatePrompt(
       "tests/fixtures/templates/basic_template.md",
       variables,
@@ -58,7 +58,7 @@ Deno.test("Basic Use Case Tests", async (t) => {
       output_dir: "tests/fixtures/output",
     };
 
-    const manager = new PromptManager(_logger);
+    const manager = new PromptManager();
     const result = await manager.generatePrompt(
       "tests/fixtures/templates/basic_template.md",
       variables,

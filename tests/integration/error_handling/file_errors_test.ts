@@ -5,7 +5,7 @@ import { cleanupTestDirs, setupTestDirs } from "../../test_utils.ts";
 import { FileSystemError } from "../../../src/errors.ts";
 
 const logger = new BreakdownLogger();
-const promptManager = new PromptManager(logger);
+const promptManager = new PromptManager();
 
 Deno.test("Error handling - missing template file", async () => {
   const variables = {

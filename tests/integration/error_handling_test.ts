@@ -14,7 +14,7 @@ import {
 import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 
 const logger = new _BreakdownLogger();
-const promptManager = new PromptManager(logger);
+const promptManager = new PromptManager();
 
 /**
  * Tests that attempting to use a non-existent template file results in a FileSystemError.

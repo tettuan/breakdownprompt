@@ -18,7 +18,7 @@ import { FileSystemError, ValidationError } from "../../src/errors.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
 const logger = new BreakdownLogger();
-const promptManager = new PromptManager(logger);
+const promptManager = new PromptManager();
 
 // Test complete workflow with all variables
 Deno.test("Integration - complete workflow with all variables", async () => {

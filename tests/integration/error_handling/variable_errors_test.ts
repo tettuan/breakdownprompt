@@ -5,7 +5,7 @@ import { cleanupTestDirs, setupTestDirs } from "../../test_utils.ts";
 import { ValidationError } from "../../../src/errors.ts";
 
 const logger = new BreakdownLogger();
-const promptManager = new PromptManager(logger);
+const promptManager = new PromptManager();
 
 Deno.test("Variable error handling - invalid variable name", async () => {
   logger.info("Starting test: Variable error handling - invalid variable name");

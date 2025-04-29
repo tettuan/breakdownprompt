@@ -14,6 +14,7 @@
 import { assertEquals, assertExists, assertRejects } from "@std/assert";
 import { PromptManager } from "../../src/core/prompt_manager.ts";
 import { cleanupTestDirs, setupTestDirs } from "../test_utils.ts";
+import { ValidationError } from "../../src/errors.ts";
 
 Deno.test("PromptManager - basic functionality", async () => {
   await setupTestDirs();
@@ -38,26 +39,22 @@ Deno.test("PromptManager - basic functionality", async () => {
   await cleanupTestDirs();
 });
 
-Deno.test("PromptManager - should generate prompt with valid parameters", async () => {
+Deno.test("PromptManager - should handle invalid template path", async () => {
   const variables = {
-    schema_file: "tests/fixtures/schema/test_schema.json",
-    input_markdown: "# Test Content\nThis is a test.",
-    input_markdown_file: "tests/fixtures/input/basic.md",
-    output_dir: "tests/fixtures/output",
+    schema_file: "test-schema.json",
+    input_markdown: "# Test Content",
+    input_markdown_file: "test.md",
+    output_dir: "output",
   };
 
   const manager = new PromptManager();
-  const result = await manager.generatePrompt(
-    "tests/fixtures/templates/basic_template.md",
-    variables,
+  await assertRejects(
+    async () => {
+      await manager.generatePrompt("", variables);
+    },
+    ValidationError,
+    "Template file path is empty",
   );
-
-  assertExists(result);
-  assertEquals(typeof result.prompt, "string");
-  assertEquals(result.prompt.includes(variables.schema_file), true);
-  assertEquals(result.prompt.includes(variables.input_markdown), true);
-  assertEquals(result.prompt.includes(variables.input_markdown_file), true);
-  assertEquals(result.prompt.includes(variables.output_dir), true);
 });
 
 Deno.test("PromptManager - should handle invalid variable types", async () => {
@@ -76,7 +73,7 @@ Deno.test("PromptManager - should handle invalid variable types", async () => {
         variables as unknown as Record<string, string>,
       );
     },
-    Error,
+    ValidationError,
     "schema_file must be a string",
   );
 });
@@ -121,4 +118,42 @@ Deno.test("PromptManager - should handle template with multiple sections", async
   assertEquals(typeof result.prompt, "string");
   assertEquals(result.prompt.includes("# Section 1"), true);
   assertEquals(result.prompt.includes("# Section 2"), true);
+});
+
+Deno.test("PromptManager - should handle file URL paths", async () => {
+  const variables = {
+    schema_file: "test-schema.json",
+    input_markdown: "# Test Content",
+    input_markdown_file: "test_input.md",
+    output_dir: "test/output",
+  };
+
+  const manager = new PromptManager();
+  const result = await manager.generatePrompt(
+    "file://tests/fixtures/templates/structured.md",
+    variables,
+  );
+
+  assertExists(result);
+  assertEquals(typeof result.prompt, "string");
+  assertEquals(result.prompt.includes("# Section 1"), true);
+  assertEquals(result.prompt.includes("# Section 2"), true);
+});
+
+Deno.test("PromptManager - should handle directory traversal attempts", async () => {
+  const variables = {
+    schema_file: "test-schema.json",
+    input_markdown: "# Test Content",
+    input_markdown_file: "test_input.md",
+    output_dir: "test/output",
+  };
+
+  const manager = new PromptManager();
+  await assertRejects(
+    async () => {
+      await manager.generatePrompt("../templates/structured.md", variables);
+    },
+    ValidationError,
+    "Invalid file path: Contains directory traversal",
+  );
 });

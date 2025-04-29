@@ -13,7 +13,7 @@ Deno.test("Basic Variable Test", async (t) => {
       output_dir: "test/output",
     };
 
-    const manager = new PromptManager(_logger);
+    const manager = new PromptManager();
     const result = await manager.generatePrompt(
       "tests/fixtures/templates/basic_template.md",
       variables,
@@ -34,7 +34,7 @@ Deno.test("Basic Variable Test", async (t) => {
       output_dir: "test/output",
     };
 
-    const manager = new PromptManager(_logger);
+    const manager = new PromptManager();
     const result = await manager.generatePrompt(
       "tests/fixtures/templates/basic_template.md",
       variables,

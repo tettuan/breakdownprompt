@@ -13,7 +13,7 @@ Deno.test("Structured Prompt Processing Tests", async (t) => {
       output_dir: "test/output",
     };
 
-    const manager = new PromptManager(_logger);
+    const manager = new PromptManager();
     const result = await manager.generatePrompt(
       "tests/fixtures/templates/valid_prompt.md",
       variables,
@@ -34,7 +34,7 @@ Deno.test("Structured Prompt Processing Tests", async (t) => {
       output_dir: "test/output",
     };
 
-    const manager = new PromptManager(_logger);
+    const manager = new PromptManager();
     const result = await manager.generatePrompt(
       "tests/fixtures/templates/valid_prompt.md",
       variables,
