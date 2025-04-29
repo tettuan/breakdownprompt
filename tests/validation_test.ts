@@ -76,11 +76,34 @@ Deno.test("File path validation", () => {
   assertEquals(pathValidator.validateFilePath("test.txt"), true);
   assertEquals(pathValidator.validateFilePath("path/to/file.txt"), true);
   assertEquals(pathValidator.validateFilePath("./file.txt"), true);
+  assertEquals(pathValidator.validateFilePath("/tmp/test/file.txt"), true);
 
   // Invalid file paths
-  assertEquals(pathValidator.validateFilePath(""), false);
-  assertEquals(pathValidator.validateFilePath("../file.txt"), false);
-  assertEquals(pathValidator.validateFilePath("/absolute/path.txt"), false);
+  assertThrows(
+    () => pathValidator.validateFilePath(""),
+    ValidationError,
+    "Path cannot be empty",
+  );
+  assertThrows(
+    () => pathValidator.validateFilePath("../file.txt"),
+    ValidationError,
+    "Invalid path: Contains directory traversal",
+  );
+  assertThrows(
+    () => pathValidator.validateFilePath("/absolute/path.txt"),
+    ValidationError,
+    "Invalid path: Absolute paths are not allowed",
+  );
+  assertThrows(
+    () => pathValidator.validateFilePath("path with spaces.txt"),
+    ValidationError,
+    "Invalid path: Contains invalid characters",
+  );
+  assertThrows(
+    () => pathValidator.validateFilePath("file@name.txt"),
+    ValidationError,
+    "Invalid path: Contains invalid characters",
+  );
 });
 
 /**
@@ -91,11 +114,34 @@ Deno.test("Directory path validation", () => {
   assertEquals(pathValidator.validateDirectoryPath("test_dir"), true);
   assertEquals(pathValidator.validateDirectoryPath("path/to/dir"), true);
   assertEquals(pathValidator.validateDirectoryPath("./dir"), true);
+  assertEquals(pathValidator.validateDirectoryPath("/tmp/test/dir"), true);
 
   // Invalid directory paths
-  assertEquals(pathValidator.validateDirectoryPath(""), false);
-  assertEquals(pathValidator.validateDirectoryPath("../dir"), false);
-  assertEquals(pathValidator.validateDirectoryPath("/absolute/dir"), false);
+  assertThrows(
+    () => pathValidator.validateDirectoryPath(""),
+    ValidationError,
+    "Path cannot be empty",
+  );
+  assertThrows(
+    () => pathValidator.validateDirectoryPath("../dir"),
+    ValidationError,
+    "Invalid path: Contains directory traversal",
+  );
+  assertThrows(
+    () => pathValidator.validateDirectoryPath("/absolute/dir"),
+    ValidationError,
+    "Invalid path: Absolute paths are not allowed",
+  );
+  assertThrows(
+    () => pathValidator.validateDirectoryPath("dir with spaces"),
+    ValidationError,
+    "Invalid path: Contains invalid characters",
+  );
+  assertThrows(
+    () => pathValidator.validateDirectoryPath("dir@name"),
+    ValidationError,
+    "Invalid path: Contains invalid characters",
+  );
 });
 
 /**

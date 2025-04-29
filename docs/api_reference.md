@@ -14,17 +14,7 @@ The main class for managing prompts and template processing.
 ### Constructor
 
 ```typescript
-constructor(options?: PromptManagerOptions)
-```
-
-#### Options
-
-```typescript
-interface PromptManagerOptions {
-  debug?: boolean; // Enable debug logging
-  cacheSize?: number; // Template cache size
-  validatePaths?: boolean; // Enable path validation
-}
+constructor();
 ```
 
 ### Methods
@@ -34,137 +24,152 @@ interface PromptManagerOptions {
 Generates a prompt from a template with variable replacement.
 
 ```typescript
-async generatePrompt(params: PromptParams): Promise<PromptResult>
+async generatePrompt(
+  template: string,
+  variables: Record<string, string>
+): Promise<{ success: boolean; prompt: string }>
 ```
 
 ##### Parameters
 
-```typescript
-interface PromptParams {
-  prompt_file_path: string; // Path to the prompt template
-  variables: Variables; // Variables for replacement
-  multipleFiles?: boolean; // Generate multiple files
-  structured?: boolean; // Use structured output
-}
-```
+- `template`: Path to the template file
+- `variables`: A record of variable names and their replacement values
 
 ##### Returns
 
-```typescript
-interface PromptResult {
-  content: string; // Generated content
-  metadata?: Metadata; // Optional metadata
-  files?: GeneratedFile[]; // Generated files (if multipleFiles is true)
-}
-```
+An object containing:
 
-#### validateTemplate
+- `success`: Whether the operation was successful
+- `prompt`: The generated prompt content
 
-Validates a template file and its variables.
+##### Throws
 
-```typescript
-async validateTemplate(templatePath: string, variables: Variables): Promise<ValidationResult>
-```
+- `ValidationError`: If template or variables are invalid
+- `FileSystemError`: If the template file cannot be read
 
-##### Returns
+#### writePrompt
+
+Writes the generated prompt to a file.
 
 ```typescript
-interface ValidationResult {
-  isValid: boolean;
-  errors: ValidationError[];
-  warnings: ValidationWarning[];
-}
+async writePrompt(content: string, destinationPath: string): Promise<void>
 ```
+
+##### Parameters
+
+- `content`: The prompt content to write
+- `destinationPath`: Path where the prompt should be written
+
+##### Throws
+
+- `ValidationError`: If the destination path is invalid
+- `FileSystemError`: If the file cannot be written
 
 ## Interfaces
 
-### Variables
+### PromptParams
 
 ```typescript
-interface Variables {
-  schema_file?: string; // Path to schema file
-  input_markdown?: string; // Markdown content
-  input_markdown_file?: string; // Path to markdown file
-  destination_path?: string; // Output destination path
+interface PromptParams {
+  /** Path to the template file */
+  template_file: string;
+  /** Variables to replace in the template */
+  variables: Record<string, string>;
 }
 ```
 
-### Metadata
+### PromptResult
 
 ```typescript
-interface Metadata {
-  generatedAt: Date; // Generation timestamp
-  templateVersion: string; // Template version
-  variablesUsed: string[]; // Variables used in generation
-}
-```
-
-### GeneratedFile
-
-```typescript
-interface GeneratedFile {
-  path: string; // File path
-  content: string; // File content
-  metadata?: FileMetadata; // File-specific metadata
-}
-```
-
-## Types
-
-### ValidationError
-
-```typescript
-interface ValidationError {
-  code: string; // Error code
-  message: string; // Error message
-  context?: any; // Error context
-}
-```
-
-### ValidationWarning
-
-```typescript
-interface ValidationWarning {
-  code: string; // Warning code
-  message: string; // Warning message
-  context?: any; // Warning context
+interface PromptResult {
+  /** Whether the operation was successful */
+  success: boolean;
+  /** The generated prompt content, if successful */
+  prompt?: string;
+  /** Error message if the operation failed */
+  error?: string;
 }
 ```
 
 ## Error Handling
 
-### Error Codes
+### Error Types
 
-| Code | Description               |
-| ---- | ------------------------- |
-| E001 | Template file not found   |
-| E002 | Invalid variable format   |
-| E003 | Missing required variable |
-| E004 | File permission error     |
-| E005 | Template parsing error    |
-| E006 | Variable validation error |
+1. **ValidationError**
+   - Thrown when input validation fails
+   - Common causes: invalid file paths, invalid variable names, invalid markdown content
+
+2. **FileSystemError**
+   - Thrown when file operations fail
+   - Common causes: file not found, permission denied, directory not found
 
 ### Example Error Handling
 
 ```typescript
 try {
-  const result = await manager.generatePrompt(params);
-} catch (error) {
-  if (error.code === "E001") {
-    console.error("Template file not found:", error.context.path);
-  } else if (error.code === "E002") {
-    console.error("Invalid variable:", error.context.variable);
+  const result = await manager.generatePrompt(template, variables);
+  if (result.success) {
+    console.log("Generated prompt:", result.prompt);
+  } else {
+    console.error("Error:", result.error);
   }
-  // Handle other error codes...
+} catch (error) {
+  if (error instanceof ValidationError) {
+    console.error("Validation error:", error.message);
+  } else if (error instanceof FileSystemError) {
+    console.error("File system error:", error.message);
+  } else {
+    console.error("Unexpected error:", error.message);
+  }
 }
 ```
 
-### Debug Mode
+## Usage Examples
 
-Enable debug mode for detailed error information:
+### Basic Usage
 
 ```typescript
-const manager = new PromptManager({ debug: true });
+const manager = new PromptManager();
+
+const variables = {
+  schema_file: "./schema/implementation.json",
+  input_markdown: "# Design Document\n\nContent here",
+  input_markdown_file: "./input/design.md",
+  destination_path: "./output",
+};
+
+const result = await manager.generatePrompt("./templates/example.md", variables);
+if (result.success) {
+  console.log(result.prompt);
+}
 ```
 
-This will provide additional context in error messages and log detailed processing information.
+## Variable Processing Rules
+
+1. **Allowed Variables**
+   - `schema_file`: Valid file path
+   - `input_markdown`: Markdown content
+   - `input_markdown_file`: Valid file path
+   - `destination_path`: Valid directory path
+
+2. **Variable Detection**
+   - Simple string matching for `{variable_name}` pattern
+   - No regular expressions used
+
+3. **Replacement Rules**
+   - Same variable is replaced with same value everywhere
+   - Replacement order is arbitrary
+   - No recursive processing
+   - No variable escape detection
+
+4. **Validation Rules**
+   - Path existence check
+   - File read permission check
+   - Markdown format check
+   - Path normalization
+
+5. **Security Considerations**
+   - Minimal local file operations
+   - Path injection prevention
+   - Special character handling
+   - File access permission verification

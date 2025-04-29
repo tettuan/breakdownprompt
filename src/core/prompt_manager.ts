@@ -8,50 +8,62 @@ import {
 import { ensureFile } from "@std/fs";
 import type { exists as _exists } from "@std/fs";
 import { MarkdownValidator } from "../validation/markdown_validator.ts";
-import type { BreakdownLogger } from "@tettuan/breakdownlogger";
 
 /**
  * A class for managing and generating prompts from templates with variable replacement.
  * Handles template loading, variable validation, and prompt generation.
+ *
+ * @module
+ * @description
+ * This module provides functionality for:
+ * - Loading prompt templates from files
+ * - Validating template paths and variables
+ * - Replacing variables in templates
+ * - Generating final prompts
  */
 export class PromptManager {
   private markdownValidator: MarkdownValidator;
-  private logger?: BreakdownLogger;
 
   /**
    * Creates a new PromptManager instance.
-   * @param logger Optional logger for debug output
    */
-  constructor(logger?: BreakdownLogger) {
+  constructor() {
     this.markdownValidator = new MarkdownValidator();
-    this.logger = logger;
   }
 
   /**
    * Generates a prompt by replacing variables in a template.
-   * @param template The template string containing variable placeholders
-   * @param variables A record of variable names and their replacement values
+   * @param templatePath - Path to the template file
+   * @param variables - A record of variable names and their replacement values
    * @returns A promise that resolves to an object containing success status and the generated prompt
    * @throws {ValidationError} If template or variables are invalid
+   * @throws {FileSystemError} If the template file cannot be read
    */
   public async generatePrompt(
-    template: string,
+    templatePath: string,
     variables: Record<string, string>,
   ): Promise<{ success: boolean; prompt: string }> {
     try {
+      // Convert template path to absolute path if it's a file URL
+      const absolutePath = templatePath.startsWith("file://")
+        ? templatePath.replace("file://", "")
+        : templatePath;
+
       // Validate template path
-      if (!template || template.trim() === "") {
+      if (!absolutePath || absolutePath.trim() === "") {
         throw new ValidationError("Template file path is empty");
       }
 
-      // Validate path characters
-      if (!/^[a-zA-Z0-9\/\-_\.]+$/.test(template)) {
+      // Validate path characters for non-file-URL paths
+      if (!templatePath.startsWith("file://") && !/^[a-zA-Z0-9\/\-_\.]+$/.test(templatePath)) {
         throw new ValidationError("Invalid file path: Contains invalid characters");
       }
 
-      // Prevent directory traversal
+      // Prevent directory traversal in the original path
       if (
-        template.includes("..") || template.startsWith("/") || template.startsWith("\\")
+        !templatePath.startsWith("file://") &&
+        (templatePath.includes("..") || templatePath.startsWith("/") ||
+          templatePath.startsWith("\\"))
       ) {
         throw new ValidationError("Invalid file path: Contains directory traversal");
       }
@@ -79,14 +91,14 @@ export class PromptManager {
         }
       }
 
-      const content = await this.loadTemplate(template);
+      const content = await this.loadTemplate(absolutePath);
       const prompt = this.replaceVariables(content, variables);
       return { success: true, prompt };
     } catch (error) {
       if (error instanceof ValidationError || error instanceof FileSystemError) {
         throw error;
       }
-      throw new FileSystemError(`Template not found: ${template}`);
+      throw new FileSystemError(`Template not found: ${templatePath}`);
     }
   }
 
@@ -137,20 +149,20 @@ export class PromptManager {
 
   /**
    * Loads a template from a file.
-   * @param templateFile Path to the template file
+   * @param templatePath - Path to the template file
    * @returns A promise that resolves to the template content
    * @throws {FileSystemError} If the file cannot be read
    */
-  private async loadTemplate(templateFile: string): Promise<string> {
+  private async loadTemplate(templatePath: string): Promise<string> {
     try {
-      const content = await Deno.readTextFile(templateFile);
+      const content = await Deno.readTextFile(templatePath);
       if (!content || content.trim() === "") {
         throw new ValidationError("Template is empty");
       }
       return content;
     } catch (error) {
       if (error instanceof Deno.errors.NotFound) {
-        throw new FileSystemError(`Template not found: ${templateFile}`);
+        throw new FileSystemError(`Template not found: ${templatePath}`);
       }
       throw error;
     }
@@ -158,15 +170,13 @@ export class PromptManager {
 
   /**
    * Replaces variables in a template with their values.
-   * @param template The template string
-   * @param variables Variables to replace
-   * @param _preservePlaceholders Whether to preserve placeholders for unknown variables
+   * @param template - The template string
+   * @param variables - Variables to replace
    * @returns The template with variables replaced
    */
   private replaceVariables(
     template: string,
     variables: Record<string, string>,
-    _preservePlaceholders = false,
   ): string {
     let result = template;
     for (const [key, value] of Object.entries(variables)) {

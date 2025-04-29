@@ -17,14 +17,11 @@ import { PromptManager } from "@tettuan/breakdownprompt";
 
 const manager = new PromptManager();
 
-const result = await manager.generatePrompt({
-  template_file: "./templates/example.md",
-  variables: {
-    schema_file: "./schema/implementation.json",
-    input_markdown: "# Design Document\n\nContent here",
-    input_markdown_file: "./input/design.md",
-    destination_path: "./output",
-  },
+const result = await manager.generatePrompt("templates/example.md", {
+  schema_file: "schema/implementation.json",
+  input_markdown: "# Design Document\n\nContent here",
+  input_markdown_file: "input/design.md",
+  destination_path: "output",
 });
 
 if (result.success) {
@@ -37,7 +34,7 @@ if (result.success) {
 - Dynamic prompt template management
 - Variable replacement with type validation
 - Comprehensive error handling
-- Debug logging support
+- Path validation and security checks
 
 ## Usage Guide
 
@@ -68,36 +65,17 @@ Example template:
 {destination_path}
 ```
 
-### Advanced Usage
-
-#### Debug Logging
-
-```typescript
-import { PromptManager } from "@tettuan/breakdownprompt";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
-
-const logger = new BreakdownLogger();
-const manager = new PromptManager(logger);
-
-const params = {
-  template_file: "./templates/example.md",
-  variables: {
-    schema_file: "./schema/implementation.json",
-    input_markdown: "# Design Document\n\nContent here",
-    input_markdown_file: "./input/design.md",
-    destination_path: "./output",
-  },
-  debug: true,
-};
-
-const result = await manager.generatePrompt(params);
-```
-
-#### Error Handling
+### Error Handling
 
 ```typescript
 try {
-  const result = await manager.generatePrompt(params);
+  const result = await manager.generatePrompt("template.md", {
+    schema_file: "schema.json",
+    input_markdown: "# Content",
+    input_markdown_file: "input.md",
+    destination_path: "output",
+  });
+
   if (result.success) {
     console.log("Generated prompt:", result.prompt);
   } else {
@@ -124,20 +102,8 @@ Main class for managing prompts.
 
 ```typescript
 class PromptManager {
-  constructor(logger?: BreakdownLogger);
-  generatePrompt(params: PromptParams): Promise<PromptResult>;
-}
-```
-
-### PromptParams
-
-Parameters for prompt generation.
-
-```typescript
-interface PromptParams {
-  template_file: string; // Path to the template file
-  variables: Record<string, string>; // Variables for replacement
-  debug?: boolean; // Optional: Enable debug logging
+  constructor();
+  generatePrompt(templatePath: string, variables: Record<string, string>): Promise<PromptResult>;
 }
 ```
 
@@ -150,9 +116,6 @@ interface PromptResult {
   success: boolean; // Whether the operation was successful
   prompt?: string; // Generated prompt content
   error?: string; // Error message if failed
-  content?: string; // Alternative content field
-  variables?: string[]; // List of variables found
-  unknownVariables?: string[]; // List of unknown variables
 }
 ```
 
