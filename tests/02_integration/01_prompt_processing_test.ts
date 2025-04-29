@@ -1,197 +1,267 @@
 /**
- * Structured Prompt Tests
+ * Integration Tests
  *
  * Purpose:
- * - Verify structured prompt parsing and generation
- * - Test section handling and variable dependencies
- * - Validate structured output generation
+ * - Verify complete workflow of the prompt management system
+ * - Test integration between components
+ * - Validate end-to-end functionality
  *
  * Background:
- * These tests ensure structured prompts work as specified in docs/index.ja.md
- * and follow the design patterns in docs/design_pattern.ja.md.
+ * These tests ensure the system works as specified in docs/index.ja.md
+ * and follows the design patterns in docs/design_pattern.ja.md.
  */
 
-import { assertEquals, type assertExists as _assertExists, assertThrows } from "@std/assert";
+import { assert, assertRejects } from "@std/assert";
+import { PromptManager } from "../../src/core/prompt_manager.ts";
+import { cleanupTestDirs, setupTestDirs } from "../test_utils.ts";
+import { FileSystemError, ValidationError } from "../../src/errors.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import { ValidationError } from "../src/errors.ts";
-import { cleanupTestDirs, setupTestDirs, TEST_PARAMS } from "./test_utils.ts";
-import { PromptGenerator } from "../src/prompt_generator.ts";
-import { PromptManager } from "../src/core/prompt_manager.ts";
-import type { join as _join } from "https://deno.land/std/path/mod.ts";
 
 const logger = new BreakdownLogger();
+const promptManager = new PromptManager();
 
-Deno.test("Structured Prompt Tests", async (t) => {
-  logger.info("Setting up test directories");
+// Test complete workflow with all variables
+Deno.test("Integration - complete workflow with all variables", async () => {
+  logger.info("Starting test: complete workflow with all variables");
   await setupTestDirs();
 
-  await t.step("should parse structured prompt with sections", () => {
-    const generator = new PromptGenerator();
-    const template = `# Input Section
-{input_markdown}
+  const result = await promptManager.generatePrompt(
+    "tmp/test/templates/simple.md",
+    {
+      schema_file: "tmp/test/schema/base.schema.json",
+      input_markdown: "# Sample Markdown\nThis is a sample markdown content.",
+      input_markdown_file: "tmp/test/input/sample.md",
+      destination_path: "tmp/test/output/output",
+    },
+  );
 
-# Schema Section
-{schema_file}
+  assert(result.prompt.includes("# Sample Template"));
+  assert(result.prompt.includes("tmp/test/schema/base.schema.json"));
+  assert(result.prompt.includes("# Sample Markdown"));
+  assert(result.prompt.includes("tmp/test/input/sample.md"));
+  assert(result.prompt.includes("tmp/test/output/output"));
 
-# Output Section
-{destination_path}`;
-
-    const result = generator.parseTemplate(template, TEST_PARAMS.variables);
-
-    // Verify each section exists and contains the correct content
-    assertEquals(result.content.includes("# Input Section"), true);
-    assertEquals(result.content.includes(TEST_PARAMS.variables.input_markdown), true);
-    assertEquals(result.content.includes("# Schema Section"), true);
-    assertEquals(result.content.includes(TEST_PARAMS.variables.schema_file), true);
-    assertEquals(result.content.includes("# Output Section"), true);
-    assertEquals(result.content.includes(TEST_PARAMS.variables.destination_path), true);
-  });
-
-  await t.step("should handle section-specific variables", () => {
-    const generator = new PromptGenerator();
-    const template = `# Input Section
-Input File: {input_markdown_file}
-Content: {input_markdown}
-
-# Schema Section
-Schema File: {schema_file}
-
-# Output Section
-Output Path: {destination_path}`;
-
-    const result = generator.parseTemplate(template, TEST_PARAMS.variables);
-
-    // Verify section-specific variables are replaced correctly
-    assertEquals(
-      result.content.includes(`Input File: ${TEST_PARAMS.variables.input_markdown_file}`),
-      true,
-    );
-    assertEquals(result.content.includes(`Content: ${TEST_PARAMS.variables.input_markdown}`), true);
-    assertEquals(
-      result.content.includes(`Schema File: ${TEST_PARAMS.variables.schema_file}`),
-      true,
-    );
-    assertEquals(
-      result.content.includes(`Output Path: ${TEST_PARAMS.variables.destination_path}`),
-      true,
-    );
-  });
-
-  await t.step("should handle empty sections", () => {
-    const generator = new PromptGenerator();
-    const template = `# Input Section
-
-# Schema Section
-{schema_file}
-
-# Output Section
-`;
-
-    assertThrows(
-      () => generator.parseTemplate(template, TEST_PARAMS.variables),
-      ValidationError,
-      "Empty section: Input Section",
-    );
-  });
-
-  await t.step("should handle invalid section structure", () => {
-    const generator = new PromptGenerator();
-    const template = `# Input Section
-{input_markdown}
-## Invalid Subsection Level
-{schema_file}
-# Output Section
-{destination_path}`;
-
-    logger.debug("Template for invalid section structure test", { template });
-
-    try {
-      logger.debug("Attempting to parse template");
-      const result = generator.parseTemplate(template, TEST_PARAMS.variables);
-      logger.debug("Template parsed successfully", { result });
-      throw new Error("Expected parseTemplate to throw but it didn't");
-    } catch (error: unknown) {
-      logger.debug("Error caught during template parsing", {
-        errorType: error instanceof Error ? error.constructor.name : typeof error,
-        errorMessage: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined,
-      });
-
-      if (error instanceof ValidationError) {
-        assertEquals(error.message, "Invalid section structure");
-      } else {
-        throw error;
-      }
-    }
-  });
-
-  logger.info("Cleaning up test directories");
   await cleanupTestDirs();
+  logger.info("Test completed successfully");
 });
 
-Deno.test("Structured Prompt: Section Analysis", async (t) => {
-  const promptPath = "tests/fixtures/templates/structured.md";
-  const schemaPath = "tests/fixtures/schema/test_schema.json";
-  const inputPath = "tests/fixtures/input/basic.md";
-  const outputDir = "tests/fixtures/output";
+// Test partial variables
+Deno.test("Integration - partial variables", async () => {
+  logger.info("Starting test: partial variables");
+  await setupTestDirs();
 
-  const variables: Record<string, string> = {
-    schema_file: schemaPath,
-    input_markdown_file: inputPath,
-    destination_path: outputDir,
-  };
+  const result = await promptManager.generatePrompt(
+    "tmp/test/templates/simple.md",
+    {
+      schema_file: "tmp/test/schema/base.schema.json",
+      input_markdown: "# Sample Markdown",
+    },
+  );
 
-  await t.step("1. Section Detection", async () => {
-    const manager = new PromptManager();
-    const result = await manager.generatePrompt(promptPath, variables);
+  assert(result.prompt.includes("# Sample Template"));
+  assert(result.prompt.includes("tmp/test/schema/base.schema.json"));
+  assert(result.prompt.includes("# Sample Markdown"));
+  assert(result.prompt.includes("{input_markdown_file}"));
+  assert(result.prompt.includes("{destination_path}"));
 
-    // Verify section headers are preserved
-    assertEquals(
-      result.prompt.includes("# Section 1"),
-      true,
-      "Section 1 header should be preserved",
-    );
-    assertEquals(
-      result.prompt.includes("# Section 2"),
-      true,
-      "Section 2 header should be preserved",
-    );
-  });
+  await cleanupTestDirs();
+  logger.info("Test completed successfully");
+});
 
-  await t.step("2. Variable Dependencies", async () => {
-    const manager = new PromptManager();
-    const result = await manager.generatePrompt(promptPath, variables);
+// Test missing variables
+Deno.test("Integration - missing variables", async () => {
+  logger.info("Starting test: missing variables");
+  await setupTestDirs();
 
-    // Verify variables are replaced in correct sections
-    const sections = result.prompt.split("# Section");
+  const result = await promptManager.generatePrompt(
+    "tmp/test/templates/simple.md",
+    {},
+  );
 
-    // Section 1 should contain schema_file
-    assertEquals(
-      sections[1].includes(schemaPath),
-      true,
-      "Section 1 should contain schema file path",
-    );
+  assert(result.prompt.includes("# Sample Template"));
+  assert(result.prompt.includes("{schema_file}"));
+  assert(result.prompt.includes("{input_markdown}"));
+  assert(result.prompt.includes("{input_markdown_file}"));
+  assert(result.prompt.includes("{destination_path}"));
 
-    // Section 2 should contain input_markdown_file
-    assertEquals(
-      sections[2].includes(inputPath),
-      true,
-      "Section 2 should contain input markdown file path",
-    );
-  });
+  await cleanupTestDirs();
+  logger.info("Test completed successfully");
+});
 
-  await t.step("3. Section Order Preservation", async () => {
-    const manager = new PromptManager();
-    const result = await manager.generatePrompt(promptPath, variables);
+// Test invalid file paths
+Deno.test("Integration - invalid file paths", async () => {
+  logger.info("Starting test: invalid file paths");
+  await setupTestDirs();
 
-    // Verify sections appear in correct order
-    const section1Index = result.prompt.indexOf("# Section 1");
-    const section2Index = result.prompt.indexOf("# Section 2");
+  await assertRejects(
+    () => promptManager.generatePrompt("../invalid/path/template.md", {}),
+    ValidationError,
+    "Invalid file path: Contains directory traversal",
+  );
 
-    assertEquals(
-      section1Index < section2Index,
-      true,
-      "Section 1 should appear before Section 2",
-    );
-  });
+  await cleanupTestDirs();
+  logger.info("Test completed successfully");
+});
+
+// Test invalid variable values
+Deno.test("Integration - invalid variable values", async () => {
+  logger.info("Starting test: invalid variable values");
+  await setupTestDirs();
+
+  await assertRejects(
+    () =>
+      promptManager.generatePrompt(
+        "tmp/test/templates/simple.md",
+        {
+          schema_file: "../invalid/path/schema.json",
+          input_markdown: "# Valid Markdown",
+          input_markdown_file: "tmp/test/input/sample.md",
+          destination_path: "tmp/test/output/output",
+        },
+      ),
+    ValidationError,
+    "Invalid file path in schema_file: Contains directory traversal",
+  );
+
+  await cleanupTestDirs();
+  logger.info("Test completed successfully");
+});
+
+// Test complex templates
+Deno.test("Integration - complex templates", async () => {
+  logger.info("Starting test: complex templates");
+  await setupTestDirs();
+
+  const complexTemplate = `
+# Complex Template
+
+## Schema
+{schema_file}
+
+## Input
+{input_markdown}
+
+## Input File
+{input_markdown_file}
+
+## Output
+{destination_path}
+
+## Nested Structure
+{schema_file}
+  - {input_markdown}
+    - {input_markdown_file}
+      - {destination_path}
+`;
+
+  await Deno.writeTextFile("tmp/test/templates/complex.md", complexTemplate);
+
+  const result = await promptManager.generatePrompt(
+    "tmp/test/templates/complex.md",
+    {
+      schema_file: "tmp/test/schema/base.schema.json",
+      input_markdown: "# Sample Markdown",
+      input_markdown_file: "tmp/test/input/sample.md",
+      destination_path: "tmp/test/output/output",
+    },
+  );
+
+  assert(result.prompt.includes("# Complex Template"));
+  assert(result.prompt.includes("tmp/test/schema/base.schema.json"));
+  assert(result.prompt.includes("# Sample Markdown"));
+  assert(result.prompt.includes("tmp/test/input/sample.md"));
+  assert(result.prompt.includes("tmp/test/output/output"));
+
+  await cleanupTestDirs();
+  logger.info("Test completed successfully");
+});
+
+// Test empty variables
+Deno.test("Integration - empty variables", async () => {
+  logger.info("Starting test: empty variables");
+  await setupTestDirs();
+
+  const result = await promptManager.generatePrompt(
+    "tmp/test/templates/simple.md",
+    {
+      schema_file: "tmp/test/schema/base.schema.json",
+      input_markdown: "",
+      input_markdown_file: "tmp/test/input/sample.md",
+      destination_path: "tmp/test/output/output",
+    },
+  );
+
+  assert(result.prompt.includes("# Sample Template"));
+
+  await cleanupTestDirs();
+  logger.info("Test completed successfully");
+});
+
+// Test whitespace in variables
+Deno.test("Integration - whitespace in variables", async () => {
+  logger.info("Starting test: whitespace in variables");
+  await setupTestDirs();
+
+  const result = await promptManager.generatePrompt(
+    "tmp/test/templates/simple.md",
+    {
+      schema_file: "tmp/test/schema/base.schema.json",
+      input_markdown: "   ",
+      input_markdown_file: "tmp/test/input/sample.md",
+      destination_path: "tmp/test/output/output",
+    },
+  );
+
+  assert(result.prompt.includes("# Sample Template"));
+
+  await cleanupTestDirs();
+  logger.info("Test completed successfully");
+});
+
+// Test file not found
+Deno.test("Integration - file not found", async () => {
+  logger.info("Starting test: file not found");
+  await setupTestDirs();
+
+  await assertRejects(
+    () =>
+      promptManager.generatePrompt(
+        "tmp/test/templates/nonexistent.md",
+        {
+          schema_file: "tmp/test/schema/base.schema.json",
+          input_markdown: "# Sample Markdown",
+          input_markdown_file: "tmp/test/input/sample.md",
+          destination_path: "tmp/test/output/output",
+        },
+      ),
+    FileSystemError,
+    "Template not found",
+  );
+
+  await cleanupTestDirs();
+  logger.info("Test completed successfully");
+});
+
+// Test invalid file path
+Deno.test("Integration - invalid file path", async () => {
+  logger.info("Starting test: invalid file path");
+  await setupTestDirs();
+
+  await assertRejects(
+    () =>
+      promptManager.generatePrompt(
+        "../invalid/path/template.md",
+        {
+          schema_file: "tmp/test/schema/base.schema.json",
+          input_markdown: "# Sample Markdown",
+          input_markdown_file: "tmp/test/input/sample.md",
+          destination_path: "tmp/test/output/output",
+        },
+      ),
+    ValidationError,
+    "Invalid file path: Contains directory traversal",
+  );
+
+  await cleanupTestDirs();
+  logger.info("Test completed successfully");
 });
