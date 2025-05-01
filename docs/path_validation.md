@@ -1,159 +1,161 @@
-# Path Validation Rules
+# パス検証ルール
 
-## Overview
+## 概要
 
-This document describes the path validation rules and error messages used in the BreakdownPrompt system. These rules ensure secure and consistent handling of file and directory paths throughout the application.
+このドキュメントでは、プロンプト管理システムにおけるパス検証ルールとエラーメッセージについて説明します。これらのルールにより、アプリケーション全体で安全かつ一貫したファイルパスとディレクトリパスの取り扱いを確保します。
 
-## Path Validation Rules
+## パス検証ルール
 
-### Basic Rules
+### 基本ルール
 
-1. **Empty Paths**
-   - Empty paths are not allowed
-   - Error message: `"Path cannot be empty"`
+1. **空のパス**
+   - 空のパスは許可されない
+   - エラーメッセージ: `"パスが空です"`
 
-2. **Character Set**
-   - Allowed characters:
-     - Alphanumeric characters (`a-zA-Z0-9`)
-     - Forward slash (`/`)
-     - Hyphen (`-`)
-     - Underscore (`_`)
-     - Dot (`.`)
-   - Error message: `"Invalid path: Contains invalid characters"`
+2. **使用可能な文字**
+   - 許可される文字:
+     - 英数字 (`a-zA-Z0-9`)
+     - スラッシュ (`/`)
+     - ハイフン (`-`)
+     - アンダースコア (`_`)
+     - ドット (`.`)
+   - エラーメッセージ: `"無効なパス: 使用できない文字が含まれています"`
 
-3. **Path Traversal Prevention**
-   - Directory traversal (`..`) is not allowed
-   - Error message: `"Invalid path: Contains directory traversal"`
+3. **パストラバーサル防止**
+   - ディレクトリトラバーサル (`..`) は許可されない
+   - エラーメッセージ: `"無効なパス: ディレクトリトラバーサルが含まれています"`
 
-4. **Absolute Paths**
-   - Absolute paths (starting with `/`) are generally not allowed
-   - Exception: Paths under `/tmp` directory are allowed
-   - Error message: `"Invalid path: Absolute paths are not allowed"`
+4. **絶対パス**
+   - 絶対パス（`/`で始まる）は基本的に許可されない
+   - 例外: `/tmp`ディレクトリ以下のパスは許可
+   - エラーメッセージ: `"無効なパス: 絶対パスは許可されていません"`
 
-### File Path Specific Rules
+### ファイルパス固有のルール
 
-1. **File Existence**
-   - Path must point to an existing file
-   - Error message: `"Path is not a file: {path}"`
+1. **ファイルの存在確認**
+   - パスは既存のファイルを指している必要がある
+   - エラーメッセージ: `"ファイルが存在しません: {path}"`
 
-2. **File Accessibility**
-   - File must be readable
-   - Error message: `"File is not readable: {path}"`
+2. **ファイルのアクセス権限**
+   - ファイルは読み取り可能である必要がある
+   - エラーメッセージ: `"ファイルを読み取ることができません: {path}"`
 
-### Directory Path Specific Rules
+### ディレクトリパス固有のルール
 
-1. **Directory Existence**
-   - Path must point to an existing directory
-   - Error message: `"Path is not a directory: {path}"`
+1. **ディレクトリの存在確認**
+   - パスは既存のディレクトリを指している必要がある
+   - エラーメッセージ: `"ディレクトリが存在しません: {path}"`
 
-2. **Directory Accessibility**
-   - Directory must be writable
-   - Error message: `"Directory is not writable: {path}"`
+2. **ディレクトリのアクセス権限**
+   - ディレクトリは書き込み可能である必要がある
+   - エラーメッセージ: `"ディレクトリに書き込むことができません: {path}"`
 
-## Examples
+## 例
 
-### Valid Paths
+### 有効なパス
 
 ```typescript
-// File paths
+// ファイルパス
+"test.md";
 "test.txt";
-"path/to/file.txt";
+"test.yml";
+"path/to/file.md";
 "./file.txt";
-"/tmp/test/file.txt";
+"/tmp/test/file.yml";
 
-// Directory paths
+// ディレクトリパス
 "test_dir";
 "path/to/dir";
 "./dir";
 "/tmp/test/dir";
 ```
 
-### Invalid Paths
+### 無効なパス
 
 ```typescript
-// File paths
-""; // Empty path
-"../file.txt"; // Directory traversal
-"/absolute/path.txt"; // Absolute path
-"path with spaces.txt"; // Contains spaces
-"file@name.txt"; // Contains special characters
+// ファイルパス
+""; // 空のパス
+"../file.md"; // ディレクトリトラバーサル
+"/absolute/path.txt"; // 絶対パス
+"path with spaces.md"; // スペースを含む
+"file@name.yml"; // 特殊文字を含む
 
-// Directory paths
-""; // Empty path
-"../dir"; // Directory traversal
-"/absolute/dir"; // Absolute path
-"dir with spaces"; // Contains spaces
-"dir@name"; // Contains special characters
+// ディレクトリパス
+""; // 空のパス
+"../dir"; // ディレクトリトラバーサル
+"/absolute/dir"; // 絶対パス
+"dir with spaces"; // スペースを含む
+"dir@name"; // 特殊文字を含む
 ```
 
-## Implementation Details
+## 実装の詳細
 
-The path validation is implemented through several classes:
+パス検証は以下のクラスを通じて実装されます：
 
-1. `PathValidator` - Core path validation logic
-2. `VariableValidator` - Variable-specific path validation
-3. `DefaultVariableValidator` - Default implementation of path validation
+1. `PathValidator` - コアとなるパス検証ロジック
+2. `VariableValidator` - 変数固有のパス検証
+3. `TemplateFile` - テンプレートファイルのパス検証
 
-### Usage Example
+### 使用例
 
 ```typescript
 import { PathValidator } from "@tettuan/breakdownprompt/validation";
 
 const validator = new PathValidator();
 
-// Validate file path
-const isValidFile = validator.validateFilePath("test.txt");
+// ファイルパスの検証
+const isValidFile = validator.validateFilePath("test.md");
 
-// Validate directory path
+// ディレクトリパスの検証
 const isValidDir = validator.validateDirectoryPath("test_dir");
 ```
 
-## Error Handling
+## エラーハンドリング
 
-All path validation errors are thrown as `ValidationError` with descriptive messages. The error messages are designed to be clear and actionable, helping users understand why their path was rejected and how to fix it.
+すべてのパス検証エラーは、`ValidationError`としてスローされ、説明的なメッセージが含まれます。エラーメッセージは明確で対処可能な内容となっており、ユーザーがパスが拒否された理由と修正方法を理解できるようになっています。
 
-### Common Error Scenarios
+### 一般的なエラーシナリオ
 
-1. **Invalid Characters**
+1. **無効な文字**
    ```typescript
    try {
-     validator.validateFilePath("file@name.txt");
+     validator.validateFilePath("file@name.md");
    } catch (error) {
-     // error.message: "Invalid path: Contains invalid characters"
+     // error.message: "無効なパス: 使用できない文字が含まれています"
    }
    ```
 
-2. **Directory Traversal**
+2. **ディレクトリトラバーサル**
    ```typescript
    try {
      validator.validateFilePath("../file.txt");
    } catch (error) {
-     // error.message: "Invalid path: Contains directory traversal"
+     // error.message: "無効なパス: ディレクトリトラバーサルが含まれています"
    }
    ```
 
-3. **Absolute Path**
+3. **絶対パス**
    ```typescript
    try {
      validator.validateFilePath("/etc/passwd");
    } catch (error) {
-     // error.message: "Invalid path: Absolute paths are not allowed"
+     // error.message: "無効なパス: 絶対パスは許可されていません"
    }
    ```
 
-## Security Considerations
+## セキュリティ考慮事項
 
-1. **Path Traversal Prevention**
-   - Strict validation of path components
-   - Rejection of any path containing `..`
-   - Normalization of paths before validation
+1. **パストラバーサル防止**
+   - パスコンポーネントの厳密な検証
+   - `..`を含むパスの拒否
+   - 検証前のパスの正規化
 
-2. **File System Access**
-   - Validation of file existence and permissions
-   - Prevention of access to system directories
-   - Restriction of absolute paths
+2. **ファイルシステムアクセス**
+   - ファイルの存在と権限の検証
+   - システムディレクトリへのアクセス防止
+   - 絶対パスの制限
 
-3. **Input Validation**
-   - Strict character set validation
-   - Length validation
-   - Type checking
+3. **入力検証**
+   - 厳密な文字セット検証
+   - 長さの検証
+   - 型チェック

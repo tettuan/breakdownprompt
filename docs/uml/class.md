@@ -4,67 +4,62 @@ classDiagram
         class PromptManager {
             +generatePrompt(params: PromptParams): PromptResult
             -validateParams(params: PromptParams): boolean
-            -loadTemplate(params: PromptParams): string
-            -findUnknownVariables(template: string): string[]
-            -validatePath(path: string): boolean
-            -normalizePath(path: string): string
-            -writeToStdout(content: string): void
+            -processTemplate(params: PromptParams): string
+            -handleError(message: string): PromptResult
         }
 
         class PromptGenerator {
             -template: string
-            -variables: Map<string, VariableReplacer>
-            +parseTemplate(template: string): void
-            +replaceVariables(result: PromptResult, values: Map<string, unknown>): void
-            -validateVariables(values: Map<string, unknown>): boolean
+            -variables: Map<string, string>
+            +parseTemplate(template: string): string[]
+            +replaceVariables(variables: Map<string, string>): string
         }
 
-        class VariableReplacer {
-            <<interface>>
-            +replace(value: unknown): string
-            +validate(value: unknown): boolean
+        class TemplateFile {
+            -content: string
+            -extension: string
+            +readFile(path: string): void
+            +validateExtension(): boolean
+            +getContent(): string
+            +static isValidExtension(extension: string): boolean
         }
 
-        class SchemaFileReplacer {
-            +replace(value: unknown): string
-            +validate(value: unknown): boolean
-            -validatePath(path: string): boolean
-            -normalizePath(path: string): string
+        class VariableValidator {
+            +validateVariableName(name: string): boolean
+            +validateVariableType(name: string, value: string): boolean
+            +validateMarkdownText(text: string): boolean
         }
 
-        class InputMarkdownReplacer {
-            +replace(value: unknown): string
-            +validate(value: unknown): boolean
-            -validateMarkdown(content: string): boolean
-            -sanitizeMarkdown(content: string): string
+        class PathValidator {
+            +validateFilePath(path: string): boolean
+            +validateDirectoryPath(path: string): boolean
+            +normalizePath(path: string): string
         }
 
-        class InputMarkdownFileReplacer {
-            +replace(value: unknown): string
-            +validate(value: unknown): boolean
-            -validatePath(path: string): boolean
-            -normalizePath(path: string): string
+        class FileUtils {
+            +readFile(path: string): string
+            +writeFile(path: string, content: string): void
+            +exists(path: string): boolean
+            +isReadable(path: string): boolean
+            +getExtension(path: string): string
         }
 
-        class DestinationPathReplacer {
-            +replace(value: unknown): string
-            +validate(value: unknown): boolean
-            -validatePath(path: string): boolean
-            -normalizePath(path: string): string
+        class MarkdownValidator {
+            +validateMarkdown(content: string): boolean
+            +sanitizeMarkdown(content: string): string
         }
 
         class PromptParams {
-            +prompt_file_path: string
-            +variables: Map<string, unknown>
+            +template_file: string
+            +variables: Map<string, string>
         }
 
         class PromptResult {
-            +content: string
-            +status: "success" | "error"
-            +error: string
-            +isError(): boolean
+            +success: boolean
+            +prompt?: string
+            +error?: string
+            +static success(prompt: string): PromptResult
             +static error(message: string): PromptResult
-            +static success(content: string): PromptResult
         }
     }
 
@@ -80,7 +75,7 @@ classDiagram
             -logger: BreakdownLogger
             +testGeneratePrompt(): void
             +testValidateParams(): void
-            +testLoadTemplate(): void
+            +testProcessTemplate(): void
         }
 
         class PromptGeneratorTest {
@@ -89,23 +84,38 @@ classDiagram
             +testReplaceVariables(): void
         }
 
-        class VariableReplacerTest {
+        class TemplateFileTest {
             -logger: BreakdownLogger
-            +testReplace(): void
-            +testValidate(): void
+            +testReadFile(): void
+            +testValidateExtension(): void
+            +testInvalidExtension(): void
+        }
+
+        class ValidatorTest {
+            -logger: BreakdownLogger
+            +testVariableValidator(): void
+            +testPathValidator(): void
+            +testMarkdownValidator(): void
         }
     }
 
     PromptManager --> PromptGenerator
-    PromptGenerator --> VariableReplacer
-    VariableReplacer <|.. SchemaFileReplacer
-    VariableReplacer <|.. InputMarkdownReplacer
-    VariableReplacer <|.. InputMarkdownFileReplacer
-    VariableReplacer <|.. DestinationPathReplacer
+    PromptManager --> TemplateFile
+    PromptManager --> VariableValidator
+    PromptManager --> PathValidator
+    PromptManager --> FileUtils
+    PromptManager --> MarkdownValidator
     PromptManager --> PromptParams
-    PromptGenerator --> PromptResult
+    PromptManager --> PromptResult
+
+    PromptGenerator --> VariableValidator
+    PromptGenerator --> PathValidator
+    PromptGenerator --> MarkdownValidator
+
+    TemplateFile --> FileUtils
 
     PromptManagerTest --> BreakdownLogger
     PromptGeneratorTest --> BreakdownLogger
-    VariableReplacerTest --> BreakdownLogger
+    TemplateFileTest --> BreakdownLogger
+    ValidatorTest --> BreakdownLogger
 ```

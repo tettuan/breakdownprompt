@@ -21,15 +21,15 @@ type DirectoryPath = string & {
   readonly _type: "directory_path";
 };
 
-// 3. マークダウン形式の値の型
-type MarkdownText = string & {
-  readonly _type: "markdown_text";
+// 3. テキスト形式の値の型
+type TextContent = string & {
+  readonly _type: "text_content";
 };
 
 // 4. 変数の型定義
 type Variables = Partial<
   { // すべてのキーは任意
-    [K in ValidVariableKey]: FilePath | DirectoryPath | MarkdownText;
+    [K in ValidVariableKey]: FilePath | DirectoryPath | TextContent;
   }
 >;
 ```
@@ -49,20 +49,22 @@ type Variables = Partial<
 1. **FilePath**
    - ファイルパスを表現する型
    - 有効なファイルパス形式であることを保証
+   - 拡張子は`.md`, `.txt`, `.yml`のみ許可
 
 2. **DirectoryPath**
    - ディレクトリパスを表現する型
    - 有効なディレクトリパス形式であることを保証
 
-3. **MarkdownText**
-   - マークダウン形式のテキストを表現する型
-   - マークダウン形式であることを保証
+3. **TextContent**
+   - テキスト形式のコンテンツを表現する型
+   - テキスト形式であることを保証
+   - マークダウン形式のテキストも含む
 
 ### Variables型
 
 - すべてのキーは任意（Partial型を使用）
 - キーは`ValidVariableKey`型に準拠
-- 値は`FilePath`、`DirectoryPath`、`MarkdownText`のいずれか
+- 値は`FilePath`、`DirectoryPath`、`TextContent`のいずれか
 
 ## バリデーション
 
@@ -71,7 +73,7 @@ interface VariableValidator {
   validateKey(key: string): key is ValidVariableKey;
   validateFilePath(path: string): path is FilePath;
   validateDirectoryPath(path: string): path is DirectoryPath;
-  validateMarkdownText(text: string): text is MarkdownText;
+  validateTextContent(text: string): text is TextContent;
 }
 ```
 
@@ -87,14 +89,14 @@ interface VariableValidator {
 
 ```typescript
 class VariableStore {
-  private store: Map<ValidVariableKey, FilePath | DirectoryPath | MarkdownText>;
+  private store: Map<ValidVariableKey, FilePath | DirectoryPath | TextContent>;
 
   constructor(variables: Variables, validator: VariableValidator) {
     this.store = new Map();
     this.initializeWithValidation(variables, validator);
   }
 
-  get(key: ValidVariableKey): FilePath | DirectoryPath | MarkdownText | undefined {
+  get(key: ValidVariableKey): FilePath | DirectoryPath | TextContent | undefined {
     return this.store.get(key);
   }
 }
@@ -126,9 +128,9 @@ class VariableStore {
 const params: PromptParams = {
   prompt_file_path: "/path/to/prompt.md" as FilePath,
   variables: {
-    schema_file: "/path/to/schema.json" as FilePath,
-    input_markdown: "# Title\nContent" as MarkdownText,
-    input_markdown_file: "/path/to/input.md" as FilePath,
+    schema_file: "/path/to/schema.yml" as FilePath,
+    input_text: "Sample text content" as TextContent,
+    input_file: "/path/to/input.txt" as FilePath,
     destination_path: "/path/to/output/" as DirectoryPath,
   },
   validator: new CustomVariableValidator(),

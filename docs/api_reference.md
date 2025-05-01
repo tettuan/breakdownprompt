@@ -25,27 +25,40 @@ Generates a prompt from a template with variable replacement.
 
 ```typescript
 async generatePrompt(
-  template: string,
-  variables: Record<string, string>
-): Promise<{ success: boolean; prompt: string }>
+  params: PromptParams
+): Promise<PromptResult>
 ```
 
 ##### Parameters
 
-- `template`: Path to the template file
-- `variables`: A record of variable names and their replacement values
+- `params`: Object containing template and variables information
+  - `template_file`: Path to the template file (required)
+  - `variables`: A record of variable names and their replacement values (required)
 
 ##### Returns
 
 An object containing:
 
 - `success`: Whether the operation was successful
-- `prompt`: The generated prompt content
+- `prompt`: The generated prompt content (if successful)
+- `error`: Error message (if failed)
 
-##### Throws
+##### Processing Flow
 
-- `ValidationError`: If template or variables are invalid
-- `FileSystemError`: If the template file cannot be read
+1. Parameter Validation
+   - Required parameters check
+   - Variable name format validation
+   - Path validation for template file
+
+2. Template Processing
+   - Template file reading
+   - Markdown format validation
+   - Variable extraction and validation
+
+3. Variable Replacement
+   - Type-specific validation (path/markdown)
+   - Variable replacement
+   - Error handling at each step
 
 #### writePrompt
 
@@ -71,9 +84,9 @@ async writePrompt(content: string, destinationPath: string): Promise<void>
 
 ```typescript
 interface PromptParams {
-  /** Path to the template file */
+  /** Path to the template file (required) */
   template_file: string;
-  /** Variables to replace in the template */
+  /** Variables to replace in the template (required) */
   variables: Record<string, string>;
 }
 ```
@@ -97,32 +110,70 @@ interface PromptResult {
 
 1. **ValidationError**
    - Thrown when input validation fails
-   - Common causes: invalid file paths, invalid variable names, invalid markdown content
+   - Common causes:
+     - Invalid file paths
+     - Invalid variable names (must start with letter, alphanumeric and underscore only)
+     - Invalid markdown content
+     - Missing required parameters
 
 2. **FileSystemError**
    - Thrown when file operations fail
-   - Common causes: file not found, permission denied, directory not found
+   - Common causes:
+     - File not found
+     - Permission denied
+     - Directory not found
 
-### Example Error Handling
+### Error Handling Flow
 
-```typescript
-try {
-  const result = await manager.generatePrompt(template, variables);
-  if (result.success) {
-    console.log("Generated prompt:", result.prompt);
-  } else {
-    console.error("Error:", result.error);
-  }
-} catch (error) {
-  if (error instanceof ValidationError) {
-    console.error("Validation error:", error.message);
-  } else if (error instanceof FileSystemError) {
-    console.error("File system error:", error.message);
-  } else {
-    console.error("Unexpected error:", error.message);
-  }
-}
-```
+1. Parameter Validation
+   - Immediate error return on validation failure
+   - No partial processing
+   - Clear error messages
+
+2. Template Processing
+   - Stop processing on first error
+   - Return error with context
+   - No partial results
+
+3. Variable Replacement
+   - Type-specific validation errors
+   - Path validation errors
+   - Markdown validation errors
+
+## Variable Processing Rules
+
+1. **Variable Types**
+   - `schema_file`: Valid file path
+   - `input_markdown`: Markdown content
+   - `input_markdown_file`: Valid file path
+   - `destination_path`: Valid directory path
+
+2. **Variable Name Rules**
+   - Alphanumeric and underscore only
+   - Must start with letter
+   - Case sensitive
+   - No duplicate keys allowed
+
+3. **Validation Rules**
+   - Path existence check
+   - File read permission check
+   - Markdown format check
+   - Path normalization
+   - Type-specific validation
+
+4. **Replacement Rules**
+   - Same variable is replaced with same value everywhere
+   - Replacement order is arbitrary
+   - No recursive processing
+   - No variable escape detection
+   - One-time template processing
+
+5. **Security Considerations**
+   - Minimal local file operations
+   - Path injection prevention
+   - Special character handling
+   - File access permission verification
+   - No sensitive information handling
 
 ## Usage Examples
 
@@ -143,33 +194,3 @@ if (result.success) {
   console.log(result.prompt);
 }
 ```
-
-## Variable Processing Rules
-
-1. **Allowed Variables**
-   - `schema_file`: Valid file path
-   - `input_markdown`: Markdown content
-   - `input_markdown_file`: Valid file path
-   - `destination_path`: Valid directory path
-
-2. **Variable Detection**
-   - Simple string matching for `{variable_name}` pattern
-   - No regular expressions used
-
-3. **Replacement Rules**
-   - Same variable is replaced with same value everywhere
-   - Replacement order is arbitrary
-   - No recursive processing
-   - No variable escape detection
-
-4. **Validation Rules**
-   - Path existence check
-   - File read permission check
-   - Markdown format check
-   - Path normalization
-
-5. **Security Considerations**
-   - Minimal local file operations
-   - Path injection prevention
-   - Special character handling
-   - File access permission verification

@@ -11,19 +11,23 @@ graph TB
             PG[プロンプトジェネレーター]
         end
 
-        subgraph "変数置換フェーズ"
-            VR[変数置換インターフェース]
-            SF[スキーマファイル置換]
-            IM[マークダウン置換]
-            IMF[マークダウンファイル置換]
-            DP[出力先パス置換]
+        subgraph "テンプレート管理フェーズ"
+            TF[テンプレートファイル]
+        end
+
+        subgraph "検証フェーズ"
+            VV[変数バリデーター]
+            PV[パスバリデーター]
+        end
+
+        subgraph "ファイル操作フェーズ"
+            FU[ファイルユーティリティ]
         end
     end
 
     subgraph "外部システム"
         PF[プロンプトファイル]
         SC[スキーマ定義]
-        MD[マークダウン]
     end
 
     subgraph "出力"
@@ -33,15 +37,17 @@ graph TB
     PM --> PP
     PM --> PR
     PM --> PG
-    PG --> VR
-    VR --> SF
-    VR --> IM
-    VR --> IMF
-    VR --> DP
-    PM --> PF
-    SF --> SC
-    IM --> MD
-    IMF --> MD
+    PM --> TF
+    PM --> VV
+    PM --> PV
+    PM --> FU
+
+    PG --> VV
+    PG --> PV
+
+    TF --> FU
+    FU --> PF
+    VV --> SC
     PM --> ST
 
     subgraph "テスト環境"
