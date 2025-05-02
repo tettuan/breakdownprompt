@@ -28,6 +28,7 @@ prompt_file_path is specified during initialization.
 All outputs display the prompt content. The content is output after performing "replacement processing".
 
 Example: Input prompt content:
+
 ```prompt
 # example prompt
 
@@ -43,6 +44,7 @@ this is a prompt contents. {input_markdown_file} {input_markdown}
 ```
 
 Output:
+
 ```
 # example prompt 
 this is a prompt contents.
@@ -158,4 +160,4 @@ Minimize local file operations.
 
 ## Performance Considerations
 
-Not required. The processing is inherently lightweight. 
+Not required. The processing is inherently lightweight.

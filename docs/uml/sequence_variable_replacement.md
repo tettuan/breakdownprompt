@@ -28,4 +28,4 @@ sequenceDiagram
 
     PromptManager->>PromptManager: replaceVariables(valid_values)
     PromptManager-->>PromptResult: success
-``` 
+```

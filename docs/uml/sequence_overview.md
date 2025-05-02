@@ -47,4 +47,4 @@ sequenceDiagram
     Note over PromptManager: 変数置換
     PromptManager->>PromptManager: replaceVariables(matched_variables)
     PromptManager-->>Client: PromptResult(success)
-``` 
+```

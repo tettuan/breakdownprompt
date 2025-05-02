@@ -31,4 +31,4 @@ sequenceDiagram
     PathValidator-->>PromptManager: valid_path
 
     PromptManager-->>PromptResult: success
-``` 
+```

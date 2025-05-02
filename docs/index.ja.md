@@ -35,9 +35,11 @@ ex.： 入力元のテンプレートプロンプトの内容： ```prompt
 this is a propmt contents. {input_text_file}
 
 # schema
+
 {schema_file}
 
 # destination path
+
 {destination_path}
 
 ````
@@ -75,6 +77,7 @@ this is a propmt contents. ./.agent/breakdown/issues/12345_something.md
 ### 置換処理の対象変数
 
 変数は2つの側面で定義される：
+
 1. 予約変数：事前定義された変数名と、対応する型、変数を処理するクラス
 2. テンプレート変数：テンプレートのスキャンで発見された変数名
 
@@ -105,10 +108,10 @@ BreakdownPromptの受け取りパラメータ `variables` が許可している�
   - パスの正規化処理
 
 - 検証エラー
-   - エラーの型を返す
-      - エラー種類ごとに判定できるENUMを含める
-      - エラー固有のエラーメッセージを含める
-   - 最初のエラーが起きた段階で、処理を呼び出し元へ返す
+  - エラーの型を返す
+    - エラー種類ごとに判定できるENUMを含める
+    - エラー固有のエラーメッセージを含める
+  - 最初のエラーが起きた段階で、処理を呼び出し元へ返す
 
 #### variablesの変数名（キー）の制約ルール
 
@@ -139,6 +142,7 @@ BreakdownPromptの受け取りパラメータ `variables` が許可している�
 - 変数のエスケープ記載を検知する必要はない（検出しない）
 
 ### 置換処理の循環処理・循環参照の対策
+
 1. 1つのテンプレートは1度だけ読み込まれる（繰り返し読み込みしない）
 2. テンプレートを１行ずつ処理する
 3. １行に対して、変数の「外かっこ」で検出する
@@ -204,14 +208,18 @@ APIの詳細な仕様については、[APIリファレンス](./api_reference.m
 すべての出力において、プロンプトの内容をテキスト表示します。表示時に「置換処理」を行ったうえで出力します。
 
 例：
+
 ```markdown
 # example prompt
+
 this is a propmt contents. ./.agent/breakdown/issues/12345_something.md
 
 # schema
+
 ./rules/schema/task/base.schema.yml
 
 # destination path
+
 ./.agent/breakdown/tasks/
 ```
 
@@ -230,16 +238,19 @@ this is a propmt contents. ./.agent/breakdown/issues/12345_something.md
 ### 3.2 ファイル形式
 
 #### 3.2.1 サポートされる拡張子
+
 - `.md`: マークダウンファイル
 - `.txt`: プレーンテキストファイル
 - `.yml`: YAMLファイル
 
 #### 3.2.2 検証ルール
+
 1. ファイルの存在確認
 2. 拡張子の検証（`.md`, `.txt`, `.yml` のみ許可）
 3. テキストファイルとして読み込み可能かの確認
 
 #### 3.2.3 エラーハンドリング
+
 - 存在しないファイル: `TemplateFileNotFoundError`
 - 不正な拡張子: `InvalidTemplateFileExtensionError`
 - 読み込み不可: `TemplateFileReadError`
@@ -253,11 +264,13 @@ this is a propmt contents. ./.agent/breakdown/issues/12345_something.md
 ```
 
 #### 3.3.1 変数名の命名規則
+
 - 英数字とアンダースコアのみ使用可能
 - 先頭は英字のみ
 - 大文字小文字を区別
 
 #### 3.3.2 変数の制約
+
 - 同じ変数が複数回出現した場合は、全て同じ値で置き換える
 - 変数の置換順序はシステムの呼び出し順で良い（順不同）
 - 再起的な処理は不要
@@ -299,10 +312,12 @@ this is a propmt contents. ./.agent/breakdown/issues/12345_something.md
 ## 5. エラーハンドリング
 
 ### 5.1 変数に関するエラー
+
 - 指定以外の変数が見つかった場合は、debugレベルでlog出力する
 - 例外は発生させずスルーする
 
 ### 5.2 検証エラー
+
 - エラーの型を返す
   - エラー種類ごとに判定できるENUMを含める
   - エラー固有のエラーメッセージを含める
@@ -311,6 +326,7 @@ this is a propmt contents. ./.agent/breakdown/issues/12345_something.md
 ## 6. セキュリティとパフォーマンス
 
 ### 6.1 セキュリティ考慮
+
 - パスインジェクション対策
 - 特殊文字の処理
 - ファイルアクセス権限の確認
@@ -319,13 +335,16 @@ this is a propmt contents. ./.agent/breakdown/issues/12345_something.md
 詳細は[特殊文字の扱い](./priority.ja.md)を参照してください。
 
 ### 6.2 パフォーマンス考慮
+
 - 軽量な処理であるため、特別な考慮は不要
 
 ## 7. テスト
 
 ### 7.1 テスト戦略
+
 - コア機能の単体テストから統合機能、最終的なユースケースのカバレッジ拡大へと階層的なテスト
 - BreakdownLoggerをテストコードへ入れてデバッグ
 
 ### 7.2 パス検証
+
 詳細は[パス検証ルール](./path_validation.md)を参照してください。

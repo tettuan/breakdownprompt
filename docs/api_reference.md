@@ -151,6 +151,7 @@ interface PromptResult {
 ### Variable Types
 
 Variables are defined in two aspects:
+
 1. Reserved Variables: Predefined variable names with corresponding types and processing classes
 2. Template Variables: Variable names discovered during template scanning
 
@@ -159,6 +160,7 @@ See [Variable Definition](./variables.ja.md) for detailed explanation.
 ### Reserved Variables
 
 Reserved variables are defined in the main code and must be:
+
 - Predefined with type and class definitions
 - Passed as `variables` parameter values
 - Validated against template variables
@@ -166,6 +168,7 @@ Reserved variables are defined in the main code and must be:
 ### Template Variables
 
 Template variables are:
+
 - Discovered during template scanning using `{variable}` notation
 - Validated against reserved variables
 - Replaced only if matching a reserved variable
