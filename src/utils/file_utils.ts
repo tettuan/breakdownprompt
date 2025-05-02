@@ -13,6 +13,7 @@ import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { PathValidator } from "../validation/path_validator.ts";
 import { exists } from "@std/fs";
 import { dirname, type fromFileUrl as _fromFileUrl, join, normalize, resolve } from "@std/path";
+import { PermissionErrorMessages } from "../errors/permission_errors.ts";
 
 const _logger = new BreakdownLogger();
 const pathValidator = new PathValidator();
@@ -59,7 +60,7 @@ export class FileUtils {
         throw new ValidationError(`Template not found: ${path}`);
       }
       if (_error instanceof Deno.errors.PermissionDenied) {
-        throw new ValidationError(`Permission denied: ${path}`);
+        throw new ValidationError(`${PermissionErrorMessages.READ_FILE}: ${path}`);
       }
       throw new ValidationError(`Failed to read file: ${path}`);
     }
@@ -79,6 +80,9 @@ export class FileUtils {
     } catch (_error) {
       if (_error instanceof ValidationError) {
         throw _error;
+      }
+      if (_error instanceof Deno.errors.PermissionDenied) {
+        throw new ValidationError(`${PermissionErrorMessages.WRITE_FILE}: ${path}`);
       }
       throw new ValidationError("Failed to write file");
     }

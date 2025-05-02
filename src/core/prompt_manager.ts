@@ -1,5 +1,5 @@
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import { FileSystemError, TemplateError, ValidationError } from "../errors.ts";
+import { TemplateError, ValidationError } from "../errors.ts";
 import type { PromptGenerationResult } from "../types/prompt_result.ts";
 import type { TextContent } from "../types.ts";
 import { FileUtils } from "../utils/file_utils.ts";
@@ -9,7 +9,7 @@ import { VariableValidator } from "../validation/variable_validator.ts";
 import type { PromptReader as _PromptReader } from "./prompt_reader.ts";
 import { VariableResolver } from "./variable_resolver.ts";
 import type { PromptParams } from "../types/prompt_params.ts";
-import { ensureFile } from "jsr:@std/fs@^0.220.1";
+import { PermissionErrorMessages } from "../errors/permission_errors.ts";
 
 /**
  * A class for managing and generating prompts from templates with variable replacement.
@@ -360,37 +360,15 @@ export class PromptManager {
    */
   private async loadTemplate(templatePath: string): Promise<string> {
     try {
-      // Check if file exists first
-      try {
-        await Deno.stat(templatePath);
-      } catch (error) {
-        if (error instanceof Deno.errors.NotFound) {
-          return "";
-        }
-        if (error instanceof Deno.errors.PermissionDenied) {
-          throw new Deno.errors.PermissionDenied("permission denied");
-        }
-        throw error;
-      }
-
-      // Only read content if file exists
-      try {
-        const content = await Deno.readTextFile(templatePath);
-        if (!content || content.trim() === "") {
-          return "";
-        }
-        return content;
-      } catch (error) {
-        if (error instanceof Deno.errors.PermissionDenied) {
-          throw new Deno.errors.PermissionDenied("permission denied");
-        }
-        throw error;
-      }
+      return await this.fileUtils.readFile(templatePath);
     } catch (error) {
       if (error instanceof Deno.errors.PermissionDenied) {
-        throw new Deno.errors.PermissionDenied("permission denied");
+        throw new ValidationError(`${PermissionErrorMessages.READ_TEMPLATE}: ${templatePath}`);
       }
-      return "";
+      if (error instanceof Deno.errors.NotFound) {
+        throw new ValidationError(`Template not found: ${templatePath}`);
+      }
+      throw error;
     }
   }
 
@@ -427,33 +405,12 @@ export class PromptManager {
    */
   async writePrompt(content: string, destinationPath: string): Promise<void> {
     try {
-      // Validate and normalize destination path
-      const normalizedPath = this.pathValidator.validateFilePath(destinationPath);
-
-      // Check if parent directory exists and is writable
-      const parentDir = normalizedPath.substring(0, normalizedPath.lastIndexOf("/"));
-      try {
-        await Deno.stat(parentDir);
-      } catch (error) {
-        if (error instanceof Deno.errors.NotFound) {
-          await Deno.mkdir(parentDir, { recursive: true });
-        } else {
-          throw error;
-        }
-      }
-
-      // Create file if it doesn't exist
-      await ensureFile(normalizedPath);
-
-      // Write content to file
-      await this.fileUtils.writeFile(normalizedPath, content);
+      await this.fileUtils.writeFile(destinationPath, content);
     } catch (error) {
-      if (error instanceof ValidationError) {
-        throw error;
+      if (error instanceof Deno.errors.PermissionDenied) {
+        throw new ValidationError(`${PermissionErrorMessages.WRITE_TEMPLATE}: ${destinationPath}`);
       }
-      throw new FileSystemError(
-        `Failed to write prompt: ${error instanceof Error ? error.message : String(error)}`,
-      );
+      throw error;
     }
   }
 
@@ -480,25 +437,13 @@ export class PromptManager {
     variables: Record<string, unknown>,
   ): Promise<string> {
     try {
-      // Validate template path
-      this.pathValidator.validateFilePath(templatePath);
-
-      // Read template file
-      const templateContent = await this.fileUtils.readFile(templatePath);
-
-      // Process template content
-      const result = await this.generatePrompt(
-        templateContent,
-        variables as Record<string, string>,
-      );
-      if (!result.success) {
-        throw new Error(result.error);
+      const templateContent = await this.loadTemplate(templatePath);
+      return this.replaceVariables(templateContent, variables as Record<string, string>);
+    } catch (error) {
+      if (error instanceof Deno.errors.PermissionDenied) {
+        throw new ValidationError(`${PermissionErrorMessages.READ_TEMPLATE}: ${templatePath}`);
       }
-      return result.prompt;
-    } catch (_error) {
-      // Log error and rethrow
-      this.logger.error(`Failed to process template: ${templatePath}`);
-      throw new Error(`Failed to process template: ${templatePath}`);
+      throw error;
     }
   }
 }
