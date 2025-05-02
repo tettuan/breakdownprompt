@@ -30,7 +30,7 @@ export class FileUtils {
    */
   async exists(path: string): Promise<boolean> {
     try {
-      const normalizedPath = pathValidator.validateFilePath(path);
+      const normalizedPath = await pathValidator.validateFilePath(path);
       const absolutePath = resolve(normalizedPath);
       return await exists(absolutePath);
     } catch (_error) {
@@ -49,7 +49,7 @@ export class FileUtils {
    */
   async readFile(path: string): Promise<string> {
     try {
-      const normalizedPath = pathValidator.validateFilePath(path);
+      const normalizedPath = await pathValidator.validateFilePath(path);
       const absolutePath = resolve(normalizedPath);
       return await Deno.readTextFile(absolutePath);
     } catch (_error) {
@@ -76,7 +76,7 @@ export class FileUtils {
    */
   async writeFile(path: string, content: string): Promise<void> {
     try {
-      const normalizedPath = pathValidator.validateFilePath(path);
+      const normalizedPath = await pathValidator.validateFilePath(path);
       const absolutePath = resolve(normalizedPath);
       await Deno.writeTextFile(absolutePath, content);
     } catch (_error) {
@@ -100,7 +100,7 @@ export class FileUtils {
    */
   async directoryExists(path: string): Promise<boolean> {
     try {
-      const normalizedPath = pathValidator.validateDirectoryPath(path);
+      const normalizedPath = await pathValidator.validateDirectoryPath(path);
       const absolutePath = resolve(normalizedPath);
       return await exists(absolutePath);
     } catch (_error) {

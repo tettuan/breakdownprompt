@@ -23,13 +23,13 @@ export class DestinationPathReplacer implements VariableReplacer {
    * - Must not contain path traversal attempts
    * - Must be accessible
    */
-  validate(value: unknown): boolean {
+  async validate(value: unknown): Promise<boolean> {
     if (typeof value !== "string") {
       return false;
     }
 
     try {
-      this.pathValidator.validateDirectoryPath(value);
+      await this.pathValidator.validateDirectoryPath(value);
       return true;
     } catch (_error) {
       return false;
@@ -41,12 +41,12 @@ export class DestinationPathReplacer implements VariableReplacer {
    * - Validates the path
    * - Returns the normalized path
    */
-  replace(value: unknown): string {
+  async replace(value: unknown): Promise<string> {
     if (typeof value !== "string") {
       return "";
     }
 
-    if (!this.validate(value)) {
+    if (!await this.validate(value)) {
       return "";
     }
 

@@ -12,7 +12,7 @@
 
 import { ValidationError } from "../errors.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import { normalize } from "@std/path";
+import { dirname, normalize, resolve } from "@std/path";
 
 const _logger = new BreakdownLogger();
 
@@ -36,6 +36,76 @@ export class PathValidator {
   private readonly VALID_PATH_REGEX = /^[a-zA-Z0-9\/\-_\.]+$/;
   private readonly MAX_PATH_LENGTH = 4096; // Maximum path length on most systems
   private readonly TRAVERSAL_REGEX = /(?:^|\/)\.\./;
+  private allowedTempDirs: string[] = [];
+  private currentDir: string;
+  private initialized: Promise<void>;
+
+  constructor() {
+    this.currentDir = resolve(".");
+    this.initialized = this.initializeTempDirs();
+  }
+
+  /**
+   * Ensures the validator is initialized
+   */
+  private async ensureInitialized(): Promise<void> {
+    try {
+      await this.initialized;
+    } catch (_error) {
+      // If initialization fails, retry
+      this.initialized = this.initializeTempDirs();
+      await this.initialized;
+    }
+  }
+
+  /**
+   * Initializes allowed temp directories by detecting system temp dir
+   */
+  private async initializeTempDirs(): Promise<void> {
+    try {
+      // Try to detect temp directory from Deno.makeTempDir
+      const tempDir = await Deno.makeTempDir();
+      const parentDir = dirname(tempDir);
+      this.allowedTempDirs = [parentDir];
+      await Deno.remove(tempDir, { recursive: true });
+    } catch (_error) {
+      // If detection fails, use fallback directories
+      this.allowedTempDirs = [
+        "/tmp",
+        "/var/tmp",
+        "/private/var/folders",
+        "/var/folders",
+      ];
+    }
+  }
+
+  /**
+   * Checks if a path is a relative path
+   * @param path - The path to check
+   * @returns true if the path is relative
+   */
+  private isRelativePath(path: string): boolean {
+    // Allow paths that:
+    // 1. Start with './' or '../' (after normalization)
+    // 2. Don't start with '/' (relative to current directory)
+    // 3. Are not empty
+    return Boolean(path) && !path.startsWith("/");
+  }
+
+  /**
+   * Checks if a path is in an allowed directory
+   * @param path - The path to check
+   * @returns true if the path is in an allowed directory
+   */
+  private isAllowedPath(path: string): boolean {
+    // If it's a relative path, it's always allowed
+    if (this.isRelativePath(path)) {
+      return true;
+    }
+    // For absolute paths, check if they're in allowed directories
+    return this.allowedTempDirs.some((dir) => path.startsWith(dir + "/") || path === dir) ||
+      path.startsWith(this.currentDir + "/") || path === this.currentDir;
+  }
 
   /**
    * Normalizes and validates a file path
@@ -43,38 +113,40 @@ export class PathValidator {
    * @returns Normalized and validated path
    * @throws {ValidationError} If the path is invalid
    */
-  validateFilePath(path: string): string {
+  async validateFilePath(path: string): Promise<string> {
+    await this.ensureInitialized();
+
     // 1. Basic validation
     if (!path || path.trim() === "") {
       throw new ValidationError("Path cannot be empty");
     }
 
-    // 2. Check for directory traversal before normalization
-    if (this.TRAVERSAL_REGEX.test(path)) {
-      throw new ValidationError("Path contains directory traversal (..)");
+    // 2. Check for invalid characters
+    const invalidChars = path.match(this.INVALID_CHARS_REGEX);
+    if (invalidChars) {
+      throw new ValidationError(`Path contains invalid characters: ${invalidChars[0]}`);
     }
 
-    // 3. Normalize path
-    const normalizedPath = this.normalizePath(path);
-
-    // 4. Check path length
-    if (normalizedPath.length > this.MAX_PATH_LENGTH) {
+    // 3. Check path length
+    if (path.length > this.MAX_PATH_LENGTH) {
       throw new ValidationError(
         `Path exceeds maximum length of ${this.MAX_PATH_LENGTH} characters`,
       );
     }
 
-    // 5. Check for absolute paths
-    if (normalizedPath.startsWith("/") || normalizedPath.startsWith("\\")) {
-      throw new ValidationError(
-        "Absolute paths are not allowed. Please use relative paths instead.",
-      );
+    // 4. Check for directory traversal before normalization
+    if (this.TRAVERSAL_REGEX.test(path)) {
+      throw new ValidationError("Path contains directory traversal (..)");
     }
 
-    // 6. Check for invalid characters
-    const invalidChars = normalizedPath.match(this.INVALID_CHARS_REGEX);
-    if (invalidChars) {
-      throw new ValidationError(`Path contains invalid characters: ${invalidChars.join(", ")}`);
+    // 5. Normalize path
+    const normalizedPath = this.normalizePath(path);
+
+    // 6. Check for absolute paths
+    if (!this.isAllowedPath(normalizedPath)) {
+      throw new ValidationError(
+        "Path is not allowed. Use relative paths or allowed absolute paths.",
+      );
     }
 
     // 7. Validate path format
@@ -109,38 +181,40 @@ export class PathValidator {
    * @returns Normalized and validated path
    * @throws {ValidationError} If the path is invalid
    */
-  validateDirectoryPath(path: string): string {
+  async validateDirectoryPath(path: string): Promise<string> {
+    await this.ensureInitialized();
+
     // 1. Basic validation
     if (!path || path.trim() === "") {
       throw new ValidationError("Path cannot be empty");
     }
 
-    // 2. Check for directory traversal before normalization
-    if (this.TRAVERSAL_REGEX.test(path)) {
-      throw new ValidationError("Path contains directory traversal (..)");
+    // 2. Check for invalid characters
+    const invalidChars = path.match(this.INVALID_CHARS_REGEX);
+    if (invalidChars) {
+      throw new ValidationError(`Path contains invalid characters: ${invalidChars[0]}`);
     }
 
-    // 3. Normalize path
-    const normalizedPath = this.normalizePath(path);
-
-    // 4. Check path length
-    if (normalizedPath.length > this.MAX_PATH_LENGTH) {
+    // 3. Check path length
+    if (path.length > this.MAX_PATH_LENGTH) {
       throw new ValidationError(
         `Path exceeds maximum length of ${this.MAX_PATH_LENGTH} characters`,
       );
     }
 
-    // 5. Check for absolute paths outside of /tmp
-    if (normalizedPath.startsWith("/") && !normalizedPath.startsWith("/tmp")) {
+    // 4. Check for directory traversal before normalization
+    if (this.TRAVERSAL_REGEX.test(path)) {
+      throw new ValidationError("Path contains directory traversal (..)");
+    }
+
+    // 5. Normalize path
+    const normalizedPath = this.normalizePath(path);
+
+    // 6. Check for absolute paths
+    if (normalizedPath.startsWith("/") && !this.isAllowedPath(normalizedPath)) {
       throw new ValidationError(
         "Absolute paths are not allowed. Please use relative paths instead.",
       );
-    }
-
-    // 6. Check for invalid characters
-    const invalidChars = normalizedPath.match(this.INVALID_CHARS_REGEX);
-    if (invalidChars) {
-      throw new ValidationError(`Path contains invalid characters: ${invalidChars.join(", ")}`);
     }
 
     // 7. Validate path format

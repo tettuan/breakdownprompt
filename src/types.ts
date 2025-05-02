@@ -24,13 +24,22 @@ export interface PromptResult {
 
 /**
  * Interface for variable replacement.
- * @interface VariableReplacer
+ * Provides methods for validating and replacing variables.
  */
 export interface VariableReplacer {
-  /** Validate the replacement value */
-  validate(value: unknown): boolean;
-  /** Replace the variable with its value */
-  replace(value: unknown): string;
+  /**
+   * Validates a variable value.
+   * @param value - The value to validate
+   * @returns Promise that resolves to true if the value is valid
+   */
+  validate(value: unknown): Promise<boolean>;
+
+  /**
+   * Replaces a variable with its value.
+   * @param value - The value to replace
+   * @returns Promise that resolves to the replaced value
+   */
+  replace(value: unknown): Promise<string>;
 }
 
 /**

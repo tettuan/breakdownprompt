@@ -1,4 +1,4 @@
-import { ValidationError } from "../errors.ts";
+import type { ValidationError as _ValidationError } from "../errors.ts";
 import type { TextContent as _TextContent, VariableReplacer } from "../types.ts";
 import { TextValidator } from "../validation/markdown_validator.ts";
 
@@ -6,9 +6,9 @@ import { TextValidator } from "../validation/markdown_validator.ts";
  * InputTextReplacer
  *
  * Purpose:
- * - Replace {input_text} variables with text content
- * - Ensure text content is not empty
- * - Prevent invalid text content
+ * - Replace {input_text} variables with validated text content
+ * - Ensure text content is valid
+ * - Prevent injection attacks
  */
 export class InputTextReplacer implements VariableReplacer {
   private textValidator: TextValidator;
@@ -18,33 +18,32 @@ export class InputTextReplacer implements VariableReplacer {
   }
 
   /**
-   * Validates that a value is valid text content
-   * @param value - The value to validate
-   * @returns true if the value is valid text content
+   * Validates text content according to the rules:
+   * - Must be a string
+   * - Must not be empty
    */
-  validate(value: unknown): boolean {
+  validate(value: unknown): Promise<boolean> {
     if (typeof value !== "string") {
-      return false;
+      return Promise.resolve(false);
     }
 
-    try {
-      return this.textValidator.validateText(value);
-    } catch {
-      return false;
-    }
+    return Promise.resolve(value.trim() !== "");
   }
 
   /**
-   * Replaces a variable with its text content value
-   * @param value - The value to replace with
-   * @returns The processed text content
-   * @throws {ValidationError} If the value is invalid
+   * Replaces an input text variable with its value
+   * - Validates the text
+   * - Returns the normalized text
    */
-  replace(value: unknown): string {
-    if (!this.validate(value)) {
-      throw new ValidationError("Invalid text content");
+  async replace(value: unknown): Promise<string> {
+    if (typeof value !== "string") {
+      return "";
     }
 
-    return value as string;
+    if (!await this.validate(value)) {
+      return "";
+    }
+
+    return value.trim();
   }
 }

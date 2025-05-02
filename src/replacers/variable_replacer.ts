@@ -8,7 +8,7 @@ import type {
 } from "../types.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
-const logger = new BreakdownLogger();
+const _logger = new BreakdownLogger();
 
 /**
  * Options for variable replacement.
@@ -39,91 +39,51 @@ export interface VariableReplacerResult {
 }
 
 /**
- * Base class for replacing variables in templates.
- * Provides common functionality for variable replacement and validation.
+ * VariableReplacer
+ *
+ * Purpose:
+ * - Replace variables in text content
+ * - Validate variable values
+ * - Handle different variable types
  */
-export class VariableReplacer {
-  private variables: Variables;
-  private validator: VariableValidator;
+export class VariableReplacer implements VariableReplacer {
+  private readonly variableValidator: VariableValidator;
 
-  /**
-   * Creates a new VariableReplacer instance
-   * @param options - Configuration options for variable replacement
-   */
-  constructor(options: VariableReplacerOptions) {
-    this.variables = options.variables;
-    this.validator = options.validator;
+  constructor(variableValidator: VariableValidator) {
+    this.variableValidator = variableValidator;
   }
 
   /**
-   * Replaces variables in a template with their corresponding values
-   * @param template - The template string containing variables to replace
-   * @returns Result containing the replaced template and any errors
+   * Validates a variable value according to the rules:
+   * - Must be a string
+   * - Must be a valid variable name
    */
-  replace(template: string): VariableReplacerResult {
-    try {
-      let result = template;
-      const replacedVariables = new Set<string>();
-      const unresolvedVariables = new Set<string>();
-
-      // Find all variables in the template
-      const variablePattern = /{([^}]+)}/g;
-      const matches = Array.from(template.matchAll(variablePattern));
-
-      for (const match of matches) {
-        const variableName = match[1];
-
-        // Validate the variable key
-        try {
-          if (!this.validator.validateKey(variableName)) {
-            logger.debug(`Invalid variable key found: ${variableName}`);
-            unresolvedVariables.add(variableName);
-            continue;
-          }
-        } catch (_error) {
-          logger.debug(`Invalid variable key found: ${variableName}`);
-          unresolvedVariables.add(variableName);
-          continue;
-        }
-
-        // Get the variable value
-        const value = this.variables[variableName as keyof Variables];
-        if (value === undefined) {
-          logger.debug(`Variable not found in provided variables: ${variableName}`);
-          unresolvedVariables.add(variableName);
-          continue;
-        }
-
-        // Replace all occurrences of the variable
-        const pattern = new RegExp(`{${variableName}}`, "g");
-        result = result.replace(pattern, String(value));
-        replacedVariables.add(variableName);
-      }
-
-      // Convert Sets to arrays for the return value
-      const replacedArray = Array.from(replacedVariables);
-      const unresolvedArray = Array.from(unresolvedVariables);
-
-      return {
-        success: unresolvedArray.length === 0,
-        prompt: result,
-        replacedVariables: replacedArray,
-        unresolvedVariables: unresolvedArray.length > 0 ? unresolvedArray : undefined,
-        error: unresolvedArray.length > 0
-          ? `Unresolved variables found: ${unresolvedArray.join(", ")}`
-          : undefined,
-      };
-    } catch (error) {
-      logger.error(
-        `Error during variable replacement: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`,
-      );
-      return {
-        success: false,
-        prompt: template,
-        error: error instanceof Error ? error.message : "Unknown error during variable replacement",
-      };
+  validate(value: unknown): Promise<boolean> {
+    if (typeof value !== "string") {
+      return Promise.resolve(false);
     }
+
+    try {
+      return Promise.resolve(this.variableValidator.validateKey(value));
+    } catch {
+      return Promise.resolve(false);
+    }
+  }
+
+  /**
+   * Replaces a variable with its value
+   * - Validates the variable name
+   * - Returns the normalized value
+   */
+  async replace(value: unknown): Promise<string> {
+    if (typeof value !== "string") {
+      return "";
+    }
+
+    if (!await this.validate(value)) {
+      return "";
+    }
+
+    return value;
   }
 }

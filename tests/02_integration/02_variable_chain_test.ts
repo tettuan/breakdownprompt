@@ -49,124 +49,143 @@ const logger = new BreakdownLogger();
 const textValidator = new TextValidator();
 
 // Pre-processing and Preparing Part
-// Setup: Initialize PromptManager and test data
 let promptManager: PromptManager;
 
 function setupTest() {
   promptManager = new PromptManager(textValidator, undefined, undefined, undefined, logger);
 }
 
+function cleanupTest() {
+  // No cleanup needed
+}
+
 // Main Test
-Deno.test("should process basic variable chain", async () => {
-  setupTest();
-  const template = "# Hello {name}, you are {age} years old";
-  const variables = { name: "test", age: "25" };
-  const expectedOutput = "# Hello test, you are 25 years old";
+Deno.test({
+  name: "Variable Chain Integration Tests",
+  async fn(t) {
+    await t.step("should process basic variable chain", async () => {
+      await setupTest();
+      const template = "# Hello {name}, you are {age} years old";
+      const variables = { name: "test", age: "25" };
+      const expectedOutput = "# Hello test, you are 25 years old";
 
-  const result = await promptManager.generatePrompt(template, variables);
-  assertEquals(result.success, true);
-  if (result.success) {
-    assertEquals(result.prompt, expectedOutput);
-  }
-});
+      const result = await promptManager.generatePrompt(template, variables);
+      assertEquals(result.success, true);
+      if (result.success) {
+        assertEquals(result.prompt, expectedOutput);
+      }
+      await cleanupTest();
+    });
 
-Deno.test("should handle multi-level dependencies", async () => {
-  setupTest();
-  const template = "## {greeting}, {name}! You are {age} years old";
-  const variables = { greeting: "Hello", name: "test", age: "25" };
-  const expectedOutput = "## Hello, test! You are 25 years old";
+    await t.step("should handle multi-level dependencies", async () => {
+      await setupTest();
+      const template = "## {greeting}, {name}! You are {age} years old";
+      const variables = { greeting: "Hello", name: "test", age: "25" };
+      const expectedOutput = "## Hello, test! You are 25 years old";
 
-  const result = await promptManager.generatePrompt(template, variables);
-  assertEquals(result.success, true);
-  if (result.success) {
-    assertEquals(result.prompt, expectedOutput);
-  }
-});
+      const result = await promptManager.generatePrompt(template, variables);
+      assertEquals(result.success, true);
+      if (result.success) {
+        assertEquals(result.prompt, expectedOutput);
+      }
+      await cleanupTest();
+    });
 
-Deno.test("should detect circular dependencies", async () => {
-  setupTest();
-  const template = "### {a} {b}";
-  const variables = { a: "{b}", b: "{a}" };
+    await t.step("should detect circular dependencies", async () => {
+      await setupTest();
+      const template = "### {a} {b}";
+      const variables = { a: "{b}", b: "{a}" };
 
-  const result = await promptManager.generatePrompt(template, variables);
-  assertEquals(result.success, false);
-  if (!result.success) {
-    assertEquals(result.error, "Circular variable reference detected");
-  }
-});
+      const result = await promptManager.generatePrompt(template, variables);
+      assertEquals(result.success, false);
+      if (!result.success) {
+        assertEquals(result.error, "Circular variable reference detected");
+      }
+      await cleanupTest();
+    });
 
-Deno.test("should handle missing dependencies", async () => {
-  setupTest();
-  const template = "#### Hello {name}, you are {age} years old";
-  const variables = { name: "test" };
+    await t.step("should handle missing dependencies", async () => {
+      await setupTest();
+      const template = "#### Hello {name}, you are {age} years old";
+      const variables = { name: "test" };
 
-  const result = await promptManager.generatePrompt(template, variables);
-  assertEquals(result.success, false);
-  if (!result.success) {
-    assertEquals(result.error, "Missing required variables: age");
-  }
-});
+      const result = await promptManager.generatePrompt(template, variables);
+      assertEquals(result.success, false);
+      if (!result.success) {
+        assertEquals(result.error, "Missing required variables: age");
+      }
+      await cleanupTest();
+    });
 
-Deno.test("should handle invalid variable names", async () => {
-  setupTest();
-  const template = "##### Hello {invalid-name}";
-  const variables = { "invalid-name": "test" };
+    await t.step("should handle invalid variable names", async () => {
+      await setupTest();
+      const template = "##### Hello {invalid-name}";
+      const variables = { "invalid-name": "test" };
 
-  const result = await promptManager.generatePrompt(template, variables);
-  assertEquals(result.success, false);
-  if (!result.success) {
-    assertEquals(
-      result.error,
-      "Invalid variable name: invalid-name (variable names cannot contain hyphens)",
-    );
-  }
-});
+      const result = await promptManager.generatePrompt(template, variables);
+      assertEquals(result.success, false);
+      if (!result.success) {
+        assertEquals(
+          result.error,
+          "Invalid variable name: invalid-name (variable names cannot contain hyphens)",
+        );
+      }
+      await cleanupTest();
+    });
 
-Deno.test("should handle invalid variable values", async () => {
-  setupTest();
-  const template = "###### Age: {age}";
-  const variables = { age: "" };
+    await t.step("should handle invalid variable values", async () => {
+      await setupTest();
+      const template = "###### Age: {age}";
+      const variables = { age: "" };
 
-  const result = await promptManager.generatePrompt(template, variables);
-  assertEquals(result.success, false);
-  if (!result.success) {
-    assertEquals(result.error, "Invalid value for variable: age");
-  }
-});
+      const result = await promptManager.generatePrompt(template, variables);
+      assertEquals(result.success, false);
+      if (!result.success) {
+        assertEquals(result.error, "Invalid value for variable: age");
+      }
+      await cleanupTest();
+    });
 
-Deno.test("should handle special characters in chains", async () => {
-  setupTest();
-  const template = "> {greeting}, {name}!";
-  const variables = { greeting: "Hello, World!", name: "test" };
-  const expectedOutput = "> Hello, World!, test!";
+    await t.step("should handle special characters in chains", async () => {
+      await setupTest();
+      const template = "> {greeting}, {name}!";
+      const variables = { greeting: "Hello, World!", name: "test" };
+      const expectedOutput = "> Hello, World!, test!";
 
-  const result = await promptManager.generatePrompt(template, variables);
-  assertEquals(result.success, true);
-  if (result.success) {
-    assertEquals(result.prompt, expectedOutput);
-  }
-});
+      const result = await promptManager.generatePrompt(template, variables);
+      assertEquals(result.success, true);
+      if (result.success) {
+        assertEquals(result.prompt, expectedOutput);
+      }
+      await cleanupTest();
+    });
 
-Deno.test("should handle empty chain", async () => {
-  setupTest();
-  const template = "";
-  const variables = { name: "test" };
+    await t.step("should handle empty chain", async () => {
+      await setupTest();
+      const template = "";
+      const variables = { name: "test" };
 
-  const result = await promptManager.generatePrompt(template, variables);
-  assertEquals(result.success, false);
-  if (!result.success) {
-    assertEquals(result.error, "Template is empty");
-  }
-});
+      const result = await promptManager.generatePrompt(template, variables);
+      assertEquals(result.success, false);
+      if (!result.success) {
+        assertEquals(result.error, "Template is empty");
+      }
+      await cleanupTest();
+    });
 
-Deno.test("should handle template with no variables", async () => {
-  setupTest();
-  const template = "# Hello World";
-  const variables = { name: "test" };
+    await t.step("should handle template with no variables", async () => {
+      await setupTest();
+      const template = "# Hello World";
+      const variables = { name: "test" };
 
-  const result = await promptManager.generatePrompt(template, variables);
-  assertEquals(result.success, true);
-  if (result.success) {
-    assertEquals(result.prompt, "# Hello World");
-  }
+      const result = await promptManager.generatePrompt(template, variables);
+      assertEquals(result.success, true);
+      if (result.success) {
+        assertEquals(result.prompt, "# Hello World");
+      }
+      await cleanupTest();
+    });
+  },
+  sanitizeResources: false,
+  sanitizeOps: false,
 });

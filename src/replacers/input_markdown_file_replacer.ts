@@ -3,14 +3,14 @@ import type { FilePath, VariableReplacer } from "../types.ts";
 import { PathValidator } from "../validation/path_validator.ts";
 
 /**
- * InputTextFileReplacer
+ * InputMarkdownFileReplacer
  *
  * Purpose:
- * - Replace {input_text_file} variables with validated file paths
+ * - Replace {input_markdown_file} variables with validated file paths
  * - Ensure file paths are valid and accessible
  * - Prevent path traversal attacks
  */
-export class InputTextFileReplacer implements VariableReplacer {
+export class InputMarkdownFileReplacer implements VariableReplacer {
   private pathValidator: PathValidator;
 
   constructor() {
@@ -18,18 +18,18 @@ export class InputTextFileReplacer implements VariableReplacer {
   }
 
   /**
-   * Validates a text file path according to the rules:
+   * Validates a markdown file path according to the rules:
    * - Must be a valid file path
    * - Must not contain path traversal attempts
    * - Must be accessible
    */
-  validate(value: unknown): boolean {
+  async validate(value: unknown): Promise<boolean> {
     if (typeof value !== "string") {
       return false;
     }
 
     try {
-      this.pathValidator.validateFilePath(value);
+      await this.pathValidator.validateFilePath(value);
       return true;
     } catch (_error) {
       return false;
@@ -37,16 +37,16 @@ export class InputTextFileReplacer implements VariableReplacer {
   }
 
   /**
-   * Replaces an input text file variable with its value
+   * Replaces an input markdown file variable with its value
    * - Validates the path
    * - Returns the normalized path
    */
-  replace(value: unknown): string {
+  async replace(value: unknown): Promise<string> {
     if (typeof value !== "string") {
       return "";
     }
 
-    if (!this.validate(value)) {
+    if (!await this.validate(value)) {
       return "";
     }
 
