@@ -205,7 +205,7 @@ export class PromptManager {
 
       // Process conditional blocks first
       let prompt = templateContent;
-      const conditionalRegex = /\{\{#if\s+([^}]+)\}\}([\s\S]*?)\{\{\/if\}\}/g;
+      const conditionalRegex = /\{#if\s+([^}]+)\}([\s\S]*?)\{\/if\}/g;
       prompt = prompt.replace(
         conditionalRegex,
         (_match: string, condition: string, content: string) => {
@@ -215,7 +215,7 @@ export class PromptManager {
       ) as TextContent;
 
       // Replace variables in template
-      const varRegex = /\{\{([^}]+)\}\}/g;
+      const varRegex = /\{([^}]+)\}/g;
       let match;
       const matches = [];
 
@@ -236,7 +236,7 @@ export class PromptManager {
           if (varName in variables) {
             try {
               const resolvedValue = variableResolver.resolveVariable(varName);
-              prompt = prompt.replace(`{{${varName}}}`, resolvedValue) as TextContent;
+              prompt = prompt.replace(`{${varName}}`, resolvedValue) as TextContent;
             } catch (_error) {
               if (_error instanceof TemplateError) {
                 return {
@@ -282,7 +282,7 @@ export class PromptManager {
   }
 
   private extractRequiredVariables(templateContent: string): string[] {
-    const varRegex = /\{\{([^}]+)\}\}/g;
+    const varRegex = /\{([^}]+)\}/g;
     const matches = new Set<string>();
     let match;
 

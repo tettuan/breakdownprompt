@@ -1,28 +1,42 @@
 # @tettuan/breakdownprompt Examples
 
-This directory contains examples demonstrating how to use the @tettuan/breakdownprompt library.
+This directory contains practical examples demonstrating how to use the @tettuan/breakdownprompt library in real-world scenarios.
 
 ## Examples Overview
 
 ### 1. Basic Usage (`basic_usage.ts`)
-Demonstrates the core functionality:
-- Loading a prompt file
-- Replacing variables with provided values
+A foundational example showing the core functionality:
+- Loading a prompt template
+- Setting up variables for replacement
 - Basic error handling
+- Simple output generation
 
-### 2. Validation Example (`validation_example.ts`)
-Shows how to implement validation:
-- Variable validation
-- Error handling for invalid inputs
-- Path validation
-- Markdown format validation
+### 2. Task Generation (`generate_task_prompt.ts`)
+Shows how to generate a task description prompt:
+- Creating structured task descriptions
+- Specifying input files and output locations
+- Using templates for consistent task formatting
+
+### 3. Code Review (`generate_code_review.ts`)
+Demonstrates generating code review prompts:
+- Creating review requests with specific criteria
+- Managing review files and output locations
+- Structuring review guidelines
+
+### 4. Documentation Generation (`generate_documentation.ts`)
+Shows how to generate documentation prompts:
+- Creating documentation requests
+- Managing source files and output locations
+- Specifying documentation requirements
 
 ## Template Structure
 
-The `templates/` directory contains the markdown templates used by the examples:
+The `templates/` directory contains markdown templates for different use cases:
 
-- `basic_prompt.md`: Basic template showing variable replacement
-- `validation_prompt.md`: Template demonstrating validation scenarios
+- `basic_prompt.md`: Simple template for basic usage
+- `task_prompt.md`: Template for generating task descriptions
+- `code_review.md`: Template for code review requests
+- `documentation.md`: Template for documentation generation
 
 ## Directory Structure
 
@@ -30,12 +44,16 @@ The `templates/` directory contains the markdown templates used by the examples:
 examples/
 ├── templates/
 │   ├── basic_prompt.md
-│   ├── validation_prompt.md
+│   ├── task_prompt.md
+│   ├── code_review.md
+│   ├── documentation.md
 │   ├── schema/
 │   ├── input/
-│   └── task/
+│   └── output/
 ├── basic_usage.ts
-├── validation_example.ts
+├── generate_task_prompt.ts
+├── generate_code_review.ts
+├── generate_documentation.ts
 └── README.md
 ```
 
@@ -44,16 +62,46 @@ examples/
 To run an example:
 
 ```bash
+# Start with the basic example
 deno run --allow-read --allow-env examples/basic_usage.ts
-deno run --allow-read --allow-env examples/validation_example.ts
+
+# Then try the use case examples
+deno run --allow-read --allow-env examples/generate_task_prompt.ts
+deno run --allow-read --allow-env examples/generate_code_review.ts
+deno run --allow-read --allow-env examples/generate_documentation.ts
 ```
+
+## Use Case Patterns
+
+Each example demonstrates a common use case pattern:
+
+1. **Basic Usage**
+   - Initialize PromptManager
+   - Set up template and variables
+   - Generate and display output
+
+2. **Task Generation**
+   - Define task parameters
+   - Specify input/output locations
+   - Generate structured task description
+
+3. **Code Review**
+   - Define review criteria
+   - Specify files to review
+   - Generate review request
+
+4. **Documentation**
+   - Define documentation requirements
+   - Specify source files
+   - Generate documentation request
 
 ## Notes
 
-- All examples use the core variables defined in the documentation:
-  - `schema_file`
-  - `input_markdown`
-  - `input_markdown_file`
-  - `destination_path`
-- Examples demonstrate proper error handling and validation
-- Each example focuses on specific use cases and features
+- All examples use the core variables:
+  - `schema_file`: For validation and structure
+  - `input_text`: For main content
+  - `input_text_file`: For file-based input
+  - `destination_path`: For output location
+- Templates can be customized for specific needs
+- Error handling is included for robustness
+- Start with `basic_usage.ts` to understand the fundamentals

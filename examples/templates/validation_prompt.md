@@ -5,17 +5,17 @@ This prompt demonstrates validation and error handling.
 ## Schema Validation
 Attempting to use schema from: {schema_file}
 
-## Markdown Validation
+## Text Validation
 Content to validate:
-{input_markdown}
+{input_text}
 
 ## File Validation
-Attempting to read from: {input_markdown_file}
+Attempting to read from: {input_text_file}
 
 ## Output Path
 Will be saved to: {destination_path}
 
 Note: This example will fail validation due to:
-1. Non-existent schema file
-2. Invalid markdown format
-3. Non-existent input file 
+1. Directory traversal attempt in schema path
+2. Invalid text format
+3. Absolute path attempt in input file 

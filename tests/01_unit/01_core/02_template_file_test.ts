@@ -126,7 +126,7 @@ Deno.test("should handle malformed template syntax", () => {
     { content: "Hello { name}", expected: [] },
     { content: "Hello {{name}}", expected: [] },
     { content: "Hello {{name}", expected: [] },
-    { content: "Hello {name}}", expected: ["name"] },
+    { content: "Hello {name}}", expected: [] },
   ];
 
   malformedTemplates.forEach(({ content, expected }) => {

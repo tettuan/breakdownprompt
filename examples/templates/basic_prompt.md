@@ -2,15 +2,18 @@
 
 This is a basic prompt template that demonstrates variable replacement.
 
-## Input Markdown
-Content from input markdown:
-{input_markdown}
+## Input Text
+Content from input text:
+- **Text**: {input_text}
 
 ## Schema
-Using schema from: {schema_file}
+Using schema from:
+- _File_: {schema_file}
 
 ## Input File
-Reading from: {input_markdown_file}
+Reading from:
+- `{input_text_file}`
 
 ## Output
-Will be saved to: {destination_path}
+Will be saved to:
+- **Path**: {destination_path}

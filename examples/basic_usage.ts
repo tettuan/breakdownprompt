@@ -7,7 +7,11 @@
  * - Basic error handling
  */
 
-import { PromptManager } from "@tettuan/breakdownprompt";
+// For users: import from JSR
+// import { PromptManager } from "@tettuan/breakdownprompt";
+
+// For local development
+import { PromptManager } from "../mod.ts";
 
 async function main() {
   // Initialize PromptManager
@@ -16,16 +20,21 @@ async function main() {
   // Define prompt parameters with required variables
   const template = "./examples/templates/basic_prompt.md";
   const variables = {
+    input_text: "This is a sample input text for the basic prompt.",
     schema_file: "./examples/templates/schema/base.schema.json",
-    input_markdown: "# Sample Markdown\nThis is a sample markdown content.",
-    input_markdown_file: "./examples/templates/input/sample.md",
-    destination_path: "./examples/templates/task/output/"
+    input_text_file: "./examples/templates/input/sample.txt",
+    destination_path: "./examples/templates/output/"
   };
 
   try {
     // Generate prompt
     const result = await manager.generatePrompt(template, variables);
-    console.log("Generated content:", result.prompt);
+    if (result.success) {
+      console.log("Generated content:");
+      console.log(result.prompt);
+    } else {
+      console.error("Error generating prompt:", result.error);
+    }
   } catch (error: unknown) {
     if (error instanceof Error) {
       console.error("Error generating prompt:", error.message);

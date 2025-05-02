@@ -58,44 +58,12 @@ export class TemplateFile {
    * @returns Array of variable names
    */
   extractVariables(content: string): string[] {
-    // First, remove all double curly braces
-    const doubleBracePattern = /\{\{[^{}]*\}\}/g;
-    let processedContent = content.replace(doubleBracePattern, " ");
-
-    // Then find malformed variables (spaces between braces or unclosed braces)
-    const malformedPattern = /\{[^{}]*\s+[^{}]*\}/g;
-    let match;
-    while ((match = malformedPattern.exec(processedContent)) !== null) {
-      this.logger.warn("Found malformed template variable", { variable: match[0] });
-    }
-
-    // Remove all malformed variables from the content
-    processedContent = processedContent.replace(malformedPattern, " ");
-
-    // Find unclosed braces
-    const unclosedPattern = /\{[^{}]*$/g;
-    while ((match = unclosedPattern.exec(processedContent)) !== null) {
-      this.logger.warn("Found malformed template variable", { variable: match[0] });
-    }
-
-    // Remove unclosed braces
-    processedContent = processedContent.replace(unclosedPattern, " ");
-
-    // Find variables with double curly braces
-    const doubleOpenPattern = /\{\{[^{}]*\}/g;
-    while ((match = doubleOpenPattern.exec(processedContent)) !== null) {
-      this.logger.warn("Found malformed template variable", { variable: match[0] });
-    }
-
-    // Remove variables with double curly braces
-    processedContent = processedContent.replace(doubleOpenPattern, " ");
-
     // Extract variables from single curly braces with no spaces
-    const variablePattern = /\{([^{}\s]+)\}/g;
+    const variablePattern = /(?<!\{)\{([^{}\s]+)\}(?!\})/g;
     const variables = new Set<string>();
     let variableMatch;
 
-    while ((variableMatch = variablePattern.exec(processedContent)) !== null) {
+    while ((variableMatch = variablePattern.exec(content)) !== null) {
       const variable = variableMatch[1].trim();
       if (variable) {
         variables.add(variable);
