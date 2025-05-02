@@ -100,7 +100,7 @@ export class PromptManager {
           return {
             success: false,
             error:
-              `${PermissionErrorMessages.ACCESS_FILE}: Access to absolute paths outside /tmp is restricted`,
+              `${PermissionErrorMessages.ACCESS_FILE}: Access to absolute paths outside /tmp is restricted. Please use relative paths instead.`,
           };
         }
 
