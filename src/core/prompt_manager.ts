@@ -13,15 +13,35 @@ import { ensureFile } from "jsr:@std/fs@^0.220.1";
 
 /**
  * A class for managing and generating prompts from templates with variable replacement.
- * Handles template loading, variable validation, and prompt generation.
- *
- * @module
+ * 
+ * @class PromptManager
  * @description
- * This module provides functionality for:
+ * This class provides functionality for:
  * - Loading prompt templates from files
  * - Validating template paths and variables
  * - Replacing variables in templates
  * - Generating final prompts
+ * 
+ * It handles various aspects of prompt generation including:
+ * - File system operations
+ * - Path validation
+ * - Variable validation and replacement
+ * - Error handling
+ * 
+ * @property {TextValidator} textValidator - Validator for text content
+ * @property {PathValidator} pathValidator - Validator for file paths
+ * @property {VariableValidator} variableValidator - Validator for variables
+ * @property {FileUtils} fileUtils - Utility for file operations
+ * @property {BreakdownLogger} logger - Logger for debugging
+ * 
+ * @example
+ * ```typescript
+ * const manager = new PromptManager();
+ * const result = await manager.generatePrompt(
+ *   "./templates/task.md",
+ *   { name: "John", task: "Code Review" }
+ * );
+ * ```
  */
 export class PromptManager {
   private textValidator: TextValidator;
@@ -401,8 +421,8 @@ export class PromptManager {
 
   /**
    * Writes the generated prompt to a file.
-   * @param content The prompt content to write
-   * @param destinationPath Path where the prompt should be written
+   * @param content - The prompt content to write
+   * @param destinationPath - Path where the prompt should be written
    * @throws {FileSystemError} If the file cannot be written
    */
   async writePrompt(content: string, destinationPath: string): Promise<void> {
@@ -453,6 +473,7 @@ export class PromptManager {
    * @param templatePath - Path to the template file
    * @param variables - Variables to replace in the template
    * @returns The processed template content
+   * @throws {Error} If template processing fails
    */
   async processTemplate(
     templatePath: string,

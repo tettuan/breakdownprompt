@@ -35,7 +35,22 @@ export type TextContent = string & {
 };
 
 /**
- * Variables represents a set of variables with their values
+ * Represents a set of variables with their values.
+ * 
+ * @type {Variables}
+ * @description
+ * This type defines a record of variables where:
+ * - Keys are valid variable names (ValidVariableKey)
+ * - Values can be file paths, directory paths, or text content
+ * 
+ * @example
+ * ```typescript
+ * const variables: Variables = {
+ *   input_file: "./src/main.ts" as FilePath,
+ *   output_dir: "./dist" as DirectoryPath,
+ *   description: "Code review task" as TextContent
+ * };
+ * ```
  */
 export type Variables = Partial<
   {
@@ -45,33 +60,49 @@ export type Variables = Partial<
 
 /**
  * Interface for validating variables and their values.
+ * 
  * @interface VariableValidator
+ * @description
+ * This interface defines methods for validating different types of variables:
+ * - Variable keys (names)
+ * - File paths
+ * - Directory paths
+ * - Sets of variables
+ * 
+ * @example
+ * ```typescript
+ * const validator = new VariableValidator();
+ * const isValid = await validator.validateVariables({
+ *   input_file: "./src/main.ts",
+ *   output_dir: "./dist"
+ * });
+ * ```
  */
 export interface VariableValidator {
   /**
    * Validates a variable key.
-   * @param key The key to validate
+   * @param key - The key to validate
    * @returns true if the key is valid
    */
   validateKey(key: string): key is ValidVariableKey;
 
   /**
    * Validates a file path.
-   * @param path The path to validate
+   * @param path - The path to validate
    * @returns A promise that resolves to true if the path is valid
    */
   validateFilePath(path: string): Promise<boolean>;
 
   /**
    * Validates a directory path.
-   * @param path The path to validate
+   * @param path - The path to validate
    * @returns A promise that resolves to true if the path is valid
    */
   validateDirectoryPath(path: string): Promise<boolean>;
 
   /**
    * Validates a set of variables.
-   * @param variables The variables to validate
+   * @param variables - The variables to validate
    * @returns A promise that resolves to true if all variables are valid
    */
   validateVariables(variables: Variables): Promise<boolean>;

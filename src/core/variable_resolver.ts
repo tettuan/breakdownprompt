@@ -2,7 +2,26 @@ import { TemplateError, ValidationError } from "../errors.ts";
 
 /**
  * A class for resolving variables in a template.
- * Handles variable replacement and circular reference detection.
+ * 
+ * @class VariableResolver
+ * @description
+ * This class handles variable replacement in templates and detects circular references.
+ * It maintains state to track visited and resolving variables to prevent infinite loops.
+ * 
+ * @property {Record<string, string>} variables - The variables to resolve
+ * @property {Set<string>} visited - Set of variables that have been visited
+ * @property {Set<string>} resolving - Set of variables currently being resolved
+ * @property {Map<string, string>} resolvedVars - Cache of resolved variable values
+ * 
+ * @example
+ * ```typescript
+ * const resolver = new VariableResolver({
+ *   name: "John",
+ *   greeting: "Hello, {name}!"
+ * });
+ * const result = resolver.resolveVariable("greeting");
+ * // result: "Hello, John!"
+ * ```
  */
 export class VariableResolver {
   private variables: Record<string, string>;
