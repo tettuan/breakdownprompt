@@ -27,6 +27,24 @@
 
 テンプレートには、事前に予期できない名称が使われる可能性があるため、予約変数とは扱い方を分ける。
 
+- 検出:
+  - "something {variable_name} here."
+  - "something{variable_name}here."
+  - "something{variable_name}here."
+  - "something {variable_name} here. \n{variable_name}"
+- 検出しない:
+  - "something { variable_name } here."
+  - "something{ variable_name }here."
+  - "something{ variable_name}here."
+  - "something{variable_name }here."
+  - "something {{variable_name}} here is not detected."
+  - "something {{variable_name} here is not detected."
+  - "something {variable_name}} here is not detected."
+  - "something{{variable_name}}here is not detected."
+  - "something{{variable_name1}, {variable_name2}}here is not detected."
+  - "something {{variable name}} here is not detected."
+  - "something {{variable\nname}} here is not detected."
+
 ### バリデーション
 
 テンプレート変数に用いることができる文字列は以下のルールである。
