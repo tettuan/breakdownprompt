@@ -11,7 +11,9 @@ sequenceDiagram
     participant PromptResult
 
     Note over PromptManager,PromptResult: 変数置換フロー
-    PromptManager->>VariableValidator: validateVariableValues(matched_variables)
+    PromptManager->>VariableValidator: validateReservedVariableValues(matched_variables)
+    VariableValidator->>Variables: getReservedVariableTypes()
+    Variables-->>VariableValidator: reserved_variable_types
     loop 各予約変数に対して
         VariableValidator->>VariableValidator: validateValueType(variable)
         alt パス型変数の場合

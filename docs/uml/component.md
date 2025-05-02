@@ -19,6 +19,17 @@ graph TB
             VV[変数バリデーター]
             RV[予約変数]
             TV[テンプレート変数]
+            VK[変数キー検証]
+            VV[変数値検証]
+            subgraph "予約変数クラス"
+                BRV[BaseReservedVariable]
+                subgraph "具象クラス"
+                    SF[SchemaFileVariable]
+                    IT[InputTextVariable]
+                    IF[InputTextFileVariable]
+                    DP[DestinationPathVariable]
+                end
+            end
         end
 
         subgraph "検証フェーズ"
@@ -58,6 +69,13 @@ graph TB
     VV --> RV
     VV --> TV
     VV --> PV
+    VV --> VK
+    VV --> VV
+    VV --> BRV
+    BRV --> SF
+    BRV --> IT
+    BRV --> IF
+    BRV --> DP
     PM --> ST
 
     subgraph "テスト環境"

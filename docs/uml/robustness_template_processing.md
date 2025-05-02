@@ -19,10 +19,21 @@ robustnessDiagram
     TF --> TP: template_content
 
     Note over TP,VV: 予約変数の検証
-    TP -> VV: validateReservedVariables(variables)
+    TP -> VV: validateReservedVariableKeys(variables)
     VV -> RV: getReservedVariableKeys()
     RV --> VV: reserved_variable_keys
-    VV --> TP: validation_result
+    VV --> TP: key_validation_result
+    alt キー検証失敗
+        TP --> Client: error
+    end
+
+    TP -> VV: validateReservedVariableValues(variables)
+    VV -> RV: getReservedVariableTypes()
+    RV --> VV: reserved_variable_types
+    VV --> TP: value_validation_result
+    alt 値検証失敗
+        TP --> Client: error
+    end
 
     Note over TP,VM: テンプレート変数の抽出と照合
     TP -> VM: extractTemplateVariables(template_content)

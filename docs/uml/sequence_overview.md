@@ -15,8 +15,15 @@ sequenceDiagram
     Client->>PromptManager: generatePrompt(params)
     
     Note over PromptManager: パラメータ検証
-    PromptManager->>VariableValidator: validateReservedVariables(params.variables)
-    alt 予約変数検証失敗
+    PromptManager->>VariableValidator: validateReservedVariableKeys(params.variables)
+    alt 予約変数キー検証失敗
+        VariableValidator-->>PromptManager: error
+        PromptManager-->>Client: PromptResult(error)
+    end
+    VariableValidator-->>PromptManager: valid_keys
+
+    PromptManager->>VariableValidator: validateReservedVariableValues(params.variables)
+    alt 予約変数値検証失敗
         VariableValidator-->>PromptManager: error
         PromptManager-->>Client: PromptResult(error)
     end

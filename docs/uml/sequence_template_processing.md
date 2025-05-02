@@ -14,11 +14,17 @@ sequenceDiagram
     PromptManager->>TemplateFile: readFile(params.template_file)
     TemplateFile-->>PromptManager: template_content
 
+    PromptManager->>VariableValidator: validateReservedVariableKeys(params.variables)
+    VariableValidator->>Variables: getReservedVariableKeys()
+    Variables-->>VariableValidator: reserved_variable_keys
+    alt 予約変数キー検証失敗
+        VariableValidator-->>PromptManager: error
+        PromptManager-->>PromptResult: error
+    end
+    VariableValidator-->>PromptManager: valid_keys
+
     PromptManager->>VariableValidator: extractTemplateVariables(template_content)
     VariableValidator-->>PromptManager: template_variables
-
-    PromptManager->>Variables: getReservedVariableKeys()
-    Variables-->>PromptManager: reserved_variable_keys
 
     PromptManager->>VariableValidator: matchVariables(template_variables, reserved_variable_keys)
     alt 変数照合失敗

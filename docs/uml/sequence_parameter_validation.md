@@ -11,11 +11,21 @@ sequenceDiagram
     participant PromptResult
 
     Note over PromptManager,PromptResult: パラメータ検証フロー
-    PromptManager->>VariableValidator: validateReservedVariables(params.variables)
+    PromptManager->>VariableValidator: validateReservedVariableKeys(params.variables)
     VariableValidator->>Variables: getReservedVariableKeys()
     Variables-->>VariableValidator: reserved_variable_keys
+    VariableValidator->>VariableValidator: validateVariableKeys(params.variables)
+    alt 変数キー検証失敗
+        VariableValidator-->>PromptManager: error
+        PromptManager-->>PromptResult: error
+    end
+    VariableValidator-->>PromptManager: valid_keys
+
+    PromptManager->>VariableValidator: validateReservedVariableValues(params.variables)
+    VariableValidator->>Variables: getReservedVariableTypes()
+    Variables-->>VariableValidator: reserved_variable_types
     VariableValidator->>VariableValidator: validateVariableTypes(params.variables)
-    alt 変数検証失敗
+    alt 変数値検証失敗
         VariableValidator-->>PromptManager: error
         PromptManager-->>PromptResult: error
     end
