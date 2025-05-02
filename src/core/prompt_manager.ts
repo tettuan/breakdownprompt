@@ -13,7 +13,7 @@ import { ensureFile } from "jsr:@std/fs@^0.220.1";
 
 /**
  * A class for managing and generating prompts from templates with variable replacement.
- * 
+ *
  * @class PromptManager
  * @description
  * This class provides functionality for:
@@ -21,19 +21,19 @@ import { ensureFile } from "jsr:@std/fs@^0.220.1";
  * - Validating template paths and variables
  * - Replacing variables in templates
  * - Generating final prompts
- * 
+ *
  * It handles various aspects of prompt generation including:
  * - File system operations
  * - Path validation
  * - Variable validation and replacement
  * - Error handling
- * 
+ *
  * @property {TextValidator} textValidator - Validator for text content
  * @property {PathValidator} pathValidator - Validator for file paths
  * @property {VariableValidator} variableValidator - Validator for variables
  * @property {FileUtils} fileUtils - Utility for file operations
  * @property {BreakdownLogger} logger - Logger for debugging
- * 
+ *
  * @example
  * ```typescript
  * const manager = new PromptManager();

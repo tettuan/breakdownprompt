@@ -59,7 +59,7 @@ function setupTest() {
 // Main Test
 Deno.test("should process basic variable chain", async () => {
   setupTest();
-  const template = "# Hello {{name}}, you are {{age}} years old";
+  const template = "# Hello {name}, you are {age} years old";
   const variables = { name: "test", age: "25" };
   const expectedOutput = "# Hello test, you are 25 years old";
 
@@ -72,7 +72,7 @@ Deno.test("should process basic variable chain", async () => {
 
 Deno.test("should handle multi-level dependencies", async () => {
   setupTest();
-  const template = "## {{greeting}}, {{name}}! You are {{age}} years old";
+  const template = "## {greeting}, {name}! You are {age} years old";
   const variables = { greeting: "Hello", name: "test", age: "25" };
   const expectedOutput = "## Hello, test! You are 25 years old";
 
@@ -85,8 +85,8 @@ Deno.test("should handle multi-level dependencies", async () => {
 
 Deno.test("should detect circular dependencies", async () => {
   setupTest();
-  const template = "### {{a}} {{b}}";
-  const variables = { a: "{{b}}", b: "{{a}}" };
+  const template = "### {a} {b}";
+  const variables = { a: "{b}", b: "{a}" };
 
   const result = await promptManager.generatePrompt(template, variables);
   assertEquals(result.success, false);
@@ -97,7 +97,7 @@ Deno.test("should detect circular dependencies", async () => {
 
 Deno.test("should handle missing dependencies", async () => {
   setupTest();
-  const template = "#### Hello {{name}}, you are {{age}} years old";
+  const template = "#### Hello {name}, you are {age} years old";
   const variables = { name: "test" };
 
   const result = await promptManager.generatePrompt(template, variables);
@@ -109,7 +109,7 @@ Deno.test("should handle missing dependencies", async () => {
 
 Deno.test("should handle invalid variable names", async () => {
   setupTest();
-  const template = "##### Hello {{invalid-name}}";
+  const template = "##### Hello {invalid-name}";
   const variables = { "invalid-name": "test" };
 
   const result = await promptManager.generatePrompt(template, variables);
@@ -124,7 +124,7 @@ Deno.test("should handle invalid variable names", async () => {
 
 Deno.test("should handle invalid variable values", async () => {
   setupTest();
-  const template = "###### Age: {{age}}";
+  const template = "###### Age: {age}";
   const variables = { age: "" };
 
   const result = await promptManager.generatePrompt(template, variables);
@@ -136,7 +136,7 @@ Deno.test("should handle invalid variable values", async () => {
 
 Deno.test("should handle special characters in chains", async () => {
   setupTest();
-  const template = "> {{greeting}}, {{name}}!";
+  const template = "> {greeting}, {name}!";
   const variables = { greeting: "Hello, World!", name: "test" };
   const expectedOutput = "> Hello, World!, test!";
 

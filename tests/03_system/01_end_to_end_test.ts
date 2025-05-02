@@ -55,7 +55,7 @@ function setupTest() {
 // Main Test
 Deno.test("should process complete flow", async () => {
   setupTest();
-  const template = "# Hello {{name}}, you are {{age}} years old";
+  const template = "# Hello {name}, you are {age} years old";
   const variables = { name: "test", age: "25" };
   const expectedOutput = "# Hello test, you are 25 years old";
 

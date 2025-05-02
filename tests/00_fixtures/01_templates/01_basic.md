@@ -1,6 +1,6 @@
 # Basic Template
 
-Hello, {{name}}!
+Hello, {name}!
 
 This is a basic template file for testing purposes.
 

@@ -1,6 +1,6 @@
 /**
  * Parameter Types
- * 
+ *
  * @module ParameterTypes
  * @description
  * This module defines types for parameters and their processed results.
@@ -10,14 +10,14 @@
 
 /**
  * Basic parameter types that can be used in parameters.
- * 
+ *
  * @type {BasicParameterValue}
  * @description
  * Represents the basic types that can be used as parameter values:
  * - string: Text values
  * - number: Numeric values
  * - boolean: True/false values
- * 
+ *
  * @example
  * ```typescript
  * const param: BasicParameterValue = "Hello"; // string
@@ -29,12 +29,12 @@ export type BasicParameterValue = string | number | boolean;
 
 /**
  * Complex parameter types that can contain nested objects.
- * 
+ *
  * @interface ComplexParameterValue
  * @description
  * Represents complex parameter values that can contain nested objects.
  * Each key can map to either a basic value or another complex value.
- * 
+ *
  * @example
  * ```typescript
  * const complex: ComplexParameterValue = {
@@ -52,12 +52,12 @@ export interface ComplexParameterValue {
 
 /**
  * Parameters that can be processed by the ParameterManager.
- * 
+ *
  * @interface Parameters
  * @description
  * Represents a collection of parameters where each key maps to either
  * a basic value or a complex value.
- * 
+ *
  * @example
  * ```typescript
  * const params: Parameters = {

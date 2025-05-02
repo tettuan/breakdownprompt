@@ -36,13 +36,13 @@ export type TextContent = string & {
 
 /**
  * Represents a set of variables with their values.
- * 
+ *
  * @type {Variables}
  * @description
  * This type defines a record of variables where:
  * - Keys are valid variable names (ValidVariableKey)
  * - Values can be file paths, directory paths, or text content
- * 
+ *
  * @example
  * ```typescript
  * const variables: Variables = {
@@ -60,7 +60,7 @@ export type Variables = Partial<
 
 /**
  * Interface for validating variables and their values.
- * 
+ *
  * @interface VariableValidator
  * @description
  * This interface defines methods for validating different types of variables:
@@ -68,7 +68,7 @@ export type Variables = Partial<
  * - File paths
  * - Directory paths
  * - Sets of variables
- * 
+ *
  * @example
  * ```typescript
  * const validator = new VariableValidator();
