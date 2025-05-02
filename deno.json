@@ -1,6 +1,6 @@
 {
   "name": "@tettuan/breakdownprompt",
-  "version": "0.1.8",
+  "version": "1.0.0",
   "exports": "./src/mod.ts",
   "tasks": {
     "test": "LOG_LEVEL=debug deno test --allow-read --allow-write --allow-env",
@@ -65,7 +65,9 @@
     ]
   },
   "test": {
-    "include": ["tests/"],
+    "include": [
+      "tests/"
+    ],
     "exclude": []
   }
 }
