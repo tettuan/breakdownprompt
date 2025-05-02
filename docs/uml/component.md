@@ -15,8 +15,13 @@ graph TB
             TF[テンプレートファイル]
         end
 
-        subgraph "検証フェーズ"
+        subgraph "変数管理フェーズ"
             VV[変数バリデーター]
+            RV[予約変数]
+            TV[テンプレート変数]
+        end
+
+        subgraph "検証フェーズ"
             PV[パスバリデーター]
         end
 
@@ -44,10 +49,15 @@ graph TB
 
     PG --> VV
     PG --> PV
+    PG --> RV
+    PG --> TV
 
     TF --> FU
     FU --> PF
     VV --> SC
+    VV --> RV
+    VV --> TV
+    VV --> PV
     PM --> ST
 
     subgraph "テスト環境"

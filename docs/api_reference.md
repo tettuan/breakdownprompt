@@ -6,6 +6,7 @@
 2. [Interfaces](#interfaces)
 3. [Types](#types)
 4. [Error Handling](#error-handling)
+5. [Variable Processing](#variable-processing)
 
 ## PromptManager
 
@@ -33,7 +34,9 @@ async generatePrompt(
 
 - `params`: Object containing template and variables information
   - `template_file`: Path to the template file (required)
-  - `variables`: A record of variable names and their replacement values (required)
+  - `variables`: A record of reserved variable names and their replacement values (required)
+    - Only reserved variables are accepted
+    - See [Variable Definition](./variables.ja.md) for details
 
 ##### Returns
 
@@ -47,13 +50,15 @@ An object containing:
 
 1. Parameter Validation
    - Required parameters check
-   - Variable name format validation
+   - Variable name format validation (must match reserved variables)
    - Path validation for template file
 
 2. Template Processing
    - Template file reading
    - Markdown format validation
    - Variable extraction and validation
+     - Template variable detection
+     - Reserved variable matching
 
 3. Variable Replacement
    - Type-specific validation (path/markdown)
@@ -86,7 +91,7 @@ async writePrompt(content: string, destinationPath: string): Promise<void>
 interface PromptParams {
   /** Path to the template file (required) */
   template_file: string;
-  /** Variables to replace in the template (required) */
+  /** Reserved variables to replace in the template (required) */
   variables: Record<string, string>;
 }
 ```
@@ -112,9 +117,10 @@ interface PromptResult {
    - Thrown when input validation fails
    - Common causes:
      - Invalid file paths
-     - Invalid variable names (must start with letter, alphanumeric and underscore only)
+     - Invalid variable names (must match reserved variables)
      - Invalid markdown content
      - Missing required parameters
+     - Non-reserved variables detected
 
 2. **FileSystemError**
    - Thrown when file operations fail
@@ -140,7 +146,31 @@ interface PromptResult {
    - Path validation errors
    - Markdown validation errors
 
-## Variable Processing Rules
+## Variable Processing
+
+### Variable Types
+
+Variables are defined in two aspects:
+1. Reserved Variables: Predefined variable names with corresponding types and processing classes
+2. Template Variables: Variable names discovered during template scanning
+
+See [Variable Definition](./variables.ja.md) for detailed explanation.
+
+### Reserved Variables
+
+Reserved variables are defined in the main code and must be:
+- Predefined with type and class definitions
+- Passed as `variables` parameter values
+- Validated against template variables
+
+### Template Variables
+
+Template variables are:
+- Discovered during template scanning using `{variable}` notation
+- Validated against reserved variables
+- Replaced only if matching a reserved variable
+
+### Variable Processing Rules
 
 1. **Variable Types**
    - `schema_file`: Valid file path
@@ -160,6 +190,7 @@ interface PromptResult {
    - Markdown format check
    - Path normalization
    - Type-specific validation
+   - Reserved variable matching
 
 4. **Replacement Rules**
    - Same variable is replaced with same value everywhere
@@ -167,6 +198,7 @@ interface PromptResult {
    - No recursive processing
    - No variable escape detection
    - One-time template processing
+   - Only reserved variables are processed
 
 5. **Security Considerations**
    - Minimal local file operations

@@ -12,7 +12,7 @@ APIの詳細な仕様については、[APIリファレンス](./api_reference.m
 
 - template_file : テンプレートとなるプロンプトファイルのパス （必須）
 - variables : テンプレート内で置換される変数の key value セット （必須）
-  - 「置換処理の対象変数」で詳細を定義している
+  - 詳細は[変数定義](./variables.ja.md)を参照
 
 # プロンプトファイルの取り扱い
 
@@ -56,7 +56,7 @@ this is a propmt contents. ./.agent/breakdown/issues/12345_something.md
 
 置換処理は、1つの変数名に1つのクラスを割り当てる。クラスは、置き換える処理のルールを定義している。
 
-流れとしては、
+流れは、
 
 1. パラメータ検証
    - 必須パラメータの存在確認
@@ -74,7 +74,11 @@ this is a propmt contents. ./.agent/breakdown/issues/12345_something.md
 
 ### 置換処理の対象変数
 
-`./type_of_variables.ja.md` に詳細を定義している。
+変数は2つの側面で定義される：
+1. 予約変数：事前定義された変数名と、対応する型、変数を処理するクラス
+2. テンプレート変数：テンプレートのスキャンで発見された変数名
+
+詳細は[変数定義](./variables.ja.md)を参照してください。
 
 BreakdownPromptの受け取りパラメータ `variables` が許可している変数は次のとおり。 variables.schema_file
 でアクセス可能とする。
@@ -193,7 +197,7 @@ APIの詳細な仕様については、[APIリファレンス](./api_reference.m
 
 - `template_file`: テンプレートとなるプロンプトファイルのパス（必須）
 - `variables`: テンプレート内で置換される変数の key-value セット（必須）
-  - 詳細は「3.2 変数定義」を参照
+  - 詳細は[変数定義](./variables.ja.md)を参照
 
 ### 2.2 出力形式
 

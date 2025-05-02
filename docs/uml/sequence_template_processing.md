@@ -1,41 +1,31 @@
 # テンプレート処理
 
-このシーケンス図は、テンプレートファイルの処理フローを示しています。ファイルの読み込みから始まり、テンプレート内の変数抽出、変数の存在確認までを順次行います。各ステップでエラーが発生した場合は即座に処理を中断し、エラーを返却します。テンプレートの内容を解析せず、変数の置換のみを行う点が特徴です。
+このシーケンス図は、テンプレート処理の詳細なフローを示しています。テンプレートファイルの読み込み、テンプレート変数の抽出、予約変数との照合を順次行い、各ステップでエラーが発生した場合は即座に処理を中断し、エラーを返却します。変数の検証と照合の責務を明確に分離している点が特徴です。
 
 ```mermaid
 sequenceDiagram
     participant PromptManager
-    participant PromptGenerator
     participant TemplateFile
-    participant FileUtils
     participant VariableValidator
+    participant Variables
     participant PromptResult
 
-    Note over PromptManager,PromptResult: テンプレート処理
-    PromptManager->>TemplateFile: readFile(template_file)
-    TemplateFile->>FileUtils: readFile(template_file)
-    FileUtils-->>TemplateFile: template_content
+    Note over PromptManager,PromptResult: テンプレート処理フロー
+    PromptManager->>TemplateFile: readFile(params.template_file)
     TemplateFile-->>PromptManager: template_content
 
-    Note over PromptManager: 変数抽出と検証
-    PromptManager->>PromptGenerator: parseTemplate(template_content)
-    PromptGenerator-->>PromptManager: variable_list
+    PromptManager->>VariableValidator: extractTemplateVariables(template_content)
+    VariableValidator-->>PromptManager: template_variables
 
-    loop 各変数に対して
-        PromptManager->>VariableValidator: validateVariableName(variable)
-        alt 変数名不正
-            VariableValidator-->>PromptManager: false
-            PromptManager-->>PromptResult: error
-        end
-        VariableValidator-->>PromptManager: true
-    end
+    PromptManager->>Variables: getReservedVariableKeys()
+    Variables-->>PromptManager: reserved_variable_keys
 
-    Note over PromptManager: 変数存在確認
-    PromptManager->>PromptManager: checkVariableExistence(variable_list)
-    alt 変数不足
+    PromptManager->>VariableValidator: matchVariables(template_variables, reserved_variable_keys)
+    alt 変数照合失敗
+        VariableValidator-->>PromptManager: error
         PromptManager-->>PromptResult: error
     end
+    VariableValidator-->>PromptManager: matched_variables
 
-    Note over PromptManager: テンプレート処理完了
     PromptManager-->>PromptResult: success
 ``` 

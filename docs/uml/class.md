@@ -6,6 +6,8 @@ classDiagram
             -validateParams(params: PromptParams): boolean
             -processTemplate(params: PromptParams): string
             -handleError(message: string): PromptResult
+            -validateReservedVariables(variables: Map<string, string>): boolean
+            -extractTemplateVariables(template: string): string[]
         }
 
         class PromptGenerator {
@@ -22,12 +24,16 @@ classDiagram
             +validateExtension(): boolean
             +getContent(): string
             +static isValidExtension(extension: string): boolean
+            +replaceVariable(content: string, variable: string, value: string): string
         }
 
         class VariableValidator {
             +validateVariableName(name: string): boolean
             +validateVariableType(name: string, value: string): boolean
-            +validateMarkdownText(text: string): boolean
+            +validateReservedVariables(variables: Map<string, string>): boolean
+            +matchVariables(template_vars: string[], reserved_vars: string[]): string[]
+            +validateFilePath(path: string): boolean
+            +validateDirectoryPath(path: string): boolean
         }
 
         class PathValidator {
@@ -42,11 +48,6 @@ classDiagram
             +exists(path: string): boolean
             +isReadable(path: string): boolean
             +getExtension(path: string): string
-        }
-
-        class MarkdownValidator {
-            +validateMarkdown(content: string): boolean
-            +sanitizeMarkdown(content: string): string
         }
 
         class PromptParams {
@@ -76,6 +77,7 @@ classDiagram
             +testGeneratePrompt(): void
             +testValidateParams(): void
             +testProcessTemplate(): void
+            +testValidateReservedVariables(): void
         }
 
         class PromptGeneratorTest {
@@ -89,13 +91,13 @@ classDiagram
             +testReadFile(): void
             +testValidateExtension(): void
             +testInvalidExtension(): void
+            +testReplaceVariable(): void
         }
 
         class ValidatorTest {
             -logger: BreakdownLogger
             +testVariableValidator(): void
             +testPathValidator(): void
-            +testMarkdownValidator(): void
         }
     }
 
@@ -104,13 +106,11 @@ classDiagram
     PromptManager --> VariableValidator
     PromptManager --> PathValidator
     PromptManager --> FileUtils
-    PromptManager --> MarkdownValidator
     PromptManager --> PromptParams
     PromptManager --> PromptResult
 
     PromptGenerator --> VariableValidator
     PromptGenerator --> PathValidator
-    PromptGenerator --> MarkdownValidator
 
     TemplateFile --> FileUtils
 
