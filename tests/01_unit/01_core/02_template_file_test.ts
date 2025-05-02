@@ -87,7 +87,7 @@ Deno.test("should handle file read errors", async () => {
 
 Deno.test("should extract variables from template", () => {
   const templateFile = new TemplateFile(mockFileUtils, logger);
-  const templateContent = "Hello {{name}}, Age: {{age}}";
+  const templateContent = "Hello {name}, Age: {age}";
   const expectedVariables = ["name", "age"];
 
   const variables = templateFile.extractVariables(templateContent);
@@ -106,7 +106,7 @@ Deno.test("should handle templates without variables", () => {
 
 Deno.test("should handle nested variables", () => {
   const templateFile = new TemplateFile(mockFileUtils, logger);
-  const templateContent = "Hello {{user.name}}, Age: {{user.age}}";
+  const templateContent = "Hello {user.name}, Age: {user.age}";
   const expectedVariables = ["user.name", "user.age"];
 
   const variables = templateFile.extractVariables(templateContent);
@@ -117,10 +117,16 @@ Deno.test("should handle nested variables", () => {
 Deno.test("should handle malformed template syntax", () => {
   const templateFile = new TemplateFile(mockFileUtils, logger);
   const malformedTemplates = [
+    { content: "Hello {name", expected: [] },
+    { content: "Hello {name} {age", expected: ["name"] },
+    { content: "Hello {", expected: [] },
+    { content: "Hello }", expected: [] },
+    { content: "Hello { name }", expected: [] },
+    { content: "Hello {name }", expected: [] },
+    { content: "Hello { name}", expected: [] },
+    { content: "Hello {{name}}", expected: [] },
     { content: "Hello {{name}", expected: [] },
-    { content: "Hello {{name}} {{age", expected: ["name"] },
-    { content: "Hello {{", expected: [] },
-    { content: "Hello }}", expected: [] },
+    { content: "Hello {name}}", expected: ["name"] },
   ];
 
   malformedTemplates.forEach(({ content, expected }) => {
@@ -150,4 +156,50 @@ Deno.test("should handle file system errors", async () => {
     Error,
     "File not found",
   );
+});
+
+Deno.test("should detect variables with single curly braces in template", async () => {
+  const templateFile = new TemplateFile(mockFileUtils, logger);
+  const templateContent = `
+    This is a test template with variables:
+    {variable1}
+    {variable_name}
+    {variable123}
+    {variable_name_123}
+  `;
+
+  const variables = await templateFile.extractVariables(templateContent);
+  assertEquals(variables.length, 4);
+  assertEquals(variables.includes("variable1"), true);
+  assertEquals(variables.includes("variable_name"), true);
+  assertEquals(variables.includes("variable123"), true);
+  assertEquals(variables.includes("variable_name_123"), true);
+});
+
+Deno.test("should not detect variables with double curly braces in template", async () => {
+  const templateFile = new TemplateFile(mockFileUtils, logger);
+  const templateContent = `
+    This is a test template with invalid variables:
+    {{variable1}}
+    {{variable_name}}
+    {{variable123}}
+    {{variable_name_123}}
+  `;
+
+  const variables = await templateFile.extractVariables(templateContent);
+  assertEquals(variables.length, 0);
+});
+
+Deno.test("should not detect variables with spaces in braces", async () => {
+  const templateFile = new TemplateFile(mockFileUtils, logger);
+  const templateContent = `
+    This is a test template with invalid variables:
+    { variable1 }
+    { variable_name }
+    { variable123 }
+    { variable_name_123 }
+  `;
+
+  const variables = await templateFile.extractVariables(templateContent);
+  assertEquals(variables.length, 0);
 });

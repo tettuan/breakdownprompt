@@ -58,25 +58,52 @@ export class TemplateFile {
    * @returns Array of variable names
    */
   extractVariables(content: string): string[] {
-    // Match variables between {{ and }}, ignoring malformed templates
-    const variablePattern = /\{\{([^{}]+)\}\}/g;
-    const malformedPattern = /\{\{([^{}]+)(?!\}\})/g;
-    const variables = new Set<string>();
-    let match;
+    // First, remove all double curly braces
+    const doubleBracePattern = /\{\{[^{}]*\}\}/g;
+    let processedContent = content.replace(doubleBracePattern, " ");
 
-    // Check for malformed templates and log them
-    let malformedMatch;
-    while ((malformedMatch = malformedPattern.exec(content)) !== null) {
-      this.logger.warn("Found malformed template variable", { variable: malformedMatch[0] });
+    // Then find malformed variables (spaces between braces or unclosed braces)
+    const malformedPattern = /\{[^{}]*\s+[^{}]*\}/g;
+    let match;
+    while ((match = malformedPattern.exec(processedContent)) !== null) {
+      this.logger.warn("Found malformed template variable", { variable: match[0] });
     }
 
-    // Extract only properly formed variables
-    while ((match = variablePattern.exec(content)) !== null) {
-      if (match[1]) {
-        variables.add(match[1].trim());
+    // Remove all malformed variables from the content
+    processedContent = processedContent.replace(malformedPattern, " ");
+
+    // Find unclosed braces
+    const unclosedPattern = /\{[^{}]*$/g;
+    while ((match = unclosedPattern.exec(processedContent)) !== null) {
+      this.logger.warn("Found malformed template variable", { variable: match[0] });
+    }
+
+    // Remove unclosed braces
+    processedContent = processedContent.replace(unclosedPattern, " ");
+
+    // Find variables with double curly braces
+    const doubleOpenPattern = /\{\{[^{}]*\}/g;
+    while ((match = doubleOpenPattern.exec(processedContent)) !== null) {
+      this.logger.warn("Found malformed template variable", { variable: match[0] });
+    }
+
+    // Remove variables with double curly braces
+    processedContent = processedContent.replace(doubleOpenPattern, " ");
+
+    // Extract variables from single curly braces with no spaces
+    const variablePattern = /\{([^{}\s]+)\}/g;
+    const variables = new Set<string>();
+    let variableMatch;
+
+    while ((variableMatch = variablePattern.exec(processedContent)) !== null) {
+      const variable = variableMatch[1].trim();
+      if (variable) {
+        variables.add(variable);
       }
     }
 
-    return Array.from(variables);
+    const result = Array.from(variables);
+    this.logger.debug("Extracted variables", { variables: result });
+    return result;
   }
 }
