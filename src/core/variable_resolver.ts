@@ -73,7 +73,7 @@ export class VariableResolver {
     try {
       // Replace all variable references in the value
       let resolvedValue = value;
-      const varRegex = /\{\{([^}]+)\}\}/g;
+      const varRegex = /\{([^}]+)\}/g;
       let match;
       const matches = [];
 

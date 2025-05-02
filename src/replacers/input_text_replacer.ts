@@ -3,14 +3,14 @@ import type { TextContent as _TextContent, VariableReplacer } from "../types.ts"
 import { TextValidator } from "../validation/markdown_validator.ts";
 
 /**
- * InputMarkdownReplacer
+ * InputTextReplacer
  *
  * Purpose:
- * - Replace {input_markdown} variables with validated markdown content
- * - Ensure markdown content is valid and properly formatted
- * - Prevent empty or invalid markdown content
+ * - Replace {input_text} variables with text content
+ * - Ensure text content is not empty
+ * - Prevent invalid text content
  */
-export class InputMarkdownReplacer implements VariableReplacer {
+export class InputTextReplacer implements VariableReplacer {
   private textValidator: TextValidator;
 
   constructor() {

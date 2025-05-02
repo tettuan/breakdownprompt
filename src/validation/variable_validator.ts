@@ -69,7 +69,7 @@ export class VariableValidator {
     }
 
     // Check for variable references in the text
-    const varRegex = /\{\{([^}]+)\}\}/g;
+    const varRegex = /\{([^}]+)\}/g;
     let match;
     const matches = [];
 

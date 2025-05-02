@@ -135,18 +135,6 @@ export class PromptManager {
         }
       }
 
-      // Validate markdown content in variables first
-      for (const [_key, value] of Object.entries(variables)) {
-        if (_key === "input_markdown" && !this.textValidator.validateText(value)) {
-          return { success: false, error: "Invalid markdown content in variables" };
-        }
-      }
-
-      // Validate markdown content in template
-      if (!this.textValidator.validateText(templateContent)) {
-        return { success: false, error: "Invalid markdown content in template" };
-      }
-
       // Then validate variable names and values
       try {
         // First validate all variable names

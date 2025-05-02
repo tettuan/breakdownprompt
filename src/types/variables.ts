@@ -28,10 +28,10 @@ export type DirectoryPath = string & {
 };
 
 /**
- * MarkdownText represents valid markdown content
+ * TextContent represents valid text content
  */
-export type MarkdownText = string & {
-  readonly _type: "markdown_text";
+export type TextContent = string & {
+  readonly _type: "text_content";
 };
 
 /**
@@ -39,7 +39,7 @@ export type MarkdownText = string & {
  */
 export type Variables = Partial<
   {
-    [K in ValidVariableKey]: FilePath | DirectoryPath | MarkdownText;
+    [K in ValidVariableKey]: FilePath | DirectoryPath | TextContent;
   }
 >;
 
@@ -68,13 +68,6 @@ export interface VariableValidator {
    * @returns A promise that resolves to true if the path is valid
    */
   validateDirectoryPath(path: string): Promise<boolean>;
-
-  /**
-   * Validates markdown text.
-   * @param text The text to validate
-   * @returns true if the text is valid markdown
-   */
-  validateMarkdownText(text: string): text is MarkdownText;
 
   /**
    * Validates a set of variables.
