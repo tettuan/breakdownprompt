@@ -30,7 +30,9 @@ export class PromptReader {
         return false;
       }
       if (error instanceof Deno.errors.PermissionDenied) {
-        throw new ValidationError(`${PermissionErrorMessages.ACCESS_FILE}: ${this.filePath}`);
+        throw new ValidationError(
+          `${PermissionErrorMessages.ACCESS_FILE}: Cannot access file at ${this.filePath} - check file permissions and ownership`,
+        );
       }
       throw error;
     }
@@ -47,7 +49,9 @@ export class PromptReader {
       return true;
     } catch (error) {
       if (error instanceof Deno.errors.PermissionDenied) {
-        throw new ValidationError(`${PermissionErrorMessages.READ_FILE}: ${this.filePath}`);
+        throw new ValidationError(
+          `${PermissionErrorMessages.READ_FILE}: Cannot read file at ${this.filePath} - check read permissions`,
+        );
       }
       throw error;
     }
@@ -63,7 +67,9 @@ export class PromptReader {
       return await Deno.readTextFile(this.filePath);
     } catch (error) {
       if (error instanceof Deno.errors.PermissionDenied) {
-        throw new ValidationError(`${PermissionErrorMessages.READ_FILE}: ${this.filePath}`);
+        throw new ValidationError(
+          `${PermissionErrorMessages.READ_FILE}: Cannot read file at ${this.filePath} - check read permissions`,
+        );
       }
       throw error;
     }

@@ -97,7 +97,11 @@ export class PromptManager {
 
         // Check for absolute paths that are not in /tmp
         if (templatePathOrContent.startsWith("/") && !templatePathOrContent.startsWith("/tmp/")) {
-          return { success: false, error: "permission denied" };
+          return {
+            success: false,
+            error:
+              `${PermissionErrorMessages.ACCESS_FILE}: Access to absolute paths outside /tmp is restricted`,
+          };
         }
 
         // Check for directory traversal in template path
@@ -118,7 +122,11 @@ export class PromptManager {
           }
         } catch (error) {
           if (error instanceof Deno.errors.PermissionDenied) {
-            return { success: false, error: "permission denied" };
+            return {
+              success: false,
+              error:
+                `${PermissionErrorMessages.READ_TEMPLATE}: Cannot read template file at ${templatePathOrContent}`,
+            };
           }
           if (error instanceof Deno.errors.NotFound) {
             return { success: false, error: `Template not found: ${templatePathOrContent}` };
@@ -363,7 +371,9 @@ export class PromptManager {
       return await this.fileUtils.readFile(templatePath);
     } catch (error) {
       if (error instanceof Deno.errors.PermissionDenied) {
-        throw new ValidationError(`${PermissionErrorMessages.READ_TEMPLATE}: ${templatePath}`);
+        throw new ValidationError(
+          `${PermissionErrorMessages.READ_TEMPLATE}: Cannot read template file at ${templatePath}`,
+        );
       }
       if (error instanceof Deno.errors.NotFound) {
         throw new ValidationError(`Template not found: ${templatePath}`);
@@ -408,7 +418,9 @@ export class PromptManager {
       await this.fileUtils.writeFile(destinationPath, content);
     } catch (error) {
       if (error instanceof Deno.errors.PermissionDenied) {
-        throw new ValidationError(`${PermissionErrorMessages.WRITE_TEMPLATE}: ${destinationPath}`);
+        throw new ValidationError(
+          `${PermissionErrorMessages.WRITE_TEMPLATE}: Cannot write to destination file at ${destinationPath}`,
+        );
       }
       throw error;
     }
@@ -441,7 +453,9 @@ export class PromptManager {
       return this.replaceVariables(templateContent, variables as Record<string, string>);
     } catch (error) {
       if (error instanceof Deno.errors.PermissionDenied) {
-        throw new ValidationError(`${PermissionErrorMessages.READ_TEMPLATE}: ${templatePath}`);
+        throw new ValidationError(
+          `${PermissionErrorMessages.READ_TEMPLATE}: Cannot read template file at ${templatePath}`,
+        );
       }
       throw error;
     }

@@ -60,7 +60,9 @@ export class FileUtils {
         throw new ValidationError(`Template not found: ${path}`);
       }
       if (_error instanceof Deno.errors.PermissionDenied) {
-        throw new ValidationError(`${PermissionErrorMessages.READ_FILE}: ${path}`);
+        throw new ValidationError(
+          `${PermissionErrorMessages.READ_FILE}: Cannot read file at ${path} - check read permissions and file ownership`,
+        );
       }
       throw new ValidationError(`Failed to read file: ${path}`);
     }
@@ -82,7 +84,9 @@ export class FileUtils {
         throw _error;
       }
       if (_error instanceof Deno.errors.PermissionDenied) {
-        throw new ValidationError(`${PermissionErrorMessages.WRITE_FILE}: ${path}`);
+        throw new ValidationError(
+          `${PermissionErrorMessages.WRITE_FILE}: Cannot write to file at ${path} - check write permissions and file ownership`,
+        );
       }
       throw new ValidationError("Failed to write file");
     }
