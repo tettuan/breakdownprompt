@@ -63,12 +63,12 @@ To run an example:
 
 ```bash
 # Start with the basic example
-deno run --allow-read --allow-env examples/basic_usage.ts
+deno run --allow-read --allow-env --allow-run examples/basic_usage.ts
 
 # Then try the use case examples
-deno run --allow-read --allow-env examples/generate_task_prompt.ts
-deno run --allow-read --allow-env examples/generate_code_review.ts
-deno run --allow-read --allow-env examples/generate_documentation.ts
+deno run --allow-read --allow-env --allow-run examples/generate_task_prompt.ts
+deno run --allow-read --allow-env --allow-run examples/generate_code_review.ts
+deno run --allow-read --allow-env --allow-run examples/generate_documentation.ts
 ```
 
 ## Use Case Patterns
