@@ -18,7 +18,8 @@
     "std/": "jsr:@std/",
     "testing/": "jsr:@std/testing/",
     "@tettuan/breakdownlogger": "jsr:@tettuan/breakdownlogger@^0.1.10",
-    "$std/": "https://deno.land/std@0.208.0/"
+    "$std/": "https://deno.land/std@0.208.0/",
+    "vitest": "npm:vitest@^3.1.2"
   },
   "compilerOptions": {
     "lib": [
@@ -64,10 +65,7 @@
     ]
   },
   "test": {
-    "files": {
-      "include": [
-        "tests/"
-      ]
-    }
+    "include": ["tests/"],
+    "exclude": []
   }
 }

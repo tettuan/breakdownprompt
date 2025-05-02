@@ -286,9 +286,9 @@ for entry_point in mod.ts cli.ts main.ts; do
     fi
 done
 
-# Check all TypeScript files in lib directory
+# Check all TypeScript files in src directory
 echo "Checking library files..."
-find lib -name "*.ts" -not -name "*.test.ts" | while read -r file; do
+find src -name "*.ts" -not -name "*.test.ts" | while read -r file; do
     if ! deno check "$file"; then
         handle_error "$file" "Type check failed" "false"
     fi

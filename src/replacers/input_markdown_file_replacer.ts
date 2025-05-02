@@ -28,7 +28,12 @@ export class InputMarkdownFileReplacer implements VariableReplacer {
       return false;
     }
 
-    return this.pathValidator.validateFilePath(value);
+    try {
+      this.pathValidator.validateFilePath(value);
+      return true;
+    } catch (_error) {
+      return false;
+    }
   }
 
   /**

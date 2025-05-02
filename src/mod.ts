@@ -6,7 +6,10 @@
 // Re-export public APIs
 export { PromptManager } from "./core/prompt_manager.ts";
 export type { PromptParams } from "./types/prompt_params.ts";
-export type { PromptResult } from "./types/prompt_result.ts";
+export type {
+  PromptGenerationResult,
+  PromptSuccessResult as PromptResult,
+} from "./types/prompt_result.ts";
 export { FileSystemError, ValidationError } from "./errors.ts";
 
 /**

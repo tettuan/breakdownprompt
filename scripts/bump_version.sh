@@ -1,5 +1,31 @@
 #!/bin/bash
 
+# Default to patch version bump
+BUMP_TYPE="patch"
+
+# Parse command line arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --major)
+            BUMP_TYPE="major"
+            shift
+            ;;
+        --minor)
+            BUMP_TYPE="minor"
+            shift
+            ;;
+        --patch)
+            BUMP_TYPE="patch"
+            shift
+            ;;
+        *)
+            echo "Unknown option: $1"
+            echo "Usage: $0 [--major|--minor|--patch]"
+            exit 1
+            ;;
+    esac
+done
+
 # Check if there are any uncommitted changes
 if [ -n "$(git status --porcelain)" ]; then
     echo "Error: You have uncommitted changes. Please commit or stash them first."
@@ -52,9 +78,21 @@ done
 # Split version into major.minor.patch
 IFS='.' read -r major minor patch <<< "$latest_jsr_version"
 
-# Increment patch version
-new_patch=$((patch + 1))
-new_version="$major.$minor.$new_patch"
+# Increment version based on bump type
+case $BUMP_TYPE in
+    "major")
+        new_major=$((major + 1))
+        new_version="$new_major.0.0"
+        ;;
+    "minor")
+        new_minor=$((minor + 1))
+        new_version="$major.$new_minor.0"
+        ;;
+    "patch")
+        new_patch=$((patch + 1))
+        new_version="$major.$minor.$new_patch"
+        ;;
+esac
 
 echo "New version: $new_version"
 

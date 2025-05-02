@@ -1,6 +1,6 @@
 import { ValidationError } from "../errors.ts";
-import type { MarkdownText, VariableReplacer } from "../types.ts";
-import { MarkdownValidator } from "../validation/markdown_validator.ts";
+import type { TextContent as _TextContent, VariableReplacer } from "../types.ts";
+import { TextValidator } from "../validation/markdown_validator.ts";
 
 /**
  * InputMarkdownReplacer
@@ -11,42 +11,40 @@ import { MarkdownValidator } from "../validation/markdown_validator.ts";
  * - Prevent empty or invalid markdown content
  */
 export class InputMarkdownReplacer implements VariableReplacer {
-  private markdownValidator: MarkdownValidator;
+  private textValidator: TextValidator;
 
   constructor() {
-    this.markdownValidator = new MarkdownValidator();
+    this.textValidator = new TextValidator();
   }
 
   /**
-   * Validates markdown content according to the rules:
-   * - Must not be empty
-   * - Must not be only whitespace
-   * - Must have some content
+   * Validates that a value is valid text content
+   * @param value - The value to validate
+   * @returns true if the value is valid text content
    */
   validate(value: unknown): boolean {
     if (typeof value !== "string") {
       return false;
     }
 
-    return this.markdownValidator.validateMarkdown(value);
+    try {
+      return this.textValidator.validateText(value);
+    } catch {
+      return false;
+    }
   }
 
   /**
-   * Replaces an input markdown variable with its value
-   * - Validates the content
-   * - Returns the validated markdown
+   * Replaces a variable with its text content value
+   * @param value - The value to replace with
+   * @returns The processed text content
+   * @throws {ValidationError} If the value is invalid
    */
   replace(value: unknown): string {
-    if (typeof value !== "string") {
-      throw new ValidationError("Input markdown must be a string");
-    }
-
     if (!this.validate(value)) {
-      throw new ValidationError("Invalid markdown content");
+      throw new ValidationError("Invalid text content");
     }
 
-    // Cast to MarkdownText type after validation
-    const markdownText = value as MarkdownText;
-    return markdownText;
+    return value as string;
   }
 }

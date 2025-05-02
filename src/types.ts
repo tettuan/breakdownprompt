@@ -34,50 +34,39 @@ export interface VariableReplacer {
 }
 
 /**
- * Valid variable key type.
- * Ensures keys follow naming rules:
- * - English alphanumeric and underscore only
- * - Must start with a letter
- * - Case sensitive
+ * Represents a file path with specific extensions
+ */
+export type FilePath = string & {
+  readonly _type: "file_path";
+};
+
+/**
+ * Represents a directory path
+ */
+export type DirectoryPath = string & {
+  readonly _type: "directory_path";
+};
+
+/**
+ * Represents text content
+ */
+export type TextContent = string & {
+  readonly _type: "text_content";
+};
+
+/**
+ * Valid variable key type that follows naming rules
  */
 export type ValidVariableKey = string & {
   readonly _brand: unique symbol;
 };
 
 /**
- * File path type.
- * Ensures value is a valid file path.
- */
-export type FilePath = string & {
-  readonly _type: "file_path";
-  readonly _brand: unique symbol;
-};
-
-/**
- * Directory path type.
- * Ensures value is a valid directory path.
- */
-export type DirectoryPath = string & {
-  readonly _type: "directory_path";
-  readonly _brand: unique symbol;
-};
-
-/**
- * Markdown text type.
- * Ensures value is valid markdown content.
- */
-export type MarkdownText = string & {
-  readonly _type: "markdown_text";
-  readonly _brand: unique symbol;
-};
-
-/**
- * Variables type.
- * Maps valid variable keys to their corresponding value types.
+ * Variables type that maps valid keys to specific value types
  */
 export type Variables = Partial<
   {
-    [K in ValidVariableKey]: FilePath | DirectoryPath | MarkdownText;
+    [K in ValidVariableKey]: FilePath | DirectoryPath | TextContent;
   }
 >;
 
@@ -101,11 +90,11 @@ export interface VariableValidator {
   validateDirectoryPath(path: string): Promise<boolean>;
 
   /**
-   * Validates markdown text.
+   * Validates text content.
    * @param text - The text to validate
-   * @returns true if the text is valid markdown
+   * @returns true if the text is valid
    */
-  validateMarkdownText(text: string): text is MarkdownText;
+  validateTextContent(text: string): text is TextContent;
 
   /**
    * Validates a variable key.

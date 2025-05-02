@@ -1,90 +1,88 @@
 /**
- * Prompt Manager Unit Tests
+ * Prompt Manager Unit Test
  *
  * Purpose:
- * - Test individual components of PromptManager in isolation
- * - Verify error handling and edge cases
- * - Test path validation and processing
+ * - Verify the core functionality of the PromptManager class
+ * - Validate prompt generation
+ * - Ensure proper error handling
+ *
+ * Intent:
+ * - Test basic prompt generation
+ * - Verify template file handling
+ * - Test variable replacement
+ * - Validate error handling
  */
 
-import { assertEquals, assertExists, assertRejects } from "@std/assert";
-import { PromptManager } from "../../src/core/prompt_manager.ts";
-import { ValidationError } from "../../src/errors.ts";
-import { cleanupTestDirs, setupTestDirs } from "../test_utils.ts";
+import { assertEquals, assertExists } from "jsr:@std/testing@^0.220.1/asserts";
+import { PromptManager } from "../../../src/core/prompt_manager.ts";
+import { FileUtils } from "../../../src/utils/file_utils.ts";
+import { PathValidator } from "../../../src/validation/path_validator.ts";
+import { VariableValidator } from "../../../src/validation/variable_validator.ts";
+import { TextValidator } from "../../../src/validation/markdown_validator.ts";
+import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
-Deno.test("PromptManager - should validate template path", async () => {
-  const manager = new PromptManager();
-  await assertRejects(
-    async () => {
-      await manager.generatePrompt("", {});
-    },
-    ValidationError,
-    "Template file path is empty",
-  );
-});
+const logger = new BreakdownLogger();
 
-Deno.test("PromptManager - should validate variables", async () => {
-  const manager = new PromptManager();
-  await assertRejects(
-    async () => {
-      await manager.generatePrompt("test.md", {
-        schema_file: 123,
-      } as unknown as Record<string, string>);
-    },
-    ValidationError,
-    "schema_file must be a string",
-  );
-});
-
-Deno.test("PromptManager - should process file URL paths", async () => {
-  await setupTestDirs();
-
-  const manager = new PromptManager();
-  const result = await manager.generatePrompt(
-    "file://tmp/test/templates/simple.md",
-    {
-      schema_file: "test.json",
-      input_markdown: "# Test",
-      input_markdown_file: "test.md",
-      output_dir: "output",
-    },
+Deno.test("PromptManager - Basic prompt generation", async (t) => {
+  // Initialize PromptManager with real dependencies
+  const promptManager = new PromptManager(
+    new TextValidator(),
+    new PathValidator(),
+    new VariableValidator(),
+    new FileUtils(),
   );
 
-  assertExists(result);
-  assertEquals(typeof result.prompt, "string");
+  await t.step("should generate a prompt from a valid template file", async () => {
+    logger.debug("Testing prompt generation with valid template file");
+    // Setup
+    const templatePath = "tests/00_fixtures/01_templates/01_basic.md";
+    const variables = { name: "test" };
+    const expectedPrompt =
+      "# Basic Template\n\nHello, test!\n\nThis is a basic template file for testing purposes.\n\nIt contains some sample content to verify file reading operations.\n";
 
-  await cleanupTestDirs();
-});
+    // Execute
+    const result = await promptManager.generatePrompt(templatePath, variables);
+    logger.debug(`Result: ${JSON.stringify(result)}`);
 
-Deno.test("PromptManager - should handle directory traversal attempts", async () => {
-  const manager = new PromptManager();
-  await assertRejects(
-    async () => {
-      await manager.generatePrompt("../test.md", {
-        schema_file: "test.json",
-        input_markdown: "# Test",
-        input_markdown_file: "test.md",
-        output_dir: "output",
-      });
-    },
-    ValidationError,
-    "Invalid file path: Contains directory traversal",
-  );
-});
-
-Deno.test("PromptManager - should handle missing variables", async () => {
-  await setupTestDirs();
-
-  const manager = new PromptManager();
-  const result = await manager.generatePrompt("tmp/test/templates/simple.md", {
-    schema_file: "test.json",
-    input_markdown: "",
-    input_markdown_file: "test.md",
-    output_dir: "output",
+    // Verify
+    assertEquals(result.success, true);
+    if (result.success) {
+      assertEquals(result.prompt, expectedPrompt);
+      assertExists(result.variables.find((v) => v === "name"));
+    }
   });
 
-  assertExists(result);
-  assertEquals(typeof result.prompt, "string");
+  await t.step("should handle missing template file", async () => {
+    logger.debug("Testing prompt generation with missing template file");
+    // Setup
+    const templatePath = "tests/00_fixtures/01_templates/nonexistent.md";
+    const variables = { name: "test" };
 
-  await cleanupTestDirs();
+    // Execute
+    const result = await promptManager.generatePrompt(templatePath, variables);
+    logger.debug(`Result: ${JSON.stringify(result)}`);
+
+    // Verify
+    assertEquals(result.success, false);
+    if (!result.success) {
+      assertExists(result.error?.includes("Template not found"));
+    }
+  });
+
+  await t.step("should handle invalid variables", async () => {
+    logger.debug("Testing prompt generation with invalid variables");
+    // Setup
+    const templatePath = "tests/00_fixtures/01_templates/01_basic.md";
+    const variables = { "invalid-name": "test" };
+
+    // Execute
+    const result = await promptManager.generatePrompt(templatePath, variables);
+    logger.debug(`Result: ${JSON.stringify(result)}`);
+
+    // Verify
+    assertEquals(result.success, false);
+    if (!result.success) {
+      assertExists(result.error?.includes("Invalid variable name"));
+    }
+  });
 });

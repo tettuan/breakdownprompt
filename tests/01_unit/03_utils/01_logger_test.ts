@@ -13,9 +13,12 @@
 
 import { join } from "https://deno.land/std/path/mod.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { assertEquals, type assertThrows as _assertThrows } from "@std/assert";
+import type { ValidationError as _ValidationError } from "../../../src/errors.ts";
 
 const logger = new BreakdownLogger();
 
+// Setup: Test configuration and parameters
 /**
  * Configuration for test directories and paths.
  * @constant
@@ -33,6 +36,7 @@ export const TEST_CONFIG = {
   OUTPUT_DIR: join(Deno.cwd(), "tmp", "test", "output"),
 };
 
+// Setup: Test parameters and sample data
 /**
  * Test parameters and sample data for testing.
  * @constant
@@ -61,7 +65,42 @@ export const TEST_PARAMS = {
   },
 };
 
-// Setup test directories and files
+// Setup: Mock console.log to capture output
+let capturedOutput: string[] = [];
+const originalConsoleLog = console.log;
+
+function mockConsoleLog(...args: unknown[]): void {
+  const formattedArgs = args.map((arg) => {
+    if (typeof arg === "object" && arg !== null) {
+      if (arg instanceof Error) {
+        return arg.message;
+      }
+      const obj = arg as Record<string, unknown>;
+      if (obj.error instanceof Error) {
+        return `Error occurred: ${obj.error.message}`;
+      }
+      return JSON.stringify(arg);
+    }
+    return String(arg);
+  });
+  capturedOutput.push(formattedArgs.join(" "));
+}
+
+// Setup: Logger test environment
+function setupLoggerTest(): void {
+  capturedOutput = [];
+  console.log = mockConsoleLog;
+  // Set environment variable for log level
+  Deno.env.set("LOG_LEVEL", "debug");
+}
+
+function teardownLoggerTest(): void {
+  console.log = originalConsoleLog;
+  // Clean up environment variable
+  Deno.env.delete("LOG_LEVEL");
+}
+
+// Main: Test directory setup and cleanup
 export async function setupTestDirs(): Promise<void> {
   logger.info("Setting up test directories");
 
@@ -225,3 +264,53 @@ export async function cleanupTestDirs(): Promise<void> {
 
   logger.info("Test directories cleanup completed");
 }
+
+// Test: Logger functionality
+Deno.test("Logger should handle different log levels", () => {
+  setupLoggerTest();
+  try {
+    const testLogger = new BreakdownLogger();
+    testLogger.info("Info message");
+    testLogger.debug("Debug message");
+    testLogger.warn("Warning message");
+    testLogger.error("Error message");
+
+    assertEquals(capturedOutput.length, 4);
+    assertEquals(capturedOutput[0].includes("[INFO]"), true);
+    assertEquals(capturedOutput[1].includes("[DEBUG]"), true);
+    assertEquals(capturedOutput[2].includes("[WARN]"), true);
+    assertEquals(capturedOutput[3].includes("[ERROR]"), true);
+  } finally {
+    teardownLoggerTest();
+  }
+});
+
+Deno.test("Logger should handle objects in messages", () => {
+  setupLoggerTest();
+  try {
+    const testLogger = new BreakdownLogger();
+    const testObject = { key: "value" };
+    testLogger.info("Info with object", testObject);
+
+    assertEquals(capturedOutput.length, 1);
+    assertEquals(capturedOutput[0].includes("value"), true);
+  } finally {
+    teardownLoggerTest();
+  }
+});
+
+Deno.test("Logger should handle errors", () => {
+  setupLoggerTest();
+  try {
+    const testLogger = new BreakdownLogger();
+    const error = new Error("Test error");
+    testLogger.error("Error occurred", { error });
+
+    assertEquals(capturedOutput.length, 1);
+    const output = capturedOutput[0];
+    assertEquals(output.includes("[ERROR]"), true);
+    assertEquals(output.includes("Error occurred"), true);
+  } finally {
+    teardownLoggerTest();
+  }
+});

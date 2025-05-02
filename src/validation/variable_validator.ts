@@ -2,82 +2,154 @@
  * Variable Validator
  *
  * Purpose:
- * - Validate variable names according to naming rules
- * - Validate variable values according to their types
- * - Ensure type safety for variables
+ * - Validate variable names and values
+ * - Ensure proper type checking and format validation
+ * - Handle required variable validation
+ *
+ * Background:
+ * The VariableValidator is responsible for validating variable names and values
+ * according to the specified rules and types.
  */
 
 import { ValidationError } from "../errors.ts";
-import type {
-  DirectoryPath as _DirectoryPath,
-  FilePath as _FilePath,
-  MarkdownText,
-  Variables,
-} from "../types.ts";
-import type { ValidVariableKey as _ValidVariableKey } from "../types.ts";
-import type { VariableValidator as IVariableValidator } from "../types.ts";
-
-// Re-export ValidationError
-export { ValidationError };
-
-const INVALID_PATH_CHARS = /[<>"|?*\\]/;
+import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import type { TextContent, ValidVariableKey } from "../types.ts";
+import { TemplateError } from "../errors.ts";
 
 /**
- * Base class for variable validation
- * Provides common validation functionality
+ * A class for validating variables and their values.
+ * Provides methods to ensure variables meet the required format and type constraints.
  */
-export abstract class VariableValidator implements IVariableValidator {
+export class VariableValidator {
+  private logger: BreakdownLogger;
+  private readonly VALID_KEY_REGEX = /^[a-zA-Z][a-zA-Z0-9_]*$/;
+
+  constructor() {
+    this.logger = new BreakdownLogger();
+  }
+
   /**
-   * Validates a variable name according to the rules:
-   * - Only alphanumeric characters and underscores are allowed
-   * - Must start with a letter
-   * - Case sensitive
+   * Validates a variable key
+   * @param key - The key to validate
+   * @returns true if the key is valid
+   * @throws {ValidationError} If the key is invalid
    */
-  validateKey(key: string): boolean {
-    if (!key) {
-      throw new ValidationError("Variable name cannot be empty");
+  validateKey(key: string): key is ValidVariableKey {
+    this.logger.debug("Validating variable key", { key });
+
+    if (!key || typeof key !== "string") {
+      throw new ValidationError("Invalid variable name");
     }
 
-    if (!/^[a-zA-Z]/.test(key)) {
-      throw new ValidationError("must start with a letter");
+    if (key.includes("-")) {
+      throw new ValidationError(
+        `Invalid variable name: ${key} (variable names cannot contain hyphens)`,
+      );
     }
 
-    if (!/^[a-zA-Z0-9_]+$/.test(key)) {
-      throw new ValidationError("only alphanumeric characters and underscores allowed");
+    if (!this.VALID_KEY_REGEX.test(key)) {
+      throw new ValidationError(`Invalid variable name: ${key}`);
     }
 
     return true;
   }
 
   /**
-   * Validates a file path
-   * - Must not be empty
-   * - Must be a valid file path format
-   * - Must exist and be readable
+   * Validates text content
+   * @param text - The text to validate
+   * @param path - The current path of variable references
+   * @returns true if the text is valid
+   * @throws {ValidationError} If the text is invalid
    */
-  public abstract validateFilePath(path: string): Promise<boolean>;
+  validateTextContent(text: string, path: Set<string> = new Set<string>()): text is TextContent {
+    this.logger.debug("Validating text content", { text });
+
+    if (!text || typeof text !== "string") {
+      throw new ValidationError("Invalid text content");
+    }
+
+    // Check for variable references in the text
+    const varRegex = /\{\{([^}]+)\}\}/g;
+    let match;
+    const matches = [];
+
+    // Collect all matches first
+    while ((match = varRegex.exec(text)) !== null) {
+      matches.push(match);
+    }
+
+    // Process matches in reverse order to handle nested references correctly
+    for (const match of matches.reverse()) {
+      const referencedVar = match[1].trim();
+      // Skip conditional blocks
+      if (referencedVar.startsWith("#if ") || referencedVar === "/if") {
+        continue;
+      }
+      // Check for circular reference
+      if (path.has(referencedVar)) {
+        throw new TemplateError("Circular variable reference detected");
+      }
+      // Validate referenced variable name if it's not already in path
+      if (!path.has(referencedVar)) {
+        try {
+          this.validateKey(referencedVar);
+        } catch (error) {
+          if (error instanceof ValidationError) {
+            throw new ValidationError(`Invalid variable name in reference: ${referencedVar}`);
+          }
+          throw error;
+        }
+      }
+    }
+
+    return true;
+  }
 
   /**
-   * Validates a directory path
-   * - Must not be empty
-   * - Must be a valid directory path format
-   * - Must exist and be writable
+   * Validates required variables
+   * @param required - List of required variable names
+   * @param variables - Variables to validate
+   * @returns true if all required variables are present
+   * @throws {ValidationError} If any required variable is missing
    */
-  public abstract validateDirectoryPath(path: string): Promise<boolean>;
+  validateRequiredVariables(required: string[], variables: Record<string, unknown>): void {
+    this.logger.debug("Validating required variables", { required, variables });
 
-  /**
-   * Validates markdown text
-   * - Must not be empty
-   * - Must be valid markdown format
-   */
-  public abstract validateMarkdownText(text: string): text is MarkdownText;
+    const missingVars = required.filter((varName) => {
+      if (varName.startsWith("#if ") || varName === "/if") {
+        return false;
+      }
+      return !(varName in variables);
+    });
+
+    if (missingVars.length > 0) {
+      throw new ValidationError(`Missing required variables: ${missingVars.join(", ")}`);
+    }
+
+    for (const key of required) {
+      if (key.startsWith("#if ") || key === "/if") {
+        continue;
+      }
+
+      const value = variables[key];
+      if (
+        value === null || value === undefined || (typeof value === "string" && value.trim() === "")
+      ) {
+        throw new ValidationError(`Invalid value for required variable: ${key}`);
+      }
+    }
+  }
 
   /**
    * Validates a set of variables
-   * - All variable names must be valid
-   * - All variable values must be valid
+   * @param variables - The variables to validate
+   * @returns true if all variables are valid
+   * @throws {ValidationError} If any variable is invalid
    */
-  public async validateVariables(variables: Variables): Promise<boolean> {
+  validateVariables(variables: Record<string, string>): void {
+    this.logger.debug("Validating variables", { variables });
+
+    // First, validate all variable names and values
     for (const [key, value] of Object.entries(variables)) {
       try {
         this.validateKey(key);
@@ -88,107 +160,77 @@ export abstract class VariableValidator implements IVariableValidator {
         throw error;
       }
 
-      if (typeof value !== "string") {
-        throw new ValidationError(`Invalid value type for variable ${key}: expected string`);
-      }
-
-      if (!value || value.trim().length === 0) {
-        throw new ValidationError(`Value for key '${key}' cannot be empty`);
-      }
-
-      if (key === "schema_file" || key === "input_markdown_file") {
-        await this.validateFilePath(value);
-      }
-
-      if (key === "destination_path") {
-        await this.validateFilePath(value);
-      }
-
-      if (key === "input_markdown") {
-        this.validateMarkdownText(value);
+      if (value === undefined || value === null || value.trim() === "") {
+        throw new ValidationError(`Invalid value for variable: ${key}`);
       }
     }
 
-    return true;
-  }
-}
+    // Then check for circular references
+    const visited = new Set<string>();
+    const resolving = new Set<string>();
 
-/**
- * Default implementation of the VariableValidator interface.
- * Provides concrete validation logic for file paths, directory paths, and markdown text.
- */
-export class DefaultVariableValidator extends VariableValidator {
-  /**
-   * Validates a file path according to the rules:
-   * - Must be a non-empty string
-   * - Must not contain invalid characters
-   * - Must be a valid file path
-   * @param path - The file path to validate
-   * @returns Promise that resolves to true if the path is valid
-   */
-  public override async validateFilePath(path: string): Promise<boolean> {
-    try {
-      if (!path || path.trim().length === 0) {
-        throw new ValidationError(`Invalid file path: ${path}`);
+    const checkCircularReferences = (key: string, path = new Set<string>()): void => {
+      if (path.has(key)) {
+        throw new TemplateError("Circular variable reference detected");
       }
 
-      // Check for invalid characters
-      if (INVALID_PATH_CHARS.test(path)) {
-        throw new ValidationError(`Invalid file path: ${path}`);
+      if (resolving.has(key)) {
+        throw new TemplateError("Circular variable reference detected");
       }
 
-      // Check if path exists and is a file
-      const fileInfo = await Deno.stat(path);
-      if (!fileInfo.isFile) {
-        throw new ValidationError(`Path is not a file: ${path}`);
+      if (visited.has(key)) {
+        return;
       }
-      return true;
-    } catch (error) {
-      if (error instanceof ValidationError) {
-        throw error;
+
+      const value = variables[key];
+      if (value === null || value === undefined || value.trim() === "") {
+        throw new ValidationError(`Invalid value for variable: ${key}`);
       }
-      throw new ValidationError(`Invalid file path: ${path}`);
+
+      resolving.add(key);
+      path.add(key);
+
+      try {
+        // Check for variable references in the value
+        const varRegex = /\{\{([^}]+)\}\}/g;
+        let match;
+        while ((match = varRegex.exec(value)) !== null) {
+          const referencedVar = match[1].trim();
+          // Skip conditional blocks
+          if (referencedVar.startsWith("#if ") || referencedVar === "/if") {
+            continue;
+          }
+          // Check for circular references
+          if (referencedVar in variables) {
+            checkCircularReferences(referencedVar, path);
+          }
+        }
+      } finally {
+        resolving.delete(key);
+        path.delete(key);
+        visited.add(key);
+      }
+    };
+
+    // Check each variable for circular references
+    for (const key of Object.keys(variables)) {
+      if (!visited.has(key)) {
+        checkCircularReferences(key);
+      }
     }
-  }
 
-  /**
-   * Validates a directory path according to the rules:
-   * - Must be a non-empty string
-   * - Must not contain invalid characters
-   * - Must be a valid directory path
-   * @param path - The directory path to validate
-   * @returns Promise that resolves to true if the path is valid
-   */
-  public override async validateDirectoryPath(path: string): Promise<boolean> {
-    try {
-      if (!path || path.trim().length === 0) {
-        return false;
+    // Also validate each variable's text content
+    for (const [key, value] of Object.entries(variables)) {
+      if (typeof value === "string") {
+        try {
+          this.validateTextContent(value);
+        } catch (error) {
+          if (error instanceof ValidationError) {
+            throw new ValidationError(`Invalid text content in variable ${key}: ${error.message}`);
+          }
+          throw error;
+        }
       }
-
-      // Check for invalid characters
-      if (INVALID_PATH_CHARS.test(path)) {
-        return false;
-      }
-
-      // Check if path exists and is a directory
-      const dirInfo = await Deno.stat(path);
-      return dirInfo.isDirectory;
-    } catch (_error) {
-      return false;
     }
-  }
-
-  /**
-   * Validates markdown text according to the rules:
-   * - Must be a non-empty string
-   * - Must be valid markdown content
-   * @param text - The markdown text to validate
-   * @returns true if the text is valid markdown
-   */
-  public override validateMarkdownText(text: string): text is MarkdownText {
-    if (!text) {
-      throw new ValidationError("Markdown text cannot be empty");
-    }
-    return true;
   }
 }

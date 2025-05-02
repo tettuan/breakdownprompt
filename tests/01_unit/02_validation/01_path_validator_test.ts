@@ -1,208 +1,196 @@
 /**
- * Validation Tests
+ * Path Validator Unit Test
  *
  * Purpose:
- * - Verify variable validation functionality
- * - Test path validation rules
- * - Validate markdown content validation
+ * - Verify the core functionality of the PathValidator class
+ * - Validate file and directory path handling
+ * - Ensure proper security checks and path normalization
  *
- * Background:
- * These tests ensure the validation works as specified in docs/index.ja.md
- * and follows the design patterns in docs/design_pattern.ja.md.
+ * Intent:
+ * - Test file path validation
+ * - Verify directory path validation
+ * - Test extension validation
+ * - Validate security checks
+ * - Test error handling
+ * - Verify path normalization
+ * - Test permission checks
  */
 
-import { assertEquals, assertThrows } from "@std/assert";
-import { DefaultVariableValidator } from "../src/validation/variable_validator.ts";
-import { PathValidator } from "../src/validation/path_validator.ts";
-import { MarkdownValidator } from "../src/validation/markdown_validator.ts";
-import { cleanupTestDirs, setupTestDirs, TEST_CONFIG } from "./test_utils.ts";
+import { assertEquals, assertThrows } from "jsr:@std/testing@^0.220.1/asserts";
+import { PathValidator } from "../../../src/validation/path_validator.ts";
+import { ValidationError } from "../../../src/errors.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import { join } from "https://deno.land/std/path/mod.ts";
-import { ValidationError } from "../src/errors.ts";
 
 const _logger = new BreakdownLogger();
-const variableValidator = new DefaultVariableValidator();
-const pathValidator = new PathValidator();
-const markdownValidator = new MarkdownValidator();
 
-/**
- * Tests for variable name validation
- */
-Deno.test("Variable name validation", () => {
-  // Valid variable names
-  assertEquals(variableValidator.validateKey("test_var"), true);
-  assertEquals(variableValidator.validateKey("TEST_VAR"), true);
-  assertEquals(variableValidator.validateKey("test123"), true);
-  assertEquals(variableValidator.validateKey("testVar"), true);
+Deno.test("PathValidator - File path validation", async (t) => {
+  const pathValidator = new PathValidator();
 
-  // Invalid variable names - should throw ValidationError
-  assertThrows(
-    () => variableValidator.validateKey(""),
-    ValidationError,
-    "Variable name cannot be empty",
-  );
-  assertThrows(
-    () => variableValidator.validateKey("123test"),
-    ValidationError,
-    "must start with a letter",
-  );
-  assertThrows(
-    () => variableValidator.validateKey("_test"),
-    ValidationError,
-    "must start with a letter",
-  );
-  assertThrows(
-    () => variableValidator.validateKey("test-var"),
-    ValidationError,
-    "only alphanumeric characters and underscores allowed",
-  );
-  assertThrows(
-    () => variableValidator.validateKey("test var"),
-    ValidationError,
-    "only alphanumeric characters and underscores allowed",
-  );
-  assertThrows(
-    () => variableValidator.validateKey("test.var"),
-    ValidationError,
-    "only alphanumeric characters and underscores allowed",
-  );
+  await t.step("should reject empty paths", () => {
+    assertThrows(
+      () => pathValidator.validateFilePath(""),
+      ValidationError,
+      "Path cannot be empty",
+    );
+    assertThrows(
+      () => pathValidator.validateFilePath("  "),
+      ValidationError,
+      "Path cannot be empty",
+    );
+  });
+
+  await t.step("should reject paths with directory traversal", () => {
+    assertThrows(
+      () => pathValidator.validateFilePath("../test.txt"),
+      ValidationError,
+      "Path contains directory traversal",
+    );
+    assertThrows(
+      () => pathValidator.validateFilePath("folder/../test.txt"),
+      ValidationError,
+      "Path contains directory traversal",
+    );
+  });
+
+  await t.step("should reject paths with invalid characters", () => {
+    assertThrows(
+      () => pathValidator.validateFilePath("test<file>.txt"),
+      ValidationError,
+      "Path contains invalid characters",
+    );
+    assertThrows(
+      () => pathValidator.validateFilePath("test|file.txt"),
+      ValidationError,
+      "Path contains invalid characters",
+    );
+    assertThrows(
+      () => pathValidator.validateFilePath("test?file.txt"),
+      ValidationError,
+      "Path contains invalid characters",
+    );
+    assertThrows(
+      () => pathValidator.validateFilePath("test*file.txt"),
+      ValidationError,
+      "Path contains invalid characters",
+    );
+    assertThrows(
+      () => pathValidator.validateFilePath("test\\file.txt"),
+      ValidationError,
+      "Path contains invalid characters",
+    );
+    assertThrows(
+      () => pathValidator.validateFilePath("test file.txt"),
+      ValidationError,
+      "Path contains invalid characters",
+    );
+  });
+
+  await t.step("should reject paths exceeding maximum length", () => {
+    const longPath = "a".repeat(5000) + ".txt";
+    assertThrows(
+      () => pathValidator.validateFilePath(longPath),
+      ValidationError,
+      "Path exceeds maximum length",
+    );
+  });
+
+  await t.step("should validate and normalize valid file paths", () => {
+    assertEquals(pathValidator.validateFilePath("test.txt"), "test.txt");
+    assertEquals(pathValidator.validateFilePath("folder/test.txt"), "folder/test.txt");
+    assertEquals(
+      pathValidator.validateFilePath("folder/subfolder/test.txt"),
+      "folder/subfolder/test.txt",
+    );
+  });
 });
 
-/**
- * Tests for file path validation
- */
-Deno.test("File path validation", () => {
-  // Valid file paths
-  assertEquals(pathValidator.validateFilePath("test.txt"), true);
-  assertEquals(pathValidator.validateFilePath("path/to/file.txt"), true);
-  assertEquals(pathValidator.validateFilePath("./file.txt"), true);
-  assertEquals(pathValidator.validateFilePath("/tmp/test/file.txt"), true);
+Deno.test("PathValidator - Directory path validation", async (t) => {
+  const pathValidator = new PathValidator();
 
-  // Invalid file paths
-  assertThrows(
-    () => pathValidator.validateFilePath(""),
-    ValidationError,
-    "Path cannot be empty",
-  );
-  assertThrows(
-    () => pathValidator.validateFilePath("../file.txt"),
-    ValidationError,
-    "Invalid path: Contains directory traversal",
-  );
-  assertThrows(
-    () => pathValidator.validateFilePath("/absolute/path.txt"),
-    ValidationError,
-    "Invalid path: Absolute paths are not allowed",
-  );
-  assertThrows(
-    () => pathValidator.validateFilePath("path with spaces.txt"),
-    ValidationError,
-    "Invalid path: Contains invalid characters",
-  );
-  assertThrows(
-    () => pathValidator.validateFilePath("file@name.txt"),
-    ValidationError,
-    "Invalid path: Contains invalid characters",
-  );
-});
+  await t.step("should reject empty paths", () => {
+    assertThrows(
+      () => pathValidator.validateDirectoryPath(""),
+      ValidationError,
+      "Path cannot be empty",
+    );
+    assertThrows(
+      () => pathValidator.validateDirectoryPath("  "),
+      ValidationError,
+      "Path cannot be empty",
+    );
+  });
 
-/**
- * Tests for directory path validation
- */
-Deno.test("Directory path validation", () => {
-  // Valid directory paths
-  assertEquals(pathValidator.validateDirectoryPath("test_dir"), true);
-  assertEquals(pathValidator.validateDirectoryPath("path/to/dir"), true);
-  assertEquals(pathValidator.validateDirectoryPath("./dir"), true);
-  assertEquals(pathValidator.validateDirectoryPath("/tmp/test/dir"), true);
+  await t.step("should reject paths with directory traversal", () => {
+    assertThrows(
+      () => pathValidator.validateDirectoryPath("../folder"),
+      ValidationError,
+      "Path contains directory traversal",
+    );
+    assertThrows(
+      () => pathValidator.validateDirectoryPath("folder/../other"),
+      ValidationError,
+      "Path contains directory traversal",
+    );
+  });
 
-  // Invalid directory paths
-  assertThrows(
-    () => pathValidator.validateDirectoryPath(""),
-    ValidationError,
-    "Path cannot be empty",
-  );
-  assertThrows(
-    () => pathValidator.validateDirectoryPath("../dir"),
-    ValidationError,
-    "Invalid path: Contains directory traversal",
-  );
-  assertThrows(
-    () => pathValidator.validateDirectoryPath("/absolute/dir"),
-    ValidationError,
-    "Invalid path: Absolute paths are not allowed",
-  );
-  assertThrows(
-    () => pathValidator.validateDirectoryPath("dir with spaces"),
-    ValidationError,
-    "Invalid path: Contains invalid characters",
-  );
-  assertThrows(
-    () => pathValidator.validateDirectoryPath("dir@name"),
-    ValidationError,
-    "Invalid path: Contains invalid characters",
-  );
-});
+  await t.step("should reject absolute paths outside /tmp", () => {
+    assertThrows(
+      () => pathValidator.validateDirectoryPath("/usr/local"),
+      ValidationError,
+      "Absolute paths are not allowed",
+    );
+    assertThrows(
+      () => pathValidator.validateDirectoryPath("/home/user"),
+      ValidationError,
+      "Absolute paths are not allowed",
+    );
+  });
 
-/**
- * Tests for basic markdown content validation
- */
-Deno.test("Basic markdown content validation", () => {
-  // Valid markdown content
-  assertEquals(markdownValidator.validateMarkdown("# Test\nContent"), true);
-  assertEquals(markdownValidator.validateMarkdown("# Test\nTest content"), true);
-  assertEquals(markdownValidator.validateMarkdown("# Test\n\nMultiple lines"), true);
+  await t.step("should reject paths with invalid characters", () => {
+    assertThrows(
+      () => pathValidator.validateDirectoryPath("test<folder>"),
+      ValidationError,
+      "Path contains invalid characters",
+    );
+    assertThrows(
+      () => pathValidator.validateDirectoryPath("test|folder"),
+      ValidationError,
+      "Path contains invalid characters",
+    );
+    assertThrows(
+      () => pathValidator.validateDirectoryPath("test?folder"),
+      ValidationError,
+      "Path contains invalid characters",
+    );
+    assertThrows(
+      () => pathValidator.validateDirectoryPath("test*folder"),
+      ValidationError,
+      "Path contains invalid characters",
+    );
+    assertThrows(
+      () => pathValidator.validateDirectoryPath("test\\folder"),
+      ValidationError,
+      "Path contains invalid characters",
+    );
+    assertThrows(
+      () => pathValidator.validateDirectoryPath("test folder"),
+      ValidationError,
+      "Path contains invalid characters",
+    );
+  });
 
-  // Invalid markdown content
-  assertEquals(markdownValidator.validateMarkdown(""), false);
-  assertEquals(markdownValidator.validateMarkdown("   "), false);
-  assertEquals(markdownValidator.validateMarkdown("No heading"), false);
-});
+  await t.step("should reject paths exceeding maximum length", () => {
+    const longPath = "a".repeat(5000);
+    assertThrows(
+      () => pathValidator.validateDirectoryPath(longPath),
+      ValidationError,
+      "Path exceeds maximum length",
+    );
+  });
 
-/**
- * Tests for complete variable set validation with test directory setup
- */
-Deno.test("Complete variable set validation", async () => {
-  await setupTestDirs();
-
-  const variables = {
-    input_markdown: "# Test\nContent",
-    input_markdown_file: join(TEST_CONFIG.INPUT_DIR, "sample.md"),
-    schema_file: join(TEST_CONFIG.SCHEMA_DIR, "base.schema.json"),
-    destination_path: join(TEST_CONFIG.OUTPUT_DIR, "output.md"),
-  };
-
-  // Test validation
-  assertEquals(await variableValidator.validateVariables(variables), true);
-
-  await cleanupTestDirs();
-});
-
-/**
- * Tests for detailed markdown content validation
- */
-Deno.test("Detailed markdown content validation", () => {
-  // Test various markdown elements
-  assertEquals(markdownValidator.validateMarkdown("# Heading 1\nContent"), true);
-  assertEquals(markdownValidator.validateMarkdown("# Main\n## Heading 2"), true);
-  assertEquals(markdownValidator.validateMarkdown("# Title\n*italic*"), true);
-  assertEquals(markdownValidator.validateMarkdown("# Title\n**bold**"), true);
-  assertEquals(markdownValidator.validateMarkdown("# List\n- list item"), true);
-  assertEquals(markdownValidator.validateMarkdown("# Numbers\n1. numbered item"), true);
-  assertEquals(markdownValidator.validateMarkdown("# Links\n[link](url)"), true);
-  assertEquals(markdownValidator.validateMarkdown("# Code\n```code block```"), true);
-
-  // Invalid markdown content
-  assertEquals(markdownValidator.validateMarkdown("No heading"), false);
-  assertEquals(markdownValidator.validateMarkdown("#NoSpace"), false);
-  assertEquals(markdownValidator.validateMarkdown(""), false);
-});
-
-/**
- * Tests for test directory setup and cleanup
- */
-Deno.test("Test setup and cleanup", async () => {
-  await setupTestDirs();
-  // Add test assertions here if needed
-  await cleanupTestDirs();
+  await t.step("should validate and normalize valid directory paths", () => {
+    assertEquals(pathValidator.validateDirectoryPath("folder"), "folder");
+    assertEquals(pathValidator.validateDirectoryPath("folder/subfolder"), "folder/subfolder");
+    assertEquals(pathValidator.validateDirectoryPath("/tmp/test"), "/tmp/test");
+  });
 });

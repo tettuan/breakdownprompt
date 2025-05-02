@@ -1,0 +1,14 @@
+{
+  "variable1": "値1",
+  "variable2": "値2",
+  "variable3": "値3",
+  "variable-with-hyphen": "ハイフンを含む値",
+  "greeting": "こんにちは",
+  "name": "テストユーザー",
+  "weather": "晴れ",
+  "temperature": 25,
+  "condition": true,
+  "path": "/valid/path/to/file",
+  "markdown": "# マークダウンテキスト\n\nこれは有効なマークダウンです。",
+  "directory": "/valid/path/to/directory"
+}

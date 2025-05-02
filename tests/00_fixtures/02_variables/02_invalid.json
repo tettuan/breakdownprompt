@@ -1,0 +1,13 @@
+{
+  "1variable": "数字で始まる変数名",
+  "variable!@#": "特殊文字を含む変数名",
+  "variable with space": "スペースを含む変数名",
+  "invalid-path": "../../../etc/passwd",
+  "invalid-markdown": "<script>alert('xss')</script>",
+  "invalid-directory": "/root/",
+  "null-value": null,
+  "circular-reference": {
+    "self": "{{circular-reference}}"
+  },
+  "malformed-json": "{invalid: json}"
+}

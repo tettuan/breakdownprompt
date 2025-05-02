@@ -1,13 +1,15 @@
+import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { FileSystemError, TemplateError, ValidationError } from "../errors.ts";
+import type { PromptGenerationResult } from "../types/prompt_result.ts";
+import type { TextContent } from "../types.ts";
+import { FileUtils } from "../utils/file_utils.ts";
+import { TextValidator } from "../validation/markdown_validator.ts";
+import { PathValidator } from "../validation/path_validator.ts";
+import { VariableValidator } from "../validation/variable_validator.ts";
+import type { PromptReader as _PromptReader } from "./prompt_reader.ts";
+import { VariableResolver } from "./variable_resolver.ts";
 import type { PromptParams } from "../types/prompt_params.ts";
-import type { PromptResult as _PromptResult } from "../types/prompt_result.ts";
-import {
-  FileSystemError,
-  type TemplateError as _TemplateError,
-  ValidationError,
-} from "../errors.ts";
-import { ensureFile } from "@std/fs";
-import type { exists as _exists } from "@std/fs";
-import { MarkdownValidator } from "../validation/markdown_validator.ts";
+import { ensureFile } from "jsr:@std/fs@^0.220.1";
 
 /**
  * A class for managing and generating prompts from templates with variable replacement.
@@ -22,84 +24,306 @@ import { MarkdownValidator } from "../validation/markdown_validator.ts";
  * - Generating final prompts
  */
 export class PromptManager {
-  private markdownValidator: MarkdownValidator;
+  private textValidator: TextValidator;
+  private pathValidator: PathValidator;
+  private variableValidator: VariableValidator;
+  private fileUtils: FileUtils;
+  private logger: BreakdownLogger;
 
   /**
    * Creates a new PromptManager instance.
+   * @param textValidator - Validator for text content
+   * @param pathValidator - Validator for file paths
+   * @param variableValidator - Validator for variables
+   * @param fileUtils - Utility for file operations
+   * @param logger - Logger for debugging
    */
-  constructor() {
-    this.markdownValidator = new MarkdownValidator();
+  constructor(
+    textValidator: TextValidator = new TextValidator(),
+    pathValidator: PathValidator = new PathValidator(),
+    variableValidator: VariableValidator = new VariableValidator(),
+    fileUtils: FileUtils = new FileUtils(),
+    logger: BreakdownLogger = new BreakdownLogger(),
+  ) {
+    this.textValidator = textValidator;
+    this.pathValidator = pathValidator;
+    this.variableValidator = variableValidator;
+    this.fileUtils = fileUtils;
+    this.logger = logger;
   }
 
   /**
    * Generates a prompt by replacing variables in a template.
-   * @param templatePath - Path to the template file
+   * @param templatePathOrContent - Path to the template file or the template content itself
    * @param variables - A record of variable names and their replacement values
-   * @returns A promise that resolves to an object containing success status and the generated prompt
+   * @returns A promise that resolves to the generated prompt
    * @throws {ValidationError} If template or variables are invalid
    * @throws {FileSystemError} If the template file cannot be read
+   * @throws {TemplateError} If there are circular references in variables
    */
   public async generatePrompt(
-    templatePath: string,
+    templatePathOrContent: string,
     variables: Record<string, string>,
-  ): Promise<{ success: boolean; prompt: string }> {
+  ): Promise<PromptGenerationResult> {
     try {
-      // Convert template path to absolute path if it's a file URL
-      const absolutePath = templatePath.startsWith("file://")
-        ? templatePath.replace("file://", "")
-        : templatePath;
+      let templateContent: string;
 
-      // Validate template path
-      if (!absolutePath || absolutePath.trim() === "") {
-        throw new ValidationError("Template file path is empty");
-      }
-
-      // Validate path characters for non-file-URL paths
-      if (!templatePath.startsWith("file://") && !/^[a-zA-Z0-9\/\-_\.]+$/.test(templatePath)) {
-        throw new ValidationError("Invalid file path: Contains invalid characters");
-      }
-
-      // Prevent directory traversal in the original path
-      if (
-        !templatePath.startsWith("file://") &&
-        (templatePath.includes("..") || templatePath.startsWith("/") ||
-          templatePath.startsWith("\\"))
-      ) {
-        throw new ValidationError("Invalid file path: Contains directory traversal");
-      }
-
-      // Validate variables
-      for (const [key, value] of Object.entries(variables)) {
-        if (!/^[a-zA-Z0-9_]+$/.test(key)) {
-          throw new ValidationError(`Invalid variable name: ${key}`);
-        }
-        if (typeof value !== "string") {
-          throw new ValidationError(`${key} must be a string`);
+      // If the input looks like a file path, try to load it
+      if (templatePathOrContent.includes("/") || templatePathOrContent.includes(".")) {
+        // Validate template path
+        if (!templatePathOrContent || templatePathOrContent.trim() === "") {
+          return { success: false, error: "Template file path is empty" };
         }
 
-        // Validate file paths in variables
-        if (key.endsWith("_file") || key.endsWith("_path")) {
-          // Validate path characters
-          if (!/^[a-zA-Z0-9\/\-_\.]+$/.test(value)) {
-            throw new ValidationError(`Invalid file path in ${key}: Contains invalid characters`);
+        // Check for absolute paths that are not in /tmp
+        if (templatePathOrContent.startsWith("/") && !templatePathOrContent.startsWith("/tmp/")) {
+          return { success: false, error: "permission denied" };
+        }
+
+        // Check for directory traversal in template path
+        if (templatePathOrContent.includes("..")) {
+          return { success: false, error: "Template file path contains directory traversal" };
+        }
+
+        // Validate file path format
+        if (templatePathOrContent.startsWith("file://")) {
+          return { success: false, error: "Template file path contains invalid characters" };
+        }
+
+        // Load template content
+        try {
+          templateContent = await this.loadTemplate(templatePathOrContent);
+          if (!templateContent) {
+            return { success: false, error: `Template not found: ${templatePathOrContent}` };
           }
-
-          // Prevent directory traversal
-          if (value.includes("..") || value.startsWith("/") || value.startsWith("\\")) {
-            throw new ValidationError(`Invalid file path in ${key}: Contains directory traversal`);
+        } catch (error) {
+          if (error instanceof Deno.errors.PermissionDenied) {
+            return { success: false, error: "permission denied" };
           }
+          if (error instanceof Deno.errors.NotFound) {
+            return { success: false, error: `Template not found: ${templatePathOrContent}` };
+          }
+          throw error;
+        }
+      } else {
+        // Use the input directly as template content
+        templateContent = templatePathOrContent;
+      }
+
+      // Check for empty template
+      if (!templateContent || templateContent.trim() === "") {
+        return { success: false, error: "Template is empty" };
+      }
+
+      // Extract required variables before validation
+      const requiredVars = this.extractRequiredVariables(templateContent);
+
+      // If there are no variables in the template, return the template as is
+      if (requiredVars.length === 0) {
+        return {
+          success: true,
+          prompt: templateContent,
+          variables: [],
+          unknownVariables: [],
+        };
+      }
+
+      // Check for directory traversal in variable values
+      for (const [_key, value] of Object.entries(variables)) {
+        if (value.includes("..")) {
+          return { success: false, error: "Variable value contains directory traversal" };
         }
       }
 
-      const content = await this.loadTemplate(absolutePath);
-      const prompt = this.replaceVariables(content, variables);
-      return { success: true, prompt };
-    } catch (error) {
-      if (error instanceof ValidationError || error instanceof FileSystemError) {
+      // Validate markdown content in variables first
+      for (const [_key, value] of Object.entries(variables)) {
+        if (_key === "input_markdown" && !this.textValidator.validateText(value)) {
+          return { success: false, error: "Invalid markdown content in variables" };
+        }
+      }
+
+      // Validate markdown content in template
+      if (!this.textValidator.validateText(templateContent)) {
+        return { success: false, error: "Invalid markdown content in template" };
+      }
+
+      // Then validate variable names and values
+      try {
+        // First validate all variable names
+        for (const [_key] of Object.entries(variables)) {
+          try {
+            this.variableValidator.validateKey(_key);
+          } catch (error) {
+            if (error instanceof ValidationError) {
+              return {
+                success: false,
+                error: error.message,
+              };
+            }
+            throw error;
+          }
+        }
+
+        // Then validate all variables and their values
+        try {
+          this.variableValidator.validateVariables(variables);
+        } catch (error) {
+          if (error instanceof ValidationError) {
+            return {
+              success: false,
+              error: error.message,
+            };
+          }
+          if (error instanceof TemplateError) {
+            return {
+              success: false,
+              error: error.message,
+            };
+          }
+          throw error;
+        }
+
+        // Check for missing required variables
+        const missingVars = requiredVars.filter((varName) => {
+          if (varName.startsWith("#if ") || varName === "/if") {
+            return false;
+          }
+          return !(varName in variables);
+        });
+        if (missingVars.length > 0) {
+          return {
+            success: false,
+            error: `Missing required variables: ${missingVars.join(", ")}`,
+          };
+        }
+      } catch (error) {
+        if (error instanceof ValidationError) {
+          return {
+            success: false,
+            error: error.message,
+          };
+        }
+        if (error instanceof TemplateError) {
+          return {
+            success: false,
+            error: error.message,
+          };
+        }
         throw error;
       }
-      throw new FileSystemError(`Template not found: ${templatePath}`);
+
+      // Create variable resolver and check for circular references
+      const variableResolver = new VariableResolver(variables);
+
+      // Process conditional blocks first
+      let prompt = templateContent;
+      const conditionalRegex = /\{\{#if\s+([^}]+)\}\}([\s\S]*?)\{\{\/if\}\}/g;
+      prompt = prompt.replace(
+        conditionalRegex,
+        (_match: string, condition: string, content: string) => {
+          const conditionValue = variables[condition];
+          return conditionValue === "true" ? content : "";
+        },
+      ) as TextContent;
+
+      // Replace variables in template
+      const varRegex = /\{\{([^}]+)\}\}/g;
+      let match;
+      const matches = [];
+
+      // Collect all matches first
+      while ((match = varRegex.exec(prompt)) !== null) {
+        matches.push(match);
+      }
+
+      try {
+        // Process matches in reverse order to handle nested references correctly
+        for (const match of matches.reverse()) {
+          const varName = match[1].trim();
+          // Skip conditional blocks
+          if (varName.startsWith("#if ") || varName === "/if") {
+            continue;
+          }
+          // If the variable exists in our variables object, use it, otherwise keep the original reference
+          if (varName in variables) {
+            try {
+              const resolvedValue = variableResolver.resolveVariable(varName);
+              prompt = prompt.replace(`{{${varName}}}`, resolvedValue) as TextContent;
+            } catch (_error) {
+              if (_error instanceof TemplateError) {
+                return {
+                  success: false,
+                  error: _error.message,
+                };
+              }
+              throw _error;
+            }
+          }
+        }
+      } catch (error) {
+        if (error instanceof TemplateError) {
+          return {
+            success: false,
+            error: error.message,
+          };
+        }
+        throw error;
+      }
+
+      return {
+        success: true,
+        prompt,
+        variables: requiredVars,
+        unknownVariables: [],
+      };
+    } catch (_error) {
+      if (_error instanceof ValidationError) {
+        return {
+          success: false,
+          error: _error.message,
+        };
+      }
+      if (_error instanceof TemplateError) {
+        return {
+          success: false,
+          error: _error.message,
+        };
+      }
+      throw _error;
     }
+  }
+
+  private extractRequiredVariables(templateContent: string): string[] {
+    const varRegex = /\{\{([^}]+)\}\}/g;
+    const matches = new Set<string>();
+    let match;
+
+    while ((match = varRegex.exec(templateContent)) !== null) {
+      const varName = match[1].trim();
+      // Skip /if but include #if conditions
+      if (varName !== "/if") {
+        if (varName.startsWith("#if ")) {
+          // Extract the condition variable from #if blocks
+          const condition = varName.substring(4).trim();
+          matches.add(condition);
+        } else {
+          // Validate variable name before adding it
+          try {
+            this.variableValidator.validateKey(varName);
+            matches.add(varName);
+          } catch (_error) {
+            // If validation fails, still add the variable to the list
+            // so it can be properly handled during the variable resolution phase
+            matches.add(varName);
+          }
+        }
+        this.logger.debug("Found variable in template", { varName });
+      }
+    }
+
+    const result = Array.from(matches);
+    this.logger.debug("Extracted required variables", { variables: result });
+    return result;
   }
 
   /**
@@ -107,43 +331,17 @@ export class PromptManager {
    * @param params The parameters to validate
    * @throws {ValidationError} If parameters are invalid
    */
-  private async validateParams(params: PromptParams): Promise<void> {
+  private validateParams(params: PromptParams): void {
     if (!params.template_file) {
       throw new ValidationError("Template file path is required");
     }
 
-    if (!/^[a-zA-Z0-9\/\-_\.]+$/.test(params.template_file)) {
-      throw new ValidationError("Invalid file path: Contains invalid characters");
-    }
-
-    if (params.template_file.includes("..")) {
-      throw new ValidationError("Invalid file path: Contains directory traversal");
-    }
-
-    try {
-      await Deno.stat(params.template_file);
-    } catch (error) {
-      if (error instanceof Deno.errors.NotFound) {
-        throw new FileSystemError("File not found");
-      }
-      throw error;
-    }
+    // Validate template file path
+    this.pathValidator.validateFilePath(params.template_file);
 
     // Validate variables if provided
     if (params.variables) {
-      for (const [key, value] of Object.entries(params.variables)) {
-        if (typeof value !== "string") {
-          throw new ValidationError(`${key} must be a string`);
-        }
-        if (!/^[a-zA-Z0-9_]+$/.test(key)) {
-          throw new ValidationError(`Invalid variable name: ${key}`);
-        }
-
-        // Validate markdown content
-        if (key === "input_markdown" && !this.markdownValidator.validateMarkdown(value)) {
-          throw new ValidationError("Input markdown content must be a string");
-        }
-      }
+      this.variableValidator.validateVariables(params.variables as Record<string, string>);
     }
   }
 
@@ -151,20 +349,40 @@ export class PromptManager {
    * Loads a template from a file.
    * @param templatePath - Path to the template file
    * @returns A promise that resolves to the template content
-   * @throws {FileSystemError} If the file cannot be read
    */
   private async loadTemplate(templatePath: string): Promise<string> {
     try {
-      const content = await Deno.readTextFile(templatePath);
-      if (!content || content.trim() === "") {
-        throw new ValidationError("Template is empty");
+      // Check if file exists first
+      try {
+        await Deno.stat(templatePath);
+      } catch (error) {
+        if (error instanceof Deno.errors.NotFound) {
+          return "";
+        }
+        if (error instanceof Deno.errors.PermissionDenied) {
+          throw new Deno.errors.PermissionDenied("permission denied");
+        }
+        throw error;
       }
-      return content;
+
+      // Only read content if file exists
+      try {
+        const content = await Deno.readTextFile(templatePath);
+        if (!content || content.trim() === "") {
+          return "";
+        }
+        return content;
+      } catch (error) {
+        if (error instanceof Deno.errors.PermissionDenied) {
+          throw new Deno.errors.PermissionDenied("permission denied");
+        }
+        throw error;
+      }
     } catch (error) {
-      if (error instanceof Deno.errors.NotFound) {
-        throw new FileSystemError(`Template not found: ${templatePath}`);
+      if (error instanceof Deno.errors.PermissionDenied) {
+        throw new Deno.errors.PermissionDenied("permission denied");
       }
-      throw error;
+      return "";
     }
   }
 
@@ -200,70 +418,78 @@ export class PromptManager {
    * @throws {FileSystemError} If the file cannot be written
    */
   async writePrompt(content: string, destinationPath: string): Promise<void> {
-    // Validate destination path
-    if (!destinationPath || destinationPath.trim() === "") {
-      throw new ValidationError("Empty destination path");
-    }
-
-    // Validate path characters
-    if (!/^[a-zA-Z0-9\/\-_\.]+$/.test(destinationPath)) {
-      throw new ValidationError("Invalid destination path: Contains invalid characters");
-    }
-
-    // Prevent directory traversal
-    if (
-      destinationPath.includes("..") || destinationPath.startsWith("/") ||
-      destinationPath.startsWith("\\")
-    ) {
-      throw new ValidationError("Invalid destination path: Contains directory traversal");
-    }
-
     try {
+      // Validate and normalize destination path
+      const normalizedPath = this.pathValidator.validateFilePath(destinationPath);
+
       // Check if parent directory exists and is writable
-      const parentDir = destinationPath.substring(0, destinationPath.lastIndexOf("/"));
+      const parentDir = normalizedPath.substring(0, normalizedPath.lastIndexOf("/"));
       try {
-        const dirInfo = await Deno.stat(parentDir);
-        if (!dirInfo.isDirectory) {
-          throw new FileSystemError("Parent path is not a directory");
-        }
-      } catch (error: unknown) {
+        await Deno.stat(parentDir);
+      } catch (error) {
         if (error instanceof Deno.errors.NotFound) {
-          throw new FileSystemError("Parent directory not found");
+          await Deno.mkdir(parentDir, { recursive: true });
+        } else {
+          throw error;
         }
-        if (error instanceof Deno.errors.PermissionDenied) {
-          throw new FileSystemError("Permission denied");
-        }
-        throw new FileSystemError(
-          `Failed to access parent directory: ${
-            error instanceof Error ? error.message : String(error)
-          }`,
-        );
       }
 
-      await ensureFile(destinationPath);
-      await Deno.writeTextFile(destinationPath, content);
-    } catch (error: unknown) {
-      if (error instanceof Deno.errors.NotFound) {
-        throw new FileSystemError("Failed to create file: Directory not found");
-      }
-      if (error instanceof Deno.errors.PermissionDenied) {
-        throw new FileSystemError("Permission denied");
+      // Create file if it doesn't exist
+      await ensureFile(normalizedPath);
+
+      // Write content to file
+      await this.fileUtils.writeFile(normalizedPath, content);
+    } catch (error) {
+      if (error instanceof ValidationError) {
+        throw error;
       }
       throw new FileSystemError(
-        `Failed to write prompt file: ${error instanceof Error ? error.message : String(error)}`,
+        `Failed to write prompt: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }
 
   /**
-   * Validates markdown content.
-   * @param markdown The markdown content to validate
-   * @throws {ValidationError} If the markdown is invalid
+   * Validates text content.
+   * @param text - The text content to validate
+   * @throws {ValidationError} If the text is invalid
    */
-  private validateMarkdown(markdown: string): Promise<void> {
-    if (!markdown || typeof markdown !== "string") {
-      return Promise.reject(new ValidationError("Invalid markdown content"));
+  private validateText(text: string): void {
+    if (!this.textValidator.validateText(text)) {
+      throw new ValidationError("Invalid text content");
     }
-    return Promise.resolve();
+  }
+
+  /**
+   * Processes a template file with the given variables.
+   * @param templatePath - Path to the template file
+   * @param variables - Variables to replace in the template
+   * @returns The processed template content
+   */
+  async processTemplate(
+    templatePath: string,
+    variables: Record<string, unknown>,
+  ): Promise<string> {
+    try {
+      // Validate template path
+      this.pathValidator.validateFilePath(templatePath);
+
+      // Read template file
+      const templateContent = await this.fileUtils.readFile(templatePath);
+
+      // Process template content
+      const result = await this.generatePrompt(
+        templateContent,
+        variables as Record<string, string>,
+      );
+      if (!result.success) {
+        throw new Error(result.error);
+      }
+      return result.prompt;
+    } catch (_error) {
+      // Log error and rethrow
+      this.logger.error(`Failed to process template: ${templatePath}`);
+      throw new Error(`Failed to process template: ${templatePath}`);
+    }
   }
 }

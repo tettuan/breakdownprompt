@@ -28,7 +28,12 @@ export class DestinationPathReplacer implements VariableReplacer {
       return false;
     }
 
-    return this.pathValidator.validateDirectoryPath(value);
+    try {
+      this.pathValidator.validateDirectoryPath(value);
+      return true;
+    } catch (_error) {
+      return false;
+    }
   }
 
   /**
