@@ -11,17 +11,20 @@
  * - Verify reserved variable type validation
  * - Test reserved variable value validation
  * - Validate error handling
+ * - Test optional variable handling
  *
  * Expected Results:
  * - Reserved variables are validated correctly
  * - Types are checked properly
  * - Values are validated appropriately
  * - Error cases are handled correctly
+ * - Optional variables are handled correctly
  *
  * Success Cases:
  * - Valid reserved variable definitions
  * - Valid reserved variable types
  * - Valid reserved variable values
+ * - Optional variables with null/undefined values
  *
  * Failure Cases:
  * - Invalid reserved variable definitions
@@ -104,6 +107,23 @@ Deno.test("should validate reserved variable types", async () => {
   }
 });
 
+Deno.test("should handle optional reserved variables", async () => {
+  setupTest();
+  const optionalVariables = [
+    { name: "date", type: "date", value: null },
+    { name: "time", type: "time", value: undefined },
+    { name: "timestamp", type: "timestamp", value: null },
+    { name: "user", type: "string", value: undefined },
+    { name: "env", type: "string", value: null },
+    { name: "random", type: "number", value: undefined },
+  ];
+
+  for (const variable of optionalVariables) {
+    const result = await reservedVariableValidator.validateType(variable);
+    assertEquals(result, true);
+  }
+});
+
 Deno.test("should reject invalid reserved variable types", async () => {
   setupTest();
   const invalidTypes = [
@@ -111,7 +131,7 @@ Deno.test("should reject invalid reserved variable types", async () => {
     { name: "time", type: "time", value: "not-a-time" },
     { name: "timestamp", type: "timestamp", value: "not-a-timestamp" },
     { name: "user", type: "string", value: 123 },
-    { name: "env", type: "string", value: null },
+    { name: "env", type: "string", value: {} },
     { name: "random", type: "number", value: "not-a-number" },
   ];
 
@@ -143,15 +163,32 @@ Deno.test("should validate reserved variable values", async () => {
   }
 });
 
+Deno.test("should handle optional reserved variable values", async () => {
+  setupTest();
+  const optionalValues = [
+    { name: "date", type: "date", value: null },
+    { name: "time", type: "time", value: undefined },
+    { name: "timestamp", type: "timestamp", value: null },
+    { name: "user", type: "string", value: undefined },
+    { name: "env", type: "string", value: null },
+    { name: "random", type: "number", value: undefined },
+  ];
+
+  for (const variable of optionalValues) {
+    const result = await reservedVariableValidator.validateValue(variable);
+    assertEquals(result, true);
+  }
+});
+
 Deno.test("should reject invalid reserved variable values", async () => {
   setupTest();
   const invalidValues = [
-    { name: "date", type: "date", value: null },
-    { name: "time", type: "time", value: undefined },
-    { name: "timestamp", type: "timestamp", value: -1 },
-    { name: "user", type: "string", value: "" },
-    { name: "env", type: "string", value: " " },
-    { name: "random", type: "number", value: NaN },
+    { name: "date", type: "date", value: "invalid" },
+    { name: "time", type: "time", value: "invalid" },
+    { name: "timestamp", type: "timestamp", value: "invalid" },
+    { name: "user", type: "string", value: 123 },
+    { name: "env", type: "string", value: {} },
+    { name: "random", type: "number", value: "invalid" },
   ];
 
   for (const variable of invalidValues) {

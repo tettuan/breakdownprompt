@@ -3,14 +3,8 @@
  *
  * Purpose:
  * - Verify the core functionality of the PromptManager class
- * - Validate prompt generation
- * - Ensure proper error handling
- *
- * Intent:
- * - Test basic prompt generation
- * - Verify template file handling
- * - Test variable replacement
- * - Validate error handling
+ * - Test prompt generation with optional variables
+ * - Ensure proper handling of variable validation
  */
 
 import { assertEquals } from "jsr:@std/testing@^0.220.1/asserts";
@@ -24,6 +18,7 @@ import type {
   PromptErrorResult as _PromptErrorResult,
   PromptSuccessResult as _PromptSuccessResult,
 } from "../../../src/types/prompt_result.ts";
+import type { TextContent } from "../../../src/types.ts";
 
 const logger = new BreakdownLogger();
 const textValidator = new TextValidator();
@@ -35,7 +30,7 @@ const testTemplatePath = "tests/00_fixtures/01_templates/01_basic.md";
 const testOutputPath = "tests/00_fixtures/02_output/test_output.md";
 
 async function setupTest() {
-  promptManager = new PromptManager(textValidator);
+  promptManager = new PromptManager(textValidator, undefined, undefined, undefined, logger);
   // Ensure clean state
   await cleanupTest();
   // Create test output directory if it doesn't exist
@@ -48,12 +43,9 @@ async function setupTest() {
 
 async function cleanupTest() {
   try {
-    const exists = await fileUtils.exists(testOutputPath);
-    if (exists) {
-      await fileUtils.writeFile(testOutputPath, "");
-    }
+    await Deno.remove(testOutputPath);
   } catch (_error) {
-    // Ignore errors during cleanup
+    // Ignore if file doesn't exist
   }
 }
 
@@ -92,8 +84,36 @@ Deno.test({
       }
     });
 
-    await t.step("should handle invalid variables", async () => {
-      logger.debug("Testing prompt generation with invalid variables");
+    await t.step("should handle empty variables", async () => {
+      logger.debug("Testing prompt generation with empty variables");
+      const result = await promptManager.generatePrompt(
+        testTemplatePath,
+        {},
+      );
+      assertEquals(result.success, true);
+      if (result.success) {
+        assertEquals(result.prompt.includes("{name}"), true);
+      }
+    });
+
+    await t.step("should handle partial variables", async () => {
+      logger.debug("Testing prompt generation with partial variables");
+      const template = "Hello {name}! Your age is {age}." as TextContent;
+      const variables = { name: "test" };
+
+      const result = await promptManager.generatePrompt(template, variables);
+      assertEquals(result.success, true);
+      if (result.success) {
+        assertEquals(result.prompt, "Hello test! Your age is {age}.");
+        assertEquals(result.variables.includes("name"), true);
+        assertEquals(result.variables.includes("age"), true);
+        assertEquals(result.unknownVariables?.includes("age"), true);
+        assertEquals(result.unknownVariables?.length, 1);
+      }
+    });
+
+    await t.step("should handle invalid variable names", async () => {
+      logger.debug("Testing prompt generation with invalid variable names");
       const result = await promptManager.generatePrompt(
         testTemplatePath,
         { "invalid-name": "test" },
