@@ -35,20 +35,23 @@ DEBUG=true ./scripts/local_ci.sh
 ```
 tests/
 ├── 01_unit/                    # 単体テスト
-│   ├── 01_core/               # コアコンポーネントのテスト
-│   │   ├── 01_prompt_manager_test.ts      # プロンプト管理の基本機能
-│   │   ├── 02_template_file_test.ts       # テンプレートファイル処理
-│   │   ├── 03_variable_replacer_test.ts   # 変数置換処理
-│   │   └── 04_variable_matcher_test.ts    # 変数照合処理
-│   ├── 02_validation/         # バリデーション関連のテスト
+│   ├── 01_validation/         # バリデーション関連のテスト
 │   │   ├── 01_path_validator_test.ts      # パス検証
 │   │   ├── 02_variable_validator_test.ts  # 変数名検証
 │   │   ├── 03_absolute_path_validator_test.ts # 絶対パス検証
 │   │   ├── 04_parameter_validator_test.ts # パラメータ検証
 │   │   └── 05_reserved_variable_test.ts   # 予約変数検証
-│   └── 03_utils/             # ユーティリティのテスト
-│       ├── 01_logger_test.ts              # ログ出力
-│       └── 02_file_utils_test.ts          # ファイル操作
+│   ├── 02_templates/          # テンプレート関連のテスト
+│   │   ├── 01_template_file_test.ts       # テンプレートファイル処理
+│   │   ├── 02_template_validation_test.ts # テンプレート検証
+│   │   └── 03_template_assets_test.ts     # テンプレートアセット
+│   ├── 03_utils/             # ユーティリティのテスト
+│   │   ├── 01_logger_test.ts              # ログ出力
+│   │   └── 02_file_utils_test.ts          # ファイル操作
+│   └── 04_core/              # コアコンポーネントのテスト
+│       ├── 01_variable_matcher_test.ts    # 変数照合処理
+│       ├── 02_variable_replacer_test.ts   # 変数置換処理
+│       └── 03_prompt_manager_test.ts      # プロンプト管理の基本機能
 │
 ├── 02_integration/            # 統合テスト
 │   ├── 01_template_processing_test.ts     # テンプレート処理フロー
@@ -87,31 +90,7 @@ tests/
 
 ### 2. 単体テスト (01_unit/)
 
-#### 2.1 コアコンポーネント (01_core/)
-
-1. `01_prompt_manager_test.ts`: プロンプト管理の基本機能
-   - プロンプト生成の基本フロー
-   - パラメータ検証の基本機能
-   - エラーハンドリングの基本機能
-
-2. `02_template_file_test.ts`: テンプレートファイル処理
-   - ファイル拡張子の検証（.md, .txt, .yml）
-   - テンプレートファイルの読み込み
-   - 変数の抽出と検証
-   - ファイルアクセス権限の検証
-
-3. `03_variable_replacer_test.ts`: 変数置換処理
-   - 変数の検出と置換
-   - 置換値の生成
-   - エラー処理
-   - 複数回の変数出現の処理
-
-4. `04_variable_matcher_test.ts`: 変数照合処理
-   - 予約変数とテンプレート変数の照合
-   - 照合結果の検証
-   - 不一致時の処理
-
-#### 2.2 バリデーション (02_validation/)
+#### 2.1 バリデーション (01_validation/)
 
 1. `01_path_validator_test.ts`: パス検証
    - ファイル操作の前提となる検証
@@ -126,18 +105,9 @@ tests/
 
 3. `03_absolute_path_validator_test.ts`: 絶対パス検証
    - 一時ディレクトリ内の絶対パス検証
-     - 一時ディレクトリの作成と削除
-     - 絶対パスの正規化
-     - パスプレフィックスの許可リスト管理
    - 特殊文字を含む絶対パスの検証
-     - ファイル名の特殊文字処理
-     - パス区切り文字の処理
    - システム一時ディレクトリパスの検証
-     - システム一時ディレクトリの特定
-     - システムパスの正規化
    - ネストされた一時ディレクトリパスの検証
-     - 再帰的なディレクトリ作成
-     - 深いパス構造の検証
 
 4. `04_parameter_validator_test.ts`: パラメータ検証
    - 入力値の検証
@@ -148,6 +118,24 @@ tests/
    - 予約変数の定義検証
    - 予約変数の型検証
    - 予約変数の値検証
+   - エラー処理
+
+#### 2.2 テンプレート (02_templates/)
+
+1. `01_template_file_test.ts`: テンプレートファイル処理
+   - ファイル拡張子の検証（.md, .txt, .yml）
+   - テンプレートファイルの読み込み
+   - 変数の抽出と検証
+   - ファイルアクセス権限の検証
+
+2. `02_template_validation_test.ts`: テンプレート検証
+   - テンプレート構文の検証
+   - 変数参照の検証
+   - エラーケースの検証
+
+3. `03_template_assets_test.ts`: テンプレートアセット
+   - アセットファイルの検証
+   - リソース管理の検証
    - エラー処理
 
 #### 2.3 ユーティリティ (03_utils/)
@@ -161,6 +149,24 @@ tests/
    - ファイル操作のユーティリティ
    - 共通機能の確認
    - エラー処理
+
+#### 2.4 コアコンポーネント (04_core/)
+
+1. `01_variable_matcher_test.ts`: 変数照合処理
+   - 予約変数とテンプレート変数の照合
+   - 照合結果の検証
+   - 不一致時の処理
+
+2. `02_variable_replacer_test.ts`: 変数置換処理
+   - 変数の検出と置換
+   - 置換値の生成
+   - エラー処理
+   - 複数回の変数出現の処理
+
+3. `03_prompt_manager_test.ts`: プロンプト管理の基本機能
+   - プロンプト生成の基本フロー
+   - パラメータ検証の基本機能
+   - エラーハンドリングの基本機能
 
 ### 3. 統合テスト (02_integration/)
 
