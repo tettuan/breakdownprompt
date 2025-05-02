@@ -43,8 +43,9 @@ tests/
 │   ├── 02_validation/         # バリデーション関連のテスト
 │   │   ├── 01_path_validator_test.ts      # パス検証
 │   │   ├── 02_variable_validator_test.ts  # 変数名検証
-│   │   ├── 03_parameter_validator_test.ts # パラメータ検証
-│   │   └── 04_reserved_variable_test.ts   # 予約変数検証
+│   │   ├── 03_absolute_path_validator_test.ts # 絶対パス検証
+│   │   ├── 04_parameter_validator_test.ts # パラメータ検証
+│   │   └── 05_reserved_variable_test.ts   # 予約変数検証
 │   └── 03_utils/             # ユーティリティのテスト
 │       ├── 01_logger_test.ts              # ログ出力
 │       └── 02_file_utils_test.ts          # ファイル操作
@@ -116,18 +117,34 @@ tests/
    - ファイル操作の前提となる検証
    - セキュリティの基本
    - パスの正規化処理
+   - 絶対パスの検証
 
 2. `02_variable_validator_test.ts`: 変数名検証
    - 変数処理の前提となる検証
    - 命名規則の確認
    - 文字種の制限
 
-3. `03_parameter_validator_test.ts`: パラメータ検証
+3. `03_absolute_path_validator_test.ts`: 絶対パス検証
+   - 一時ディレクトリ内の絶対パス検証
+     - 一時ディレクトリの作成と削除
+     - 絶対パスの正規化
+     - パスプレフィックスの許可リスト管理
+   - 特殊文字を含む絶対パスの検証
+     - ファイル名の特殊文字処理
+     - パス区切り文字の処理
+   - システム一時ディレクトリパスの検証
+     - システム一時ディレクトリの特定
+     - システムパスの正規化
+   - ネストされた一時ディレクトリパスの検証
+     - 再帰的なディレクトリ作成
+     - 深いパス構造の検証
+
+4. `04_parameter_validator_test.ts`: パラメータ検証
    - 入力値の検証
    - 型チェックの確認
    - 値の制約検証
 
-4. `04_reserved_variable_test.ts`: 予約変数検証
+5. `05_reserved_variable_test.ts`: 予約変数検証
    - 予約変数の定義検証
    - 予約変数の型検証
    - 予約変数の値検証
@@ -223,21 +240,44 @@ tests/
     - パストラバーサルの防止
     - 絶対パスの制限
     - パスの正規化
+    - ファイル: `01_path_validator_test.ts`
+
+  - AbsolutePathValidator: 絶対パス検証の実装
+    - 一時ディレクトリ内の絶対パス検証
+      - 一時ディレクトリの作成と削除
+      - 絶対パスの正規化
+      - パスプレフィックスの許可リスト管理
+    - 特殊文字を含む絶対パスの検証
+      - ファイル名の特殊文字処理
+      - パス区切り文字の処理
+    - システム一時ディレクトリパスの検証
+      - システム一時ディレクトリの特定
+      - システムパスの正規化
+    - ネストされた一時ディレクトリパスの検証
+      - 再帰的なディレクトリ作成
+      - 深いパス構造の検証
+    - ファイル: `03_absolute_path_validator_test.ts`
+
   - VariableValidator: 変数名の命名規則検証
     - 英数字とアンダースコアの検証
     - 先頭文字の検証
     - 大文字小文字の区別
     - 文字種の制限
+    - ファイル: `02_variable_validator_test.ts`
+
   - ParameterValidator: パラメータ値の検証
     - ファイルパスの検証
     - テキスト内容の検証
     - ディレクトリパスの検証
     - 型チェック
+    - ファイル: `04_parameter_validator_test.ts`
+
   - ReservedVariableValidator: 予約変数の検証
     - 予約変数の定義検証
     - 予約変数の型検証
     - 予約変数の値検証
     - エラー処理
+    - ファイル: `05_reserved_variable_test.ts`
 
 - ユーティリティ (utils/)
   - Logger: デバッグログ出力
@@ -245,11 +285,14 @@ tests/
     - デバッグ情報の出力
     - エラーログの出力
     - ログフォーマット
+    - ファイル: `01_logger_test.ts`
+
   - FileUtils: ファイル操作関連
     - ファイルの読み書き
     - パスの正規化
     - 権限の確認
     - エラー処理
+    - ファイル: `02_file_utils_test.ts`
 
 ### 2. 統合テスト (integration/)
 
