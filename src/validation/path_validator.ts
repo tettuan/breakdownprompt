@@ -66,7 +66,9 @@ export class PathValidator {
 
     // 5. Check for absolute paths
     if (normalizedPath.startsWith("/") || normalizedPath.startsWith("\\")) {
-      throw new ValidationError("Absolute paths are not allowed. Please use relative paths instead.");
+      throw new ValidationError(
+        "Absolute paths are not allowed. Please use relative paths instead.",
+      );
     }
 
     // 6. Check for invalid characters
@@ -130,7 +132,9 @@ export class PathValidator {
 
     // 5. Check for absolute paths outside of /tmp
     if (normalizedPath.startsWith("/") && !normalizedPath.startsWith("/tmp")) {
-      throw new ValidationError("Absolute paths are not allowed. Please use relative paths instead.");
+      throw new ValidationError(
+        "Absolute paths are not allowed. Please use relative paths instead.",
+      );
     }
 
     // 6. Check for invalid characters
