@@ -37,13 +37,28 @@ jobs:
           VERSION=$(deno eval "console.log(JSON.parse(Deno.readTextFileSync('deno.json')).version)")
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
+      - name: Get version from src/mod.ts
+        id: get_constant_version
+        run: |
+          CONSTANT_VERSION=$(grep -o 'export const VERSION = "[0-9]\+\.[0-9]\+\.[0-9]\+"' src/mod.ts | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+')
+          echo "constant_version=${CONSTANT_VERSION}" >> $GITHUB_OUTPUT
+
       - name: Check version consistency
         run: |
           if [ "v${{ steps.get_version.outputs.version }}" != "${{ steps.get_latest_tag.outputs.latest_tag }}" ]; then
-            echo "Error: Version mismatch!"
+            echo "Error: Version mismatch between deno.json and git tag!"
             echo "deno.json version: ${{ steps.get_version.outputs.version }}"
             echo "Latest git tag: ${{ steps.get_latest_tag.outputs.latest_tag }}"
             echo "Please ensure the version in deno.json matches the latest git tag."
             exit 1
           fi
-          echo "Version check passed! Both versions are ${{ steps.get_version.outputs.version }}"
+
+          if [ "${{ steps.get_version.outputs.version }}" != "${{ steps.get_constant_version.outputs.constant_version }}" ]; then
+            echo "Error: Version mismatch between deno.json and src/mod.ts!"
+            echo "deno.json version: ${{ steps.get_version.outputs.version }}"
+            echo "src/mod.ts version: ${{ steps.get_constant_version.outputs.constant_version }}"
+            echo "Please ensure the version in src/mod.ts matches deno.json."
+            exit 1
+          fi
+
+          echo "Version check passed! All versions are ${{ steps.get_version.outputs.version }}"
