@@ -101,6 +101,11 @@ esac
 
 echo "New version: $new_version"
 
+# Show current versions
+echo "Current versions:"
+echo "deno.json: $(deno eval "const config = JSON.parse(await Deno.readTextFile('deno.json')); console.log(config.version);")"
+echo "mod.ts: $(grep -o 'export const VERSION = "[0-9]\+\.[0-9]\+\.[0-9]\+"' src/mod.ts | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+')"
+
 # Create temporary files for atomic updates
 temp_deno=$(mktemp)
 temp_mod=$(mktemp)
@@ -111,23 +116,15 @@ deno eval "const config = JSON.parse(await Deno.readTextFile('deno.json')); conf
 # Update version in src/mod.ts
 sed "s/export const VERSION = \"[0-9]\+\.[0-9]\+\.[0-9]\+\"/export const VERSION = \"$new_version\"/" src/mod.ts > "$temp_mod"
 
-# Verify both files have the same version before applying changes
-deno_version=$(deno eval "const config = JSON.parse(await Deno.readTextFile('$temp_deno')); console.log(config.version);")
-mod_version=$(grep -o 'export const VERSION = "[0-9]\+\.[0-9]\+\.[0-9]\+"' "$temp_mod" | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+')
+# Show the changes
+echo -e "\nChanges to be made:"
+echo "deno.json:"
+diff deno.json "$temp_deno" || true
+echo -e "\nmod.ts:"
+diff src/mod.ts "$temp_mod" || true
 
-if [ "$deno_version" != "$mod_version" ]; then
-    echo "Error: Version mismatch detected in temporary files!"
-    echo "deno.json version: $deno_version"
-    echo "mod.ts version: $mod_version"
-    echo "Please fix the version mismatch before proceeding."
-    rm "$temp_deno" "$temp_mod"
-    exit 1
-fi
-
-echo "Version consistency check passed: both files will be updated to $new_version"
-
-# Ask for confirmation before proceeding with git operations
-read -p "Do you want to proceed with creating git tag v$new_version? (y/N) " -n 1 -r
+# Ask for confirmation before proceeding with version updates
+read -p "Do you want to proceed with updating versions to $new_version? (y/N) " -n 1 -r
 echo
 if [[ ! $REPLY =~ ^[Yy]$ ]]; then
     echo "Version bump aborted. No files have been modified."
@@ -138,6 +135,28 @@ fi
 # Apply the changes atomically
 mv "$temp_deno" deno.json
 mv "$temp_mod" src/mod.ts
+
+# Verify both files have the same version after applying changes
+deno_version=$(deno eval "const config = JSON.parse(await Deno.readTextFile('deno.json')); console.log(config.version);")
+mod_version=$(grep -o 'export const VERSION = "[0-9]\+\.[0-9]\+\.[0-9]\+"' src/mod.ts | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+')
+
+if [ "$deno_version" != "$mod_version" ]; then
+    echo "Error: Version mismatch detected after applying changes!"
+    echo "deno.json version: $deno_version"
+    echo "mod.ts version: $mod_version"
+    echo "Please fix the version mismatch manually."
+    exit 1
+fi
+
+echo "Version consistency check passed: both files updated to $new_version"
+
+# Ask for confirmation before proceeding with git operations
+read -p "Do you want to proceed with creating git tag v$new_version? (y/N) " -n 1 -r
+echo
+if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    echo "Version bump aborted. Files have been modified but not committed."
+    exit 1
+fi
 
 # Commit the version changes
 git add deno.json src/mod.ts
