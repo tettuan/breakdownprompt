@@ -58,6 +58,8 @@ if [ -z "$latest_jsr_version" ]; then
     echo "Warning: Could not determine latest version from JSR, using local version"
     # Read current version from deno.json
     latest_jsr_version=$(deno eval "const config = JSON.parse(await Deno.readTextFile('deno.json')); console.log(config.version);")
+    # If we can't get versions from JSR, assume all tags are published
+    jsr_versions=$(git tag -l "v*" | sed 's/^v//' | sort -V)
 fi
 
 echo "Latest JSR version: $latest_jsr_version"
@@ -67,17 +69,14 @@ echo "Checking GitHub tags..."
 git fetch --tags
 all_tags=$(git tag -l "v*" | sort -V)
 
-# Remove tags newer than latest version and not in JSR
+# Remove only tags that are newer than latest JSR version
 for tag in $all_tags; do
     tag_version=${tag#v}
     # Check if version is newer than latest JSR version
     if [ "$(printf '%s\n%s\n' "$tag_version" "$latest_jsr_version" | sort -V | tail -n 1)" = "$tag_version" ]; then
-        # Check if version exists in JSR
-        if ! echo "$jsr_versions" | grep -q "^$tag_version$"; then
-            echo "Removing tag $tag (newer than version $latest_jsr_version and not in JSR)"
-            git tag -d "$tag"
-            git push origin ":refs/tags/$tag"
-        fi
+        echo "Removing tag $tag (newer than latest JSR version $latest_jsr_version)"
+        git tag -d "$tag"
+        git push origin ":refs/tags/$tag"
     fi
 done
 
