@@ -8,48 +8,53 @@
 #    - Check if deno.json and src/mod.ts have the same version
 #    - Exit if versions don't match
 #
-# 2. GitHub Actions Status
+# 2. Git Status Check
+#    - Check if there are any un-staged files
+#    - Exit if un-staged files exist
+#
+# 3. GitHub Actions Status
 #    - Check if all workflows (ci.yml, version-check.yml) are completed and successful
 #    - Exit if any workflow is running or failed
 #
-# 3. JSR Version Check
+# 4. JSR Version Check
 #    - Get all published versions from JSR
 #    - Determine latest released version
 #    - Use local version if JSR is unavailable
 #
-# 4. GitHub Tags Handling
+# 5. GitHub Tags Handling
 #    - Fetch all tags from remote
 #    - Remove tags that are ahead of latest JSR version
 #    - Keep tags that match JSR versions
 #
-# 5. New Version Generation
+# 6. New Version Generation
 #    - Generate new version based on bump type (major/minor/patch)
 #    - Increment appropriate version number
 #
-# 6. Version Update
+# 7. Version Update
 #    - Create temporary files for atomic updates
 #    - Update version in both deno.json and src/mod.ts
 #    - Show changes before applying
 #    - Ask for confirmation
 #
-# 7. Version Verification
+# 8. Version Verification
 #    - Verify both files have the same new version
 #    - Exit if versions don't match
 #
-# 8. Git Commit
+# 9. Git Commit
 #    - Commit both files in a single commit
 #    - Use standard commit message format
 #
-# 9. Git Tag
-#    - Create tag with new version
+# 10. Git Tag
+#     - Create tag with new version
 #
-# 10. Push Changes
+# 11. Push Changes
 #     - Push commit to main branch
 #     - Push tag to remote
 #
 # Exit Codes:
 # 0 - Success
 # 1 - Version mismatch
+# 1 - Un-staged files exist
 # 1 - GitHub Actions not completed
 # 1 - Version update failed
 # 1 - User aborted
@@ -95,7 +100,17 @@ fi
 
 echo "Version consistency check passed: both files have version $deno_version"
 
-# 2. Check GitHub Actions status
+# 2. Check git status for un-staged files
+echo "Checking git status..."
+if [ -n "$(git status --porcelain)" ]; then
+    echo "Error: You have un-staged files. Please commit or stash them first."
+    git status
+    exit 1
+fi
+
+echo "Git status check passed: no un-staged files"
+
+# 3. Check GitHub Actions status
 echo "Checking GitHub Actions status..."
 for workflow in "ci.yml" "version-check.yml"; do
     echo "Checking $workflow..."
@@ -108,7 +123,7 @@ for workflow in "ci.yml" "version-check.yml"; do
     fi
 done
 
-# 3. Check JSR versions and get latest released version
+# 4. Check JSR versions and get latest released version
 echo "Checking latest version from JSR..."
 jsr_versions=$(curl -s https://jsr.io/@tettuan/breakdownprompt/versions | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+' | sort -V)
 latest_jsr_version=$(echo "$jsr_versions" | tail -n 1)
@@ -121,7 +136,7 @@ fi
 
 echo "Latest JSR version: $latest_jsr_version"
 
-# 4. Check and handle GitHub tags
+# 5. Check and handle GitHub tags
 echo "Checking GitHub tags..."
 git fetch --tags
 all_tags=$(git tag -l "v*" | sort -V)
@@ -136,7 +151,7 @@ for tag in $all_tags; do
     fi
 done
 
-# 5. Generate new version number
+# 6. Generate new version number
 IFS='.' read -r major minor patch <<< "$latest_jsr_version"
 
 case $BUMP_TYPE in
@@ -156,7 +171,7 @@ esac
 
 echo "New version: $new_version"
 
-# 6. Set new version number to both files
+# 7. Set new version number to both files
 # Create temporary files for atomic updates
 temp_deno=$(mktemp /tmp/deno.XXXXXX)
 temp_mod=$(mktemp /tmp/mod.XXXXXX)
@@ -189,7 +204,7 @@ fi
 mv "$temp_deno" deno.json
 mv "$temp_mod" src/mod.ts
 
-# 7. Verify both files have the same new version
+# 8. Verify both files have the same new version
 deno_version=$(deno eval "const config = JSON.parse(await Deno.readTextFile('deno.json')); console.log(config.version);")
 mod_version=$(grep -o 'export const VERSION = \"[0-9]\+\.[0-9]\+\.[0-9]\+\"' src/mod.ts | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+')
 
@@ -204,14 +219,14 @@ fi
 
 echo "Version consistency check passed: both files updated to $new_version"
 
-# 8. Commit both files in the same commit
+# 9. Commit both files in the same commit
 git add deno.json src/mod.ts
 git commit -m "chore: bump version to $new_version"
 
-# 9. Create and push tag
+# 10. Create and push tag
 git tag "v$new_version"
 
-# 10. Push changes and tag
+# 11. Push changes and tag
 git push origin main
 git push origin "v$new_version"
 
