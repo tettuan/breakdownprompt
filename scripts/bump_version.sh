@@ -96,34 +96,43 @@ esac
 
 echo "New version: $new_version"
 
+# Create temporary files for atomic updates
+temp_deno=$(mktemp)
+temp_mod=$(mktemp)
+
 # Update version in deno.json
-deno eval "const config = JSON.parse(await Deno.readTextFile('deno.json')); config.version = '$new_version'; await Deno.writeTextFile('deno.json', JSON.stringify(config, null, 2).trimEnd() + '\n');"
+deno eval "const config = JSON.parse(await Deno.readTextFile('deno.json')); config.version = '$new_version'; await Deno.writeTextFile('$temp_deno', JSON.stringify(config, null, 2).trimEnd() + '\n');"
 
 # Update version in src/mod.ts
-sed -i '' "s/export const VERSION = \"[0-9]\+\.[0-9]\+\.[0-9]\+\"/export const VERSION = \"$new_version\"/" src/mod.ts
+sed "s/export const VERSION = \"[0-9]\+\.[0-9]\+\.[0-9]\+\"/export const VERSION = \"$new_version\"/" src/mod.ts > "$temp_mod"
 
-# Verify both versions match
-echo "Verifying version consistency..."
-deno_version=$(deno eval "const config = JSON.parse(await Deno.readTextFile('deno.json')); console.log(config.version);")
-mod_version=$(grep -o 'export const VERSION = "[0-9]\+\.[0-9]\+\.[0-9]\+"' src/mod.ts | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+')
+# Verify both files have the same version before applying changes
+deno_version=$(deno eval "const config = JSON.parse(await Deno.readTextFile('$temp_deno')); console.log(config.version);")
+mod_version=$(grep -o 'export const VERSION = "[0-9]\+\.[0-9]\+\.[0-9]\+"' "$temp_mod" | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+')
 
 if [ "$deno_version" != "$mod_version" ]; then
-    echo "Error: Version mismatch detected!"
+    echo "Error: Version mismatch detected in temporary files!"
     echo "deno.json version: $deno_version"
     echo "mod.ts version: $mod_version"
     echo "Please fix the version mismatch before proceeding."
+    rm "$temp_deno" "$temp_mod"
     exit 1
 fi
 
-echo "Version consistency check passed: both files show $new_version"
+echo "Version consistency check passed: both files will be updated to $new_version"
 
 # Ask for confirmation before proceeding with git operations
 read -p "Do you want to proceed with creating git tag v$new_version? (y/N) " -n 1 -r
 echo
 if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-    echo "Version bump aborted. Files have been updated but not committed."
+    echo "Version bump aborted. No files have been modified."
+    rm "$temp_deno" "$temp_mod"
     exit 1
 fi
+
+# Apply the changes atomically
+mv "$temp_deno" deno.json
+mv "$temp_mod" src/mod.ts
 
 # Commit the version changes
 git add deno.json src/mod.ts
