@@ -102,28 +102,14 @@ export class PromptManager {
         templatePathOrContent.includes("/") ||
         (templatePathOrContent.includes(".") && templatePathOrContent.includes("/"))
       ) {
-        // Validate template path
-        if (!templatePathOrContent || templatePathOrContent.trim() === "") {
-          return { success: false, error: "Template file path is empty" };
-        }
-
-        // Check for absolute paths that are not in /tmp
-        if (templatePathOrContent.startsWith("/") && !templatePathOrContent.startsWith("/tmp/")) {
-          return {
-            success: false,
-            error:
-              `${PermissionErrorMessages.ACCESS_FILE}: Access to absolute paths outside /tmp is restricted. Please use relative paths instead.`,
-          };
-        }
-
-        // Check for directory traversal in template path
-        if (templatePathOrContent.includes("..")) {
-          return { success: false, error: "Template file path contains directory traversal" };
-        }
-
-        // Validate file path format
-        if (templatePathOrContent.startsWith("file://")) {
-          return { success: false, error: "Template file path contains invalid characters" };
+        // Validate template path using PathValidator
+        try {
+          await this.pathValidator.validateFilePath(templatePathOrContent);
+        } catch (error) {
+          if (error instanceof ValidationError) {
+            return { success: false, error: error.message };
+          }
+          throw error;
         }
 
         // Load template content
