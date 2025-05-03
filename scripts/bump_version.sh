@@ -228,7 +228,7 @@ trap 'rm -f "$temp_deno" "$temp_mod"' EXIT
 deno eval "const config = JSON.parse(await Deno.readTextFile('deno.json')); config.version = '$new_version'; await Deno.writeTextFile('$temp_deno', JSON.stringify(config, null, 2).trimEnd() + '\n');"
 
 # Update version in src/mod.ts
-sed "s/export const VERSION = \"[0-9]\+\.[0-9]\+\.[0-9]\+\"/export const VERSION = \"$new_version\"/" src/mod.ts > "$temp_mod"
+deno eval "const content = await Deno.readTextFile('src/mod.ts'); await Deno.writeTextFile('$temp_mod', content.replace(/export const VERSION = \"[0-9]+\.[0-9]+\.[0-9]+\"/g, 'export const VERSION = \"$new_version\"'));"
 
 # Show the changes
 echo -e "\nChanges to be made:"
