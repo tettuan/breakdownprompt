@@ -29,6 +29,24 @@ Shows how to generate documentation prompts:
 - Managing source files and output locations
 - Specifying documentation requirements
 
+### 5. Input Text File Only (`input_text_file_only.ts`)
+Demonstrates using only file-based input:
+- Using file paths for template and variables
+- Handling file-based input text
+- Managing output locations
+
+### 6. Absolute Path Usage (`absolute_path_usage.ts`)
+Shows how to use absolute paths with PromptParams:
+- Using absolute paths for input and output
+- Handling path validation
+- Managing file operations with absolute paths
+
+### 7. Temporary Path Usage (`temp_path_usage.ts`)
+Demonstrates handling temporary files:
+- Creating and using temporary directories
+- Managing temporary file paths
+- Cleaning up temporary resources
+
 ## Template Structure
 
 The `templates/` directory contains markdown templates for different use cases:
@@ -54,6 +72,9 @@ examples/
 ├── generate_task_prompt.ts
 ├── generate_code_review.ts
 ├── generate_documentation.ts
+├── input_text_file_only.ts
+├── absolute_path_usage.ts
+├── temp_path_usage.ts
 └── README.md
 ```
 
@@ -69,6 +90,13 @@ deno run --allow-read --allow-env --allow-run examples/basic_usage.ts
 deno run --allow-read --allow-env --allow-run examples/generate_task_prompt.ts
 deno run --allow-read --allow-env --allow-run examples/generate_code_review.ts
 deno run --allow-read --allow-env --allow-run examples/generate_documentation.ts
+
+# Run examples with file-based input
+deno run --allow-read --allow-env --allow-run examples/input_text_file_only.ts
+deno run --allow-read --allow-env --allow-run examples/absolute_path_usage.ts
+
+# Run temporary file example (requires write permission)
+deno run --allow-read --allow-env --allow-run --allow-write examples/temp_path_usage.ts
 ```
 
 ## Use Case Patterns
