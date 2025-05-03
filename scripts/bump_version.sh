@@ -102,6 +102,29 @@ deno eval "const config = JSON.parse(await Deno.readTextFile('deno.json')); conf
 # Update version in src/mod.ts
 sed -i '' "s/export const VERSION = \"[0-9]\+\.[0-9]\+\.[0-9]\+\"/export const VERSION = \"$new_version\"/" src/mod.ts
 
+# Verify both versions match
+echo "Verifying version consistency..."
+deno_version=$(deno eval "const config = JSON.parse(await Deno.readTextFile('deno.json')); console.log(config.version);")
+mod_version=$(grep -o 'export const VERSION = "[0-9]\+\.[0-9]\+\.[0-9]\+"' src/mod.ts | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+')
+
+if [ "$deno_version" != "$mod_version" ]; then
+    echo "Error: Version mismatch detected!"
+    echo "deno.json version: $deno_version"
+    echo "mod.ts version: $mod_version"
+    echo "Please fix the version mismatch before proceeding."
+    exit 1
+fi
+
+echo "Version consistency check passed: both files show $new_version"
+
+# Ask for confirmation before proceeding with git operations
+read -p "Do you want to proceed with creating git tag v$new_version? (y/N) " -n 1 -r
+echo
+if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    echo "Version bump aborted. Files have been updated but not committed."
+    exit 1
+fi
+
 # Commit the version changes
 git add deno.json src/mod.ts
 git commit -m "chore: bump version to $new_version"
