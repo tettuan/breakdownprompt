@@ -5,8 +5,8 @@ import { TextValidator } from "../src/validation/markdown_validator.ts";
 import { PathValidator } from "../src/validation/path_validator.ts";
 import { VariableValidator } from "../src/validation/variable_validator.ts";
 
-const logger = new BreakdownLogger();
-const fileUtils = new FileUtils();
+const _logger = new BreakdownLogger();
+const _fileUtils = new FileUtils();
 const textValidator = new TextValidator();
 const pathValidator = new PathValidator();
 const variableValidator = new VariableValidator();
