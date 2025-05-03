@@ -43,8 +43,8 @@ const params = {
   prompt_file_path: "./templates/example.md",
   variables: {
     schema_file: "./schemas/example.json",
-    input_markdown: "# Example Content",
-    input_markdown_file: "./input/example.md",
+    input_text: "# Example Content",
+    input_text_file: "./input/example.md",
     destination_path: "./output",
   },
 };
@@ -66,11 +66,11 @@ The framework supports several types of variables:
 
 1. **File Path Variables**
    - `schema_file`: Path to schema definition
-   - `input_markdown_file`: Path to input markdown file
+   - `input_text_file`: Path to input text file
    - `destination_path`: Output destination path
 
 2. **Content Variables**
-   - `input_markdown`: Markdown content
+   - `input_text`: Text content
 
 ### Template Structure
 
@@ -81,7 +81,7 @@ Templates are markdown files that can include variables in the format `{variable
 
 ## Input Content
 
-{input_markdown}
+{input_text}
 
 ## Schema Definition
 

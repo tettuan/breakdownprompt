@@ -19,8 +19,8 @@ const manager = new PromptManager();
 
 const result = await manager.generatePrompt("templates/example.md", {
   schema_file: "schema/implementation.json",
-  input_markdown: "# Design Document\n\nContent here",
-  input_markdown_file: "input/design.md",
+  input_text: "# Design Document\n\nContent here",
+  input_text_file: "input/design.md",
   destination_path: "output",
 });
 
@@ -43,8 +43,8 @@ if (result.success) {
 Templates are markdown files with variables in the format `{variable_name}`. Supported variables:
 
 - `{schema_file}`: Path to the schema file (must be a valid file path)
-- `{input_markdown}`: Content of the input markdown (must be valid markdown)
-- `{input_markdown_file}`: Path to the input markdown file (must be a valid file path)
+- `{input_text}`: Content of the input text (must be valid markdown)
+- `{input_text_file}`: Path to the input text file (must be a valid file path)
 - `{destination_path}`: Output destination path (must be a valid directory path)
 
 Example template:
@@ -54,7 +54,7 @@ Example template:
 
 ## Input
 
-{input_markdown}
+{input_text}
 
 ## Schema
 
@@ -71,8 +71,8 @@ Example template:
 try {
   const result = await manager.generatePrompt("template.md", {
     schema_file: "schema.json",
-    input_markdown: "# Content",
-    input_markdown_file: "input.md",
+    input_text: "# Content",
+    input_text_file: "input.md",
     destination_path: "output",
   });
 

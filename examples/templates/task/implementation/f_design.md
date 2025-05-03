@@ -2,7 +2,7 @@
 
 ## Input Design
 
-{input_markdown_file}
+{input_text_file}
 
 ## Schema
 

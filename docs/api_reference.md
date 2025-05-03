@@ -177,8 +177,8 @@ Template variables are:
 
 1. **Variable Types**
    - `schema_file`: Valid file path
-   - `input_markdown`: Markdown content
-   - `input_markdown_file`: Valid file path
+   - `input_text`: Text content
+   - `input_text_file`: Valid file path
    - `destination_path`: Valid directory path
 
 2. **Variable Name Rules**
@@ -219,8 +219,8 @@ const manager = new PromptManager();
 
 const variables = {
   schema_file: "./schema/implementation.json",
-  input_markdown: "# Design Document\n\nContent here",
-  input_markdown_file: "./input/design.md",
+  input_text: "# Design Document\n\nContent here",
+  input_text_file: "./input/design.md",
   destination_path: "./output",
 };
 

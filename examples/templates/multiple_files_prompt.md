@@ -4,7 +4,7 @@ This template demonstrates how to split content into multiple files.
 
 ## Main Content
 
-{input_markdown}
+{input_text}
 
 ## Schema Definition
 

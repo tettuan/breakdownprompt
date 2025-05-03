@@ -4,7 +4,7 @@ This template demonstrates how to generate structured output.
 
 ## Content Structure
 
-{input_markdown}
+{input_text}
 
 ## Schema Configuration
 

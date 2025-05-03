@@ -47,8 +47,8 @@ export const TEST_CONFIG = {
  * @property {string} no_permission_file_path - Path to a file with restricted permissions
  * @property {Object} variables - Sample variables for testing
  * @property {string} variables.schema_file - Path to a sample schema file
- * @property {string} variables.input_markdown - Sample markdown content
- * @property {string} variables.input_markdown_file - Path to a sample markdown file
+ * @property {string} variables.input_text - Sample text content
+ * @property {string} variables.input_text_file - Path to a sample text file
  * @property {string} variables.destination_path - Path for output files
  */
 export const TEST_PARAMS = {
@@ -59,9 +59,9 @@ export const TEST_PARAMS = {
   no_permission_file_path: join(TEST_CONFIG.TEMPLATES_DIR, "no_permission.md"),
   variables: {
     schema_file: join(TEST_CONFIG.SCHEMA_DIR, "base.schema.json"),
-    input_markdown: "# Sample Markdown\nThis is a sample markdown content.",
-    input_markdown_file: join(TEST_CONFIG.INPUT_DIR, "sample.md"),
-    destination_path: join(TEST_CONFIG.OUTPUT_DIR, "output.md"),
+    input_text: "# Sample Text\nThis is a sample text content.",
+    input_text_file: join(TEST_CONFIG.INPUT_DIR, "sample.txt"),
+    destination_path: join(TEST_CONFIG.OUTPUT_DIR, "output.txt"),
   },
 };
 
@@ -160,10 +160,10 @@ export async function setupTestDirs(): Promise<void> {
 {schema_file}
 
 ## Input
-{input_markdown}
+{input_text}
 
 ## Input File
-{input_markdown_file}
+{input_text_file}
 
 ## Output
 {destination_path}
@@ -204,25 +204,25 @@ export async function setupTestDirs(): Promise<void> {
       path: join(TEST_CONFIG.SCHEMA_DIR, "base.schema.json"),
     });
 
-    // Create input markdown file
-    const inputContent = "# Sample Markdown\nThis is a sample markdown content.";
+    // Create input text file
+    const inputContent = "# Sample Text\nThis is a sample text content.";
     await Deno.writeTextFile(
-      join(TEST_CONFIG.INPUT_DIR, "sample.md"),
+      join(TEST_CONFIG.INPUT_DIR, "sample.txt"),
       inputContent,
     );
-    await Deno.chmod(join(TEST_CONFIG.INPUT_DIR, "sample.md"), 0o644);
-    logger.debug("Created input markdown file", {
-      path: join(TEST_CONFIG.INPUT_DIR, "sample.md"),
+    await Deno.chmod(join(TEST_CONFIG.INPUT_DIR, "sample.txt"), 0o644);
+    logger.debug("Created input text file", {
+      path: join(TEST_CONFIG.INPUT_DIR, "sample.txt"),
     });
 
     // Create output file
     await Deno.writeTextFile(
-      join(TEST_CONFIG.OUTPUT_DIR, "output.md"),
+      join(TEST_CONFIG.OUTPUT_DIR, "output.txt"),
       "# Output\nThis is a placeholder output file.",
     );
-    await Deno.chmod(join(TEST_CONFIG.OUTPUT_DIR, "output.md"), 0o644);
+    await Deno.chmod(join(TEST_CONFIG.OUTPUT_DIR, "output.txt"), 0o644);
     logger.debug("Created output file", {
-      path: join(TEST_CONFIG.OUTPUT_DIR, "output.md"),
+      path: join(TEST_CONFIG.OUTPUT_DIR, "output.txt"),
     });
 
     // Create no permission file - only if it doesn't exist
