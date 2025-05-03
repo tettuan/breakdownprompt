@@ -1,60 +1,68 @@
 #!/bin/bash
 
-# Purpose: Bump version number in deno.json and src/mod.ts, ensuring version consistency
-#          and proper handling of GitHub tags and JSR releases.
+# Purpose: Automated version management script for Deno projects
+#          - Ensures version consistency between deno.json and src/mod.ts
+#          - Handles version bumping (major/minor/patch)
+#          - Performs pre-release checks (git status, CI, GitHub Actions)
+#          - Manages GitHub tags and JSR version synchronization
+#          - Automatically commits and pushes version changes
+#
+# Usage: ./scripts/bump_version.sh [--major|--minor|--patch]
+#        Default: --patch
 #
 # Flow:
 # 1. Version Sync Check
-#    - Check if deno.json and src/mod.ts have the same version
-#    - If not, update both files to match the version in deno.json
-#    - Exit if version sync fails
+#    - Checks if deno.json and src/mod.ts have matching versions
+#    - If mismatch found, updates src/mod.ts to match deno.json
+#    - Fails if version sync cannot be achieved
 #
 # 2. Git Status Check
-#    - Check if there are any un-staged files
-#    - Exit if un-staged files exist
+#    - Ensures no un-staged changes exist
+#    - Prevents version bump on dirty working directory
 #
 # 3. Local CI Check
-#    - Run scripts/local_ci.sh
-#    - Exit if local CI fails
+#    - Runs local_ci.sh to verify code quality
+#    - Ensures tests pass before version bump
 #
 # 4. GitHub Actions Status
-#    - Check if all workflows (ci.yml, version-check.yml) are completed and successful
-#    - Exit if any workflow is running or failed
+#    - Verifies ci.yml and version-check.yml workflows
+#    - Ensures all workflows are completed and successful
 #
 # 5. JSR Version Check
-#    - Get all published versions from JSR
-#    - Determine latest released version
-#    - Use local version if JSR is unavailable
+#    - Fetches published versions from JSR
+#    - Determines latest released version
+#    - Falls back to local version if JSR unavailable
 #
-# 6. GitHub Tags Handling
-#    - Fetch all tags from remote
-#    - Remove tags that are ahead of latest JSR version
-#    - Keep tags that match JSR versions
+# 6. GitHub Tags Cleanup
+#    - Fetches all tags from remote
+#    - Removes tags that are ahead of latest JSR version
+#    - Keeps tags that match published JSR versions
 #
 # 7. New Version Generation
-#    - Generate new version based on bump type (major/minor/patch)
-#    - Increment appropriate version number
+#    - Increments version based on bump type:
+#      * major: X.0.0
+#      * minor: x.Y.0
+#      * patch: x.y.Z
 #
 # 8. Version Update
-#    - Create temporary files for atomic updates
-#    - Update version in both deno.json and src/mod.ts
-#    - Show changes before applying
-#    - Ask for confirmation
+#    - Updates version in both deno.json and src/mod.ts
+#    - Uses atomic file operations with temporary files
+#    - Shows changes before applying
 #
 # 9. Version Verification
-#    - Verify both files have the same new version
-#    - Exit if versions don't match
+#    - Verifies both files have the same new version
+#    - Ensures version update was successful
 #
 # 10. Git Commit
-#     - Commit both files in a single commit
-#     - Use standard commit message format
+#     - Commits version changes with standard message
+#     - Includes both deno.json and src/mod.ts
 #
 # 11. Git Tag
-#     - Create tag with new version
+#     - Creates new tag with version (vX.Y.Z)
 #
 # 12. Push Changes
-#     - Push commit to main branch
-#     - Push tag to remote
+#     - Pushes commit to main branch
+#     - Pushes new tag to remote
 #
 # Exit Codes:
 # 0 - Success
