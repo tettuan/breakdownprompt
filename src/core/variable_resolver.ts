@@ -1,3 +1,12 @@
+/**
+ * Variable Resolver
+ *
+ * Purpose:
+ * - Resolve variable references in templates
+ * - Handle variable dependencies and circular references
+ * - Support optional variables
+ */
+
 import { TemplateError, ValidationError } from "../errors.ts";
 
 /**
@@ -28,6 +37,7 @@ export class VariableResolver {
   private visited: Set<string>;
   private resolving: Set<string>;
   private resolvedVars: Map<string, string>;
+  private readonly VALID_KEY_REGEX = /^[a-zA-Z][a-zA-Z0-9_]*$/;
 
   /**
    * Creates a new VariableResolver instance.
@@ -41,10 +51,31 @@ export class VariableResolver {
   }
 
   /**
+   * Validates a variable name.
+   * @param varName - The name of the variable to validate
+   * @throws {ValidationError} If the variable name is invalid
+   */
+  private validateVariableName(varName: string): void {
+    if (!varName || typeof varName !== "string") {
+      throw new ValidationError("Invalid variable name");
+    }
+
+    if (varName.includes("-")) {
+      throw new ValidationError(
+        `Invalid variable name: ${varName} (variable names cannot contain hyphens)`,
+      );
+    }
+
+    if (!this.VALID_KEY_REGEX.test(varName)) {
+      throw new ValidationError(`Invalid variable name: ${varName}`);
+    }
+  }
+
+  /**
    * Resolves a variable by replacing references to other variables.
    * @param varName - The name of the variable to resolve
    * @param path - The current path of variable resolution (for circular reference detection)
-   * @returns The resolved value of the variable
+   * @returns The resolved value of the variable or empty string if variable is not found
    * @throws {TemplateError} If a circular reference is detected
    * @throws {ValidationError} If the variable name is invalid
    */
@@ -59,6 +90,9 @@ export class VariableResolver {
       return this.variables[varName] || "";
     }
 
+    // Validate variable name
+    this.validateVariableName(varName);
+
     // Check for circular reference
     if (path.has(varName)) {
       throw new TemplateError("Circular variable reference detected");
@@ -69,14 +103,14 @@ export class VariableResolver {
       return this.resolvedVars.get(varName)!;
     }
 
-    // Check if variable exists
+    // Return empty string if variable doesn't exist (optional variable)
     if (!(varName in this.variables)) {
-      throw new ValidationError(`Missing required variable: ${varName}`);
+      return "";
     }
 
     const value = this.variables[varName];
     if (value === undefined || value === null || value.trim() === "") {
-      throw new ValidationError(`Invalid value for variable: ${varName}`);
+      return "";
     }
 
     // Check for circular reference in resolution process
@@ -90,51 +124,55 @@ export class VariableResolver {
     this.resolving.add(varName);
 
     try {
-      // Replace all variable references in the value
-      let resolvedValue = value;
-      const varRegex = /\{([^}]+)\}/g;
-      let match;
-      const matches = [];
-
-      // Collect all matches first
-      while ((match = varRegex.exec(value)) !== null) {
-        matches.push(match);
-      }
-
-      // Process matches in reverse order to handle nested references correctly
-      for (const match of matches.reverse()) {
-        const refVarName = match[1].trim();
-        // Skip conditional blocks
-        if (refVarName.startsWith("#if ") || refVarName === "/if") {
-          continue;
-        }
-        // Check for circular reference
-        if (path.has(refVarName)) {
-          throw new TemplateError("Circular variable reference detected");
-        }
-        // Check if referenced variable exists
-        if (!(refVarName in this.variables)) {
-          throw new ValidationError(`Missing required variable: ${refVarName}`);
-        }
-        // Resolve referenced variable
-        const resolvedRef = this.resolveVariable(refVarName, new Set(path));
-        // Replace reference with resolved value, preserving whitespace
-        resolvedValue = resolvedValue.replace(match[0], () => {
-          // Preserve leading and trailing whitespace from the original value
-          const leadingWhitespace = match[0].match(/^\s*/)?.[0] || "";
-          const trailingWhitespace = match[0].match(/\s*$/)?.[0] || "";
-          return leadingWhitespace + resolvedRef + trailingWhitespace;
-        });
-      }
-
-      // Cache and return resolved value
-      this.resolvedVars.set(varName, resolvedValue);
-      return resolvedValue;
+      // Return the value as is, without processing nested variables
+      this.resolvedVars.set(varName, value);
+      return value;
     } finally {
-      // Clean up path and resolving state
+      // Clean up
       path.delete(varName);
       this.resolving.delete(varName);
     }
+  }
+
+  /**
+   * Resolves variables in a template string.
+   * @param template - The template string containing variables to resolve
+   * @returns The resolved template string
+   * @throws {TemplateError} If a circular reference is detected
+   * @throws {ValidationError} If any variable name is invalid
+   */
+  public resolveTemplate(template: string): string {
+    if (!template || template.trim() === "") {
+      return "";
+    }
+
+    let resolvedTemplate = template;
+    const varRegex = /\{([^}]+)\}/g;
+    let match;
+
+    while ((match = varRegex.exec(template)) !== null) {
+      const varName = match[1].trim();
+      // Skip conditional blocks
+      if (varName.startsWith("#if ") || varName === "/if") {
+        continue;
+      }
+
+      try {
+        // Try to resolve the variable
+        const value = this.resolveVariable(varName);
+        resolvedTemplate = resolvedTemplate.replace(`{${varName}}`, value);
+      } catch (error) {
+        if (error instanceof ValidationError) {
+          throw error;
+        }
+        if (error instanceof TemplateError) {
+          throw error;
+        }
+        throw error;
+      }
+    }
+
+    return resolvedTemplate;
   }
 
   /**

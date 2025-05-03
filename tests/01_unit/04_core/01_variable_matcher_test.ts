@@ -3,184 +3,451 @@
  *
  * Purpose:
  * - Verify the core functionality of the VariableMatcher class
- * - Validate variable matching between reserved and template variables
- * - Ensure proper handling of variable types and formats
- * - Test template variable discovery
- * - Test optional variable handling
+ * - Test the matching process between template variables and reserved variables
+ * - Ensure proper handling of class hierarchy in variable matching
  *
  * Intent:
- * - Test basic variable matching
- * - Verify reserved variable matching
- * - Test variable type validation
- * - Validate error handling
- * - Test template variable discovery
- * - Test optional variable handling
+ * - Test variable matching process
+ *   - Exact matches between template variables and variables
+ *   - Partial matches and mismatches
+ *   - Missing variables in template or variables object
+ * - Test class hierarchy matching
+ *   - Base class field matching
+ *   - Base class method matching
+ *   - Concrete class specific validation
+ *   - Concrete class specific conversion
  *
- * Expected Results:
- * - Variables are matched correctly
- * - Reserved variables are handled properly
- * - Error cases are handled appropriately
- * - Template variables are discovered correctly
- * - Optional variables are handled correctly
+ * Scope:
+ * - Variable matching
+ *   - Template variable extraction
+ *   - Reserved variable matching
+ *   - Type validation
+ *   - Value validation
+ * - Class hierarchy
+ *   - Base class validation
+ *   - Concrete class validation
+ *   - Polymorphism validation
+ * - Error handling
+ *   - Invalid variable handling
+ *   - Type mismatch handling
+ *   - Missing variable handling
  *
- * Success Cases:
- * - Valid variable matching
- * - Valid reserved variable matching
- * - Valid type validation
- * - Template variable discovery
- * - Optional variable handling
- *
- * Failure Cases:
- * - Invalid variable names
- * - Invalid variable types
- * - Missing required variables
+ * Notes:
+ * - Template variables should be output as-is when variables object is empty
+ * - Error messages should be consistent with validation rules
+ * - Type validation is strict and follows predefined rules
  */
 
-import {
-  assertEquals,
-  type assertExists as _assertExists,
-  assertRejects,
-} from "jsr:@std/testing@^0.220.1/asserts";
+import { assertEquals, assertRejects } from "jsr:@std/testing@^0.220.1/asserts";
 import { VariableMatcher } from "../../../src/core/variable_matcher.ts";
+import { VariableValidator } from "../../../src/validation/variable_validator.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { ValidationError } from "../../../src/errors.ts";
+import type { ValidVariableKey } from "../../../src/types.ts";
 
-const logger = new BreakdownLogger();
+const _logger = new BreakdownLogger();
 
 // Pre-processing and Preparing Part
 // Setup: Initialize VariableMatcher and test data
 let variableMatcher: VariableMatcher;
+let variableValidator: VariableValidator;
 
 function setupTest() {
-  variableMatcher = new VariableMatcher(logger);
+  variableMatcher = new VariableMatcher();
+  variableValidator = new VariableValidator();
+}
+
+// Helper function to validate and cast variable names
+function validateAndCastKey(key: string): ValidVariableKey {
+  if (variableValidator.validateKey(key)) {
+    return key as ValidVariableKey;
+  }
+  throw new ValidationError(`Invalid variable key: ${key}`);
 }
 
 // Main Test
-Deno.test("should match basic variables", async () => {
+// Base class variable matching
+Deno.test("should match base class common fields", async () => {
   setupTest();
-  const templateVariables = ["name", "age"];
-  const reservedVariables = {
-    name: { type: "string", value: "test" },
-    age: { type: "number", value: 25 },
+  const templateVariable = {
+    name: validateAndCastKey("test"),
+    type: "string",
   };
 
-  const result = await variableMatcher.match(templateVariables, reservedVariables);
-  assertEquals(result.matched.length, 2);
-  assertEquals(result.unmatched.length, 0);
-});
-
-Deno.test("should handle optional variables", async () => {
-  setupTest();
-  const templateVariables = ["name", "age", "optional"];
-  const reservedVariables = {
-    name: { type: "string", value: "test" },
-    age: { type: "number", value: 25 },
+  const reservedVariable = {
+    name: validateAndCastKey("test"),
+    type: "string",
   };
 
-  const result = await variableMatcher.match(templateVariables, reservedVariables);
-  assertEquals(result.matched.length, 2);
-  assertEquals(result.unmatched.length, 1);
-  assertEquals(result.unmatched[0], "optional");
+  const result = await variableMatcher.matchBaseClassFields(templateVariable, reservedVariable);
+  assertEquals(result, true);
 });
 
-Deno.test("should handle reserved variables", async () => {
+Deno.test("should match base class common methods", async () => {
   setupTest();
-  const templateVariables = ["date", "time"];
-  const reservedVariables = {
-    date: { type: "date", value: new Date() },
-    time: { type: "time", value: new Date() },
+  const templateVariable = {
+    name: validateAndCastKey("test"),
+    type: "string",
+    value: "test",
   };
 
-  const result = await variableMatcher.match(templateVariables, reservedVariables);
-  assertEquals(result.matched.length, 2);
-  assertEquals(result.unmatched.length, 0);
-});
-
-Deno.test("should detect mismatches", async () => {
-  setupTest();
-  const templateVariables = ["name", "age", "city"];
-  const reservedVariables = {
-    name: { type: "string", value: "test" },
-    age: { type: "number", value: 25 },
+  const reservedVariable = {
+    name: validateAndCastKey("test"),
+    type: "string",
+    value: "test",
   };
 
-  const result = await variableMatcher.match(templateVariables, reservedVariables);
-  assertEquals(result.matched.length, 2);
-  assertEquals(result.unmatched.length, 1);
-  assertEquals(result.unmatched[0], "city");
+  const result = await variableMatcher.matchBaseClassMethods(templateVariable, reservedVariable);
+  assertEquals(result, true);
 });
 
-Deno.test("should handle invalid variable names", async () => {
+// Concrete class variable matching
+Deno.test("should match concrete class specific validation", async () => {
   setupTest();
-  const templateVariables = ["invalid-name"];
-  const reservedVariables = {};
+  const templateVariable = {
+    name: validateAndCastKey("schema_file"),
+    type: "file_path",
+    value: "/path/to/schema",
+  };
+
+  const reservedVariable = {
+    name: validateAndCastKey("schema_file"),
+    type: "file_path",
+    value: "/path/to/schema",
+  };
+
+  const result = await variableMatcher.matchConcreteClassValidation(
+    templateVariable,
+    reservedVariable,
+  );
+  assertEquals(result, true);
+});
+
+Deno.test("should match concrete class specific conversion", async () => {
+  setupTest();
+  const templateVariable = {
+    name: validateAndCastKey("schema_file"),
+    type: "file_path",
+    value: "/path/to/schema",
+  };
+
+  const reservedVariable = {
+    name: validateAndCastKey("schema_file"),
+    type: "file_path",
+    value: "/path/to/schema",
+  };
+
+  const result = await variableMatcher.matchConcreteClassConversion(
+    templateVariable,
+    reservedVariable,
+  );
+  assertEquals(result, true);
+});
+
+// Class hierarchy matching
+Deno.test("should match class hierarchy inheritance", async () => {
+  setupTest();
+  const templateVariable = {
+    name: validateAndCastKey("test"),
+    type: "string",
+  };
+
+  const reservedVariable = {
+    name: validateAndCastKey("schema_file"),
+    type: "file_path",
+  };
+
+  const result = await variableMatcher.matchClassHierarchy(templateVariable, reservedVariable);
+  assertEquals(result, true);
+});
+
+Deno.test("should match class hierarchy polymorphism", async () => {
+  setupTest();
+  const templateVariable = {
+    name: validateAndCastKey("test"),
+    type: "string",
+    value: "test",
+  };
+
+  const reservedVariable = {
+    name: validateAndCastKey("schema_file"),
+    type: "file_path",
+    value: "/path/to/schema",
+  };
+
+  const result = await variableMatcher.matchPolymorphism(templateVariable, reservedVariable);
+  assertEquals(result, true);
+});
+
+// Common processing flow matching
+Deno.test("should match common processing flow", async () => {
+  setupTest();
+  const templateVariable = {
+    name: validateAndCastKey("schema_file"),
+    type: "file_path",
+    value: "/path/to/schema",
+  };
+
+  const reservedVariable = {
+    name: validateAndCastKey("schema_file"),
+    type: "file_path",
+    value: "/path/to/schema",
+  };
+
+  const result = await variableMatcher.matchCommonProcessingFlow(
+    templateVariable,
+    reservedVariable,
+  );
+  assertEquals(result, true);
+});
+
+// Error cases
+Deno.test("should reject invalid base class matching", async () => {
+  setupTest();
+  const templateVariable = {
+    name: validateAndCastKey("test"),
+    type: "",
+  };
+
+  const reservedVariable = {
+    name: validateAndCastKey("test"),
+    type: "string",
+  };
 
   await assertRejects(
     async () => {
-      await variableMatcher.match(templateVariables, reservedVariables);
+      await variableMatcher.matchBaseClassFields(templateVariable, reservedVariable);
     },
     ValidationError,
-    "Invalid variable name",
+    "Invalid base class matching",
   );
 });
 
-Deno.test("should handle reserved variables validation", async () => {
+Deno.test("should reject invalid concrete class matching", async () => {
   setupTest();
-  const templateVariables = ["name"];
-  const reservedVariables = {
-    name: { type: "string", value: "test" },
+  const templateVariable = {
+    name: validateAndCastKey("schema_file"),
+    type: "file_path",
+    value: "invalid/path",
   };
 
-  const result = await variableMatcher.match(templateVariables, reservedVariables);
-  assertEquals(result.matched.length, 1);
-  assertEquals(result.unmatched.length, 0);
-});
-
-Deno.test("should handle empty template variables", async () => {
-  setupTest();
-  const templateVariables: string[] = [];
-  const reservedVariables = {
-    name: { type: "string", value: "test" },
+  const reservedVariable = {
+    name: validateAndCastKey("schema_file"),
+    type: "file_path",
+    value: "/path/to/schema",
   };
 
-  const result = await variableMatcher.match(templateVariables, reservedVariables);
-  assertEquals(result.matched.length, 0);
-  assertEquals(result.unmatched.length, 0);
+  await assertRejects(
+    async () => {
+      await variableMatcher.matchConcreteClassValidation(templateVariable, reservedVariable);
+    },
+    ValidationError,
+    "Invalid concrete class matching",
+  );
 });
 
-Deno.test("should handle empty reserved variables", async () => {
+Deno.test("should reject invalid class hierarchy matching", async () => {
   setupTest();
-  const templateVariables = ["name", "age"];
-  const reservedVariables = {};
+  const templateVariable = {
+    name: validateAndCastKey("test"),
+    type: "",
+  };
 
-  const result = await variableMatcher.match(templateVariables, reservedVariables);
-  assertEquals(result.matched.length, 0);
-  assertEquals(result.unmatched.length, 2);
+  const reservedVariable = {
+    name: validateAndCastKey("schema_file"),
+    type: "file_path",
+  };
+
+  await assertRejects(
+    async () => {
+      await variableMatcher.matchClassHierarchy(templateVariable, reservedVariable);
+    },
+    ValidationError,
+    "Invalid class hierarchy matching",
+  );
 });
 
-Deno.test("should discover template variables", async () => {
+Deno.test("should reject invalid processing flow matching", async () => {
   setupTest();
-  const template = "Hello {name}! Your age is {age}. Optional: {optional}";
-  const expectedVariables = ["{name}", "{age}", "{optional}"];
+  const templateVariable = {
+    name: validateAndCastKey("schema_file"),
+    type: "file_path",
+    value: "invalid/path",
+  };
 
-  const result = variableMatcher.matchPattern(template, /\{[^}]+\}/g);
-  assertEquals(result, expectedVariables);
+  const reservedVariable = {
+    name: validateAndCastKey("schema_file"),
+    type: "file_path",
+    value: "/path/to/schema",
+  };
+
+  await assertRejects(
+    async () => {
+      await variableMatcher.matchCommonProcessingFlow(templateVariable, reservedVariable);
+    },
+    ValidationError,
+    "Invalid processing flow matching",
+  );
 });
 
-Deno.test("should handle template with no variables in discovery", async () => {
+// Template variable and variables matching
+Deno.test("should match template variables with variables object", async () => {
   setupTest();
-  const template = "Hello World!";
-  const expectedVariables: string[] = [];
+  const template = "Using {schema_file} with {template_path}";
+  const variables = {
+    schema_file: "/path/to/schema",
+    template_path: "/path/to/template",
+  };
 
-  const result = variableMatcher.matchPattern(template, /\{[^}]+\}/g);
-  assertEquals(result, expectedVariables);
+  const result = await variableMatcher.matchTemplateVariables(template, variables);
+  assertEquals(result, true);
 });
 
-Deno.test("should handle template with special characters in discovery", async () => {
+Deno.test("should handle partial match between template variables and variables", async () => {
   setupTest();
-  const template = "Hello {name}! This is a special character: @#$%";
-  const expectedVariables = ["{name}"];
+  const template = "Using {schema_file} with {template_path} and {output_dir}";
+  const variables = {
+    schema_file: "/path/to/schema",
+    template_path: "/path/to/template",
+  };
 
-  const result = variableMatcher.matchPattern(template, /\{[^}]+\}/g);
-  assertEquals(result, expectedVariables);
+  const result = await variableMatcher.matchTemplateVariables(template, variables);
+  assertEquals(
+    result,
+    true,
+    "Template variables not found in variables object should be kept as is",
+  );
+});
+
+Deno.test("should handle mismatch between template variables and variables", async () => {
+  setupTest();
+  const template = "Using {schema_file} with {template_path}";
+  const variables = {
+    schema_file: "/path/to/schema",
+    output_dir: "/path/to/output",
+  };
+
+  const result = await variableMatcher.matchTemplateVariables(template, variables);
+  assertEquals(
+    result,
+    true,
+    "Template variables not found in variables object should be kept as is",
+  );
+});
+
+Deno.test("should handle missing variables in template", async () => {
+  setupTest();
+  const template = "No variables in this template";
+  const variables = {
+    schema_file: "/path/to/schema",
+    template_path: "/path/to/template",
+  };
+
+  const result = await variableMatcher.matchTemplateVariables(template, variables);
+  assertEquals(result, true);
+});
+
+Deno.test("should handle missing variables in variables object", async () => {
+  setupTest();
+  const template = "Using {schema_file} with {template_path}";
+  const variables = {};
+
+  const result = await variableMatcher.matchTemplateVariables(template, variables);
+  assertEquals(result, true, "All variables are optional, empty variables object should be valid");
+});
+
+Deno.test("should handle nested variable references", async () => {
+  setupTest();
+  const template = "Using {schema_file} with {template_path} in {output_dir}";
+  const variables = {
+    schema_file: "/path/to/schema",
+    template_path: "/path/to/template",
+    output_dir: "/path/to/output",
+  };
+
+  const result = await variableMatcher.matchTemplateVariables(template, variables);
+  assertEquals(result, true);
+});
+
+Deno.test("should handle duplicate variable references", async () => {
+  setupTest();
+  const template = "Using {schema_file} with {schema_file} and {template_path}";
+  const variables = {
+    schema_file: "/path/to/schema",
+    template_path: "/path/to/template",
+  };
+
+  const result = await variableMatcher.matchTemplateVariables(template, variables);
+  assertEquals(result, true);
+});
+
+// Additional test cases for variable relationships
+Deno.test("should reject non-reserved variables in variables object", async () => {
+  setupTest();
+  const template = "Using {name} with {age}";
+  const variables = {
+    name: "test",
+    age: 30,
+  };
+
+  await assertRejects(
+    async () => {
+      await variableMatcher.matchTemplateVariables(template, variables);
+    },
+    ValidationError,
+    "Non-reserved variables are not allowed",
+  );
+});
+
+Deno.test("should handle empty variables object with template variables", async () => {
+  setupTest();
+  const template = "Using {schema_file} with {template_path}";
+  const variables = {};
+
+  const result = await variableMatcher.matchTemplateVariables(template, variables);
+  assertEquals(
+    result,
+    true,
+    "Template variables should be output as is when variables object is empty",
+  );
+});
+
+Deno.test("should handle variable replacement with class processing", async () => {
+  setupTest();
+  const template = "Using {schema_file} with {template_path}";
+  const variables = {
+    schema_file: "/path/to/schema",
+    template_path: "/path/to/template",
+  };
+
+  const result = await variableMatcher.matchTemplateVariables(template, variables);
+  assertEquals(result, true);
+});
+
+Deno.test("should handle variable replacement without variables object values", async () => {
+  setupTest();
+  const template = "Using {schema_file} with {input_text}";
+  const variables = {
+    schema_file: "/path/to/schema",
+  };
+
+  const result = await variableMatcher.matchTemplateVariables(template, variables);
+  assertEquals(
+    result,
+    true,
+    "Template variables should be output as is when not found in variables object",
+  );
+});
+
+Deno.test("should handle variable replacement with class default processing", async () => {
+  setupTest();
+  const template = "Using {schema_file}";
+  const variables = {};
+
+  const result = await variableMatcher.matchTemplateVariables(template, variables);
+  assertEquals(
+    result,
+    true,
+    "Template variables should be output as is when variables object is empty",
+  );
 });

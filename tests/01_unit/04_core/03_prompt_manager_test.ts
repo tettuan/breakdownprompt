@@ -11,9 +11,9 @@ import { assertEquals } from "jsr:@std/testing@^0.220.1/asserts";
 import { PromptManager } from "../../../src/core/prompt_manager.ts";
 import { FileUtils } from "../../../src/utils/file_utils.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import type { PathValidator as _PathValidator } from "../../../src/validation/path_validator.ts";
-import type { VariableValidator as _VariableValidator } from "../../../src/validation/variable_validator.ts";
 import { TextValidator } from "../../../src/validation/markdown_validator.ts";
+import { PathValidator } from "../../../src/validation/path_validator.ts";
+import { VariableValidator } from "../../../src/validation/variable_validator.ts";
 import type {
   PromptErrorResult as _PromptErrorResult,
   PromptSuccessResult as _PromptSuccessResult,
@@ -22,7 +22,9 @@ import type { TextContent } from "../../../src/types.ts";
 
 const logger = new BreakdownLogger();
 const textValidator = new TextValidator();
-const fileUtils = new FileUtils();
+const _pathValidator = new PathValidator();
+const _variableValidator = new VariableValidator();
+const _fileUtils = new FileUtils();
 
 // Pre-processing and Preparing Part
 let promptManager: PromptManager;
@@ -98,10 +100,19 @@ Deno.test({
 
     await t.step("should handle partial variables", async () => {
       logger.debug("Testing prompt generation with partial variables");
-      const template = "Hello {name}! Your age is {age}." as TextContent;
+      const templateStr = "Hello {name}! Your age is {age}.";
       const variables = { name: "test" };
 
+      logger.debug("Template content", { templateStr });
+      logger.debug("Variables provided", { variables });
+
+      // Validate template content
+      textValidator.validateText(templateStr);
+      const template = templateStr as TextContent;
+
       const result = await promptManager.generatePrompt(template, variables);
+      logger.debug("Result", { result });
+
       assertEquals(result.success, true);
       if (result.success) {
         assertEquals(result.prompt, "Hello test! Your age is {age}.");

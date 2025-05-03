@@ -14,6 +14,7 @@
 import type { BreakdownLogger } from "@tettuan/breakdownlogger";
 import type { VariableValidator } from "../validation/variable_validator.ts";
 import { ValidationError } from "../errors.ts";
+import type { TextContent } from "../types.ts";
 
 export class VariableReplacer {
   private readonly logger: BreakdownLogger;
@@ -29,70 +30,69 @@ export class VariableReplacer {
    * @param content Template content
    * @param variables Variables to replace
    * @returns Content with variables replaced
-   * @throws {ValidationError} If any variable is invalid or missing
    */
-  replaceVariables(content: string, variables: Record<string, unknown>): string {
-    if (!content) {
-      return "";
-    }
-
-    const variablePattern = /\{([^}]+)\}/g;
-    let result = content;
-    const requiredVariables = new Set<string>();
-    const matches = Array.from(content.matchAll(variablePattern));
-    const validVariables = new Map<string, string>();
-
-    // First pass: collect all variables and validate names
-    for (const match of matches) {
-      const variableName = match[1].trim();
-      requiredVariables.add(variableName);
-
-      // Validate variable name
+  public replaceVariables(content: TextContent, variables: Record<string, unknown>): TextContent {
+    // First validate all variable names
+    for (const [key] of Object.entries(variables)) {
       try {
-        this.variableValidator.validateKey(variableName);
+        this.variableValidator.validateKey(key);
       } catch (error) {
-        this.logger.error("Invalid variable name", { name: variableName });
+        if (error instanceof ValidationError) {
+          this.logger.error("Invalid variable name", { name: key });
+          throw error;
+        }
         throw error;
       }
+    }
 
-      // Check for missing variables
-      const value = variables[variableName];
+    // Convert all values to strings and validate them
+    const stringVariables: Record<string, string> = {};
+    for (const [key, value] of Object.entries(variables)) {
       if (value === undefined || value === null) {
-        this.logger.warn("Variable not found", { name: variableName });
         continue;
       }
 
-      // Validate variable value
-      if (typeof value !== "string") {
-        this.logger.error("Invalid variable value", { name: variableName });
-        throw new ValidationError("Invalid variable value");
-      }
-
+      // Convert value to string
+      const stringValue = String(value);
       try {
-        this.variableValidator.validateTextContent(value);
-        validVariables.set(variableName, value);
+        this.variableValidator.validateTextContent(stringValue);
+        stringVariables[key] = stringValue;
       } catch (error) {
-        this.logger.error("Invalid variable value", { name: variableName });
+        if (error instanceof ValidationError) {
+          this.logger.error("Invalid variable value", { name: key });
+          throw error;
+        }
         throw error;
       }
     }
 
-    // Validate required variables
-    try {
-      this.variableValidator.validateRequiredVariables(
-        Array.from(requiredVariables),
-        variables,
-      );
-    } catch (error) {
-      this.logger.error("Missing required variables", {
-        error: error instanceof Error ? error.message : String(error),
-      });
-      throw error;
+    // Validate variables
+    this.variableValidator.validateVariables(stringVariables);
+
+    // Replace variables in template
+    let result = content;
+    const varRegex = /\{([^}]+)\}/g;
+    let match;
+    const matches = [];
+
+    // Collect all matches first
+    while ((match = varRegex.exec(content)) !== null) {
+      matches.push(match);
     }
 
-    // Second pass: replace only valid variables
-    for (const [variableName, value] of validVariables) {
-      result = result.replace(`{${variableName}}`, value);
+    // Process matches in reverse order to handle nested references correctly
+    for (const match of matches.reverse()) {
+      const varName = match[1].trim();
+      const value = variables[varName];
+
+      // For optional variables, replace with empty string if undefined or null
+      if (value === undefined || value === null) {
+        result = result.replace(`{${varName}}`, "") as TextContent;
+        continue;
+      }
+
+      // Replace variable with its string value
+      result = result.replace(`{${varName}}`, String(value)) as TextContent;
     }
 
     return result;

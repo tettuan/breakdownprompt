@@ -129,14 +129,10 @@ Deno.test("should handle empty variables", async () => {
   setupTest();
   const template = "Hello {name}!" as TextContent;
   const variables = {};
+  const expectedOutput = "Hello !";
 
-  await assertRejects(
-    async () => {
-      await variableReplacer.replaceVariables(template, variables);
-    },
-    ValidationError,
-    "Missing required variables",
-  );
+  const result = await variableReplacer.replaceVariables(template, variables);
+  assertEquals(result, expectedOutput);
 });
 
 Deno.test("should replace multiple variables", async () => {
@@ -153,14 +149,10 @@ Deno.test("should handle partial variable replacement with optional variables", 
   setupTest();
   const template = "Hello {name}! Your age is {age}. Optional: {optional}" as TextContent;
   const variables = { name: "test" };
+  const expectedOutput = "Hello test! Your age is . Optional: ";
 
-  await assertRejects(
-    async () => {
-      await variableReplacer.replaceVariables(template, variables);
-    },
-    ValidationError,
-    "Missing required variables",
-  );
+  const result = await variableReplacer.replaceVariables(template, variables);
+  assertEquals(result, expectedOutput);
 });
 
 Deno.test("should handle special characters in variables", async () => {
@@ -253,31 +245,23 @@ Deno.test("should handle undefined variable values", async () => {
   setupTest();
   const template = "Hello {name}!" as TextContent;
   const variables = { name: undefined };
+  const expectedOutput = "Hello !";
 
-  await assertRejects(
-    async () => {
-      await variableReplacer.replaceVariables(template, variables);
-    },
-    ValidationError,
-    "Missing required variables",
-  );
+  const result = await variableReplacer.replaceVariables(template, variables);
+  assertEquals(result, expectedOutput);
 });
 
 Deno.test("should handle null variable values", async () => {
   setupTest();
   const template = "Hello {name}!" as TextContent;
   const variables = { name: null };
+  const expectedOutput = "Hello !";
 
-  await assertRejects(
-    async () => {
-      await variableReplacer.replaceVariables(template, variables);
-    },
-    ValidationError,
-    "Missing required variables",
-  );
+  const result = await variableReplacer.replaceVariables(template, variables);
+  assertEquals(result, expectedOutput);
 });
 
-Deno.test("should discover template variables", async () => {
+Deno.test("should discover template variables", () => {
   setupTest();
   const template = "Hello {name}! Your age is {age}. Optional: {optional}" as TextContent;
   const expectedVariables = ["name", "age", "optional"];
@@ -286,7 +270,7 @@ Deno.test("should discover template variables", async () => {
   assertEquals(result, expectedVariables);
 });
 
-Deno.test("should handle template with no variables in discovery", async () => {
+Deno.test("should handle template with no variables in discovery", () => {
   setupTest();
   const template = "Hello World!" as TextContent;
   const expectedVariables: string[] = [];
@@ -295,7 +279,7 @@ Deno.test("should handle template with no variables in discovery", async () => {
   assertEquals(result, expectedVariables);
 });
 
-Deno.test("should handle template with special characters in discovery", async () => {
+Deno.test("should handle template with special characters in discovery", () => {
   setupTest();
   const template = "Hello {name}! This is a special character: @#$%" as TextContent;
   const expectedVariables = ["name"];

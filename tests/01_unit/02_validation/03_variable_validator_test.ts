@@ -2,30 +2,26 @@
  * Variable Validator Unit Test
  *
  * Purpose:
- * - Verify the core functionality of the VariableValidator class
- * - Validate variable name rules according to specifications
- * - Ensure proper handling of variable validation
+ * - Verify the core functionality of variable name validation
+ * - Ensure proper handling of variable name format and rules
  *
  * Intent:
- * - Test variable name validation rules
- * - Verify character set validation
- * - Test case sensitivity
- * - Validate error handling
+ * - Test variable name format validation rules
+ * - Verify character set and case sensitivity rules
+ * - Validate error handling for invalid names
  *
- * Expected Results:
- * - Variable names are validated correctly
- * - Character set rules are enforced
- * - Error cases are handled appropriately
+ * Scope:
+ * - Focus on variable name format validation
+ * - Test character set rules (alphanumeric and underscore)
+ * - Verify case sensitivity handling
+ * - Test first character rules
+ * - Validate whitespace handling
+ * - Do not test reserved variable validation (covered by reserved_variable_test.ts)
  *
- * Success Cases:
- * - Valid variable names
- * - Valid character sets
- * - Valid case sensitivity
- *
- * Failure Cases:
- * - Invalid variable names
- * - Invalid character sets
- * - Invalid case sensitivity
+ * Note:
+ * - This test focuses on the format of variable names
+ * - Reserved variable validation is tested separately
+ * - Error messages should be consistent with the validation rules
  */
 
 import {
@@ -37,7 +33,7 @@ import { VariableValidator } from "../../../src/validation/variable_validator.ts
 import { ValidationError } from "../../../src/errors.ts";
 
 // Pre-processing and Preparing Part
-// Setup: Initialize VariableValidator and test data
+// Setup: Initialize VariableValidator for testing variable name format
 let variableValidator: VariableValidator;
 
 function setupTest() {
@@ -45,6 +41,7 @@ function setupTest() {
 }
 
 // Main Test
+// Test basic variable name format
 Deno.test("should validate basic variable names", async () => {
   setupTest();
   const validNames = ["name", "age", "city", "user_name", "firstName"];
@@ -55,6 +52,7 @@ Deno.test("should validate basic variable names", async () => {
   }
 });
 
+// Test invalid character handling
 Deno.test("should reject invalid variable names", async () => {
   setupTest();
   const invalidNames = [
@@ -103,6 +101,7 @@ Deno.test("should reject invalid variable names", async () => {
   }
 });
 
+// Test case sensitivity rules
 Deno.test("should validate case sensitivity", async () => {
   setupTest();
   const names = ["Name", "NAME", "name"];
@@ -113,6 +112,7 @@ Deno.test("should validate case sensitivity", async () => {
   }
 });
 
+// Test character set rules
 Deno.test("should validate character set", async () => {
   setupTest();
   const validNames = [
@@ -134,6 +134,7 @@ Deno.test("should validate character set", async () => {
   }
 });
 
+// Test first character rules
 Deno.test("should validate first character", async () => {
   setupTest();
   const validNames = ["name", "Name", "NAME"];
@@ -155,6 +156,7 @@ Deno.test("should validate first character", async () => {
   }
 });
 
+// Test empty name handling
 Deno.test("should handle empty variable names", async () => {
   setupTest();
   await assertRejects(
@@ -166,6 +168,7 @@ Deno.test("should handle empty variable names", async () => {
   );
 });
 
+// Test whitespace handling
 Deno.test("should handle whitespace in variable names", async () => {
   setupTest();
   const names = [" name", "name ", "name name"];

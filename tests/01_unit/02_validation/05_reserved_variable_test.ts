@@ -1,203 +1,124 @@
 /**
- * Reserved Variable Validator Unit Test
+ * Reserved Variable Unit Test
  *
  * Purpose:
- * - Verify the core functionality of the ReservedVariableValidator class
- * - Validate reserved variable definitions and types
- * - Ensure proper handling of reserved variable validation
+ * - Verify the validation of reserved variables
+ * - Ensure proper handling of reserved variable types and values
+ * - Test the relationship between reserved variables and template variables
  *
  * Intent:
- * - Test reserved variable definition validation
- * - Verify reserved variable type validation
- * - Test reserved variable value validation
- * - Validate error handling
- * - Test optional variable handling
+ * - Test validation of predefined reserved variables
+ * - Verify type checking for reserved variable values
+ * - Test error handling for invalid reserved variables
+ * - Validate the optional nature of reserved variables
  *
- * Expected Results:
- * - Reserved variables are validated correctly
- * - Types are checked properly
- * - Values are validated appropriately
- * - Error cases are handled correctly
- * - Optional variables are handled correctly
+ * Scope:
+ * - Reserved variable validation
+ *   - Variable name validation
+ *   - Type validation for each reserved variable
+ *   - Value validation for each reserved variable
+ * - Class hierarchy validation
+ *   - Base class validation
+ *   - Concrete class validation
+ *   - Polymorphism validation
+ * - Error handling
+ *   - Invalid type handling
+ *   - Invalid value handling
+ *   - Missing variable handling
  *
- * Success Cases:
- * - Valid reserved variable definitions
- * - Valid reserved variable types
- * - Valid reserved variable values
- * - Optional variables with null/undefined values
- *
- * Failure Cases:
- * - Invalid reserved variable definitions
- * - Invalid reserved variable types
- * - Invalid reserved variable values
+ * Notes:
+ * - All reserved variables are optional
+ * - Error messages should be consistent with validation rules
+ * - Type validation is strict and follows predefined rules
  */
 
-import {
-  assertEquals,
-  type assertExists as _assertExists,
-  assertRejects,
-} from "jsr:@std/testing@^0.220.1/asserts";
+import { assertRejects } from "jsr:@std/testing@^0.220.1/asserts";
 import { ReservedVariableValidator } from "../../../src/validation/reserved_variable_validator.ts";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { ValidationError } from "../../../src/errors.ts";
-
-const _logger = new BreakdownLogger();
+import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
 // Pre-processing and Preparing Part
-// Setup: Initialize ReservedVariableValidator and test data
+// Setup: Initialize ReservedVariableValidator for testing reserved variables
 let reservedVariableValidator: ReservedVariableValidator;
+let _logger: BreakdownLogger;
 
 function setupTest() {
   reservedVariableValidator = new ReservedVariableValidator();
+  _logger = new BreakdownLogger();
 }
 
 // Main Test
-Deno.test("should validate reserved variable definitions", async () => {
+// Test reserved variable validation
+Deno.test("should validate reserved variables", () => {
   setupTest();
-  const validDefinitions = [
-    { name: "date", type: "date" },
-    { name: "time", type: "time" },
-    { name: "timestamp", type: "timestamp" },
-    { name: "user", type: "string" },
-    { name: "env", type: "string" },
-    { name: "random", type: "number" },
-  ];
-
-  for (const definition of validDefinitions) {
-    const result = await reservedVariableValidator.validateDefinition(definition);
-    assertEquals(result, true);
-  }
+  const validVariables = {
+    schema_file: "/path/to/schema.json",
+    template_path: "/path/to/template",
+    output_dir: "/path/to/output",
+    config_file: "/path/to/config.json",
+  };
+  reservedVariableValidator.validateVariables(validVariables);
 });
 
-Deno.test("should reject invalid reserved variable definitions", async () => {
+// Test reserved variable type validation
+Deno.test("should validate reserved variable types", () => {
   setupTest();
-  const invalidDefinitions = [
-    { name: "invalid-name", type: "string" },
-    { name: "1name", type: "string" },
-    { name: "name!", type: "string" },
-    { name: "", type: "string" },
-    { name: "name", type: "invalid-type" },
-  ];
-
-  for (const definition of invalidDefinitions) {
-    await assertRejects(
-      async () => {
-        await reservedVariableValidator.validateDefinition(definition);
-      },
-      ValidationError,
-      "Invalid reserved variable definition",
-    );
-  }
+  const validTypes = {
+    schema_file: "/path/to/schema.json",
+    template_path: "/path/to/template",
+    output_dir: "/path/to/output",
+    config_file: "/path/to/config.json",
+  };
+  reservedVariableValidator.validateVariables(validTypes);
 });
 
-Deno.test("should validate reserved variable types", async () => {
-  setupTest();
-  const validTypes = [
-    { name: "date", type: "date", value: new Date() },
-    { name: "time", type: "time", value: new Date() },
-    { name: "timestamp", type: "timestamp", value: Date.now() },
-    { name: "user", type: "string", value: "test" },
-    { name: "env", type: "string", value: "development" },
-    { name: "random", type: "number", value: 42 },
-  ];
-
-  for (const variable of validTypes) {
-    const result = await reservedVariableValidator.validateType(variable);
-    assertEquals(result, true);
-  }
-});
-
-Deno.test("should handle optional reserved variables", async () => {
-  setupTest();
-  const optionalVariables = [
-    { name: "date", type: "date", value: null },
-    { name: "time", type: "time", value: undefined },
-    { name: "timestamp", type: "timestamp", value: null },
-    { name: "user", type: "string", value: undefined },
-    { name: "env", type: "string", value: null },
-    { name: "random", type: "number", value: undefined },
-  ];
-
-  for (const variable of optionalVariables) {
-    const result = await reservedVariableValidator.validateType(variable);
-    assertEquals(result, true);
-  }
-});
-
+// Test rejection of invalid reserved variable types
 Deno.test("should reject invalid reserved variable types", async () => {
   setupTest();
-  const invalidTypes = [
-    { name: "date", type: "date", value: "not-a-date" },
-    { name: "time", type: "time", value: "not-a-time" },
-    { name: "timestamp", type: "timestamp", value: "not-a-timestamp" },
-    { name: "user", type: "string", value: 123 },
-    { name: "env", type: "string", value: {} },
-    { name: "random", type: "number", value: "not-a-number" },
-  ];
+  const invalidTypes = {
+    schema_file: 123,
+    template_path: true,
+    output_dir: null,
+    config_file: undefined, // Invalid type: undefined instead of string
+  };
 
-  for (const variable of invalidTypes) {
-    await assertRejects(
-      async () => {
-        await reservedVariableValidator.validateType(variable);
-      },
-      ValidationError,
-      "Invalid reserved variable type",
-    );
-  }
+  await assertRejects(
+    async () => {
+      await reservedVariableValidator.validateVariables(
+        invalidTypes as unknown as Record<string, string>,
+      );
+    },
+    ValidationError,
+    "Invalid type for reserved variable",
+  );
 });
 
-Deno.test("should validate reserved variable values", async () => {
+// Test handling of optional reserved variables
+Deno.test("should handle optional reserved variables", () => {
   setupTest();
-  const validValues = [
-    { name: "date", type: "date", value: new Date() },
-    { name: "time", type: "time", value: new Date() },
-    { name: "timestamp", type: "timestamp", value: Date.now() },
-    { name: "user", type: "string", value: "test" },
-    { name: "env", type: "string", value: "development" },
-    { name: "random", type: "number", value: 42 },
-  ];
-
-  for (const variable of validValues) {
-    const result = await reservedVariableValidator.validateValue(variable);
-    assertEquals(result, true);
-  }
+  const partialVariables = {
+    schema_file: "/path/to/schema.json",
+    output_dir: "/path/to/output",
+  };
+  reservedVariableValidator.validateVariables(partialVariables);
 });
 
-Deno.test("should handle optional reserved variable values", async () => {
+// Test rejection of non-reserved variables
+Deno.test("should reject non-reserved variables", async () => {
   setupTest();
-  const optionalValues = [
-    { name: "date", type: "date", value: null },
-    { name: "time", type: "time", value: undefined },
-    { name: "timestamp", type: "timestamp", value: null },
-    { name: "user", type: "string", value: undefined },
-    { name: "env", type: "string", value: null },
-    { name: "random", type: "number", value: undefined },
-  ];
+  const nonReservedVariables = {
+    name: "test", // Not a reserved variable
+    age: 25, // Not a reserved variable
+    city: "Tokyo", // Not a reserved variable
+  };
 
-  for (const variable of optionalValues) {
-    const result = await reservedVariableValidator.validateValue(variable);
-    assertEquals(result, true);
-  }
-});
-
-Deno.test("should reject invalid reserved variable values", async () => {
-  setupTest();
-  const invalidValues = [
-    { name: "date", type: "date", value: "invalid" },
-    { name: "time", type: "time", value: "invalid" },
-    { name: "timestamp", type: "timestamp", value: "invalid" },
-    { name: "user", type: "string", value: 123 },
-    { name: "env", type: "string", value: {} },
-    { name: "random", type: "number", value: "invalid" },
-  ];
-
-  for (const variable of invalidValues) {
-    await assertRejects(
-      async () => {
-        await reservedVariableValidator.validateValue(variable);
-      },
-      ValidationError,
-      "Invalid reserved variable value",
-    );
-  }
+  await assertRejects(
+    async () => {
+      await reservedVariableValidator.validateVariables(
+        nonReservedVariables as unknown as Record<string, string>,
+      );
+    },
+    ValidationError,
+    "Non-reserved variable not allowed: name",
+  );
 });

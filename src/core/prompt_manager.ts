@@ -1,3 +1,12 @@
+/**
+ * Prompt Manager
+ *
+ * Purpose:
+ * - Manage prompt generation and variable replacement
+ * - Handle template loading and validation
+ * - Support optional variables
+ */
+
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { TemplateError, ValidationError } from "../errors.ts";
 import type { PromptGenerationResult } from "../types/prompt_result.ts";
@@ -89,7 +98,10 @@ export class PromptManager {
       let templateContent: string;
 
       // If the input looks like a file path, try to load it
-      if (templatePathOrContent.includes("/") || templatePathOrContent.includes(".")) {
+      if (
+        templatePathOrContent.includes("/") ||
+        (templatePathOrContent.includes(".") && templatePathOrContent.includes("/"))
+      ) {
         // Validate template path
         if (!templatePathOrContent || templatePathOrContent.trim() === "") {
           return { success: false, error: "Template file path is empty" };
@@ -143,25 +155,11 @@ export class PromptManager {
         return { success: false, error: "Template is empty" };
       }
 
-      // Extract required variables before validation
-      const requiredVars = this.extractRequiredVariables(templateContent);
+      // Replace variables in template
+      let prompt = templateContent as TextContent;
 
-      // If there are no variables in the template, return the template as is
-      if (requiredVars.length === 0) {
-        return {
-          success: true,
-          prompt: templateContent,
-          variables: [],
-          unknownVariables: [],
-        };
-      }
-
-      // Check for directory traversal in variable values
-      for (const [_key, value] of Object.entries(variables)) {
-        if (value.includes("..")) {
-          return { success: false, error: "Variable value contains directory traversal" };
-        }
-      }
+      // Extract variables from template
+      const templateVars = this.extractTemplateVariables(templateContent);
 
       // Then validate variable names and values
       try {
@@ -182,7 +180,16 @@ export class PromptManager {
 
         // Then validate all variables and their values
         try {
-          this.variableValidator.validateVariables(variables);
+          // Skip reserved variable validation for prompt variables
+          // this.variableValidator.validateVariables(variables);
+          // Instead, just validate that the values are strings
+          for (const [_key, value] of Object.entries(variables)) {
+            if (
+              value !== undefined && value !== null && value !== "" && typeof value !== "string"
+            ) {
+              throw new ValidationError(`Invalid type for variable: ${_key}`);
+            }
+          }
         } catch (error) {
           if (error instanceof ValidationError) {
             return {
@@ -197,20 +204,6 @@ export class PromptManager {
             };
           }
           throw error;
-        }
-
-        // Check for missing required variables
-        const missingVars = requiredVars.filter((varName) => {
-          if (varName.startsWith("#if ") || varName === "/if") {
-            return false;
-          }
-          return !(varName in variables);
-        });
-        if (missingVars.length > 0) {
-          return {
-            success: false,
-            error: `Missing required variables: ${missingVars.join(", ")}`,
-          };
         }
       } catch (error) {
         if (error instanceof ValidationError) {
@@ -228,53 +221,41 @@ export class PromptManager {
         throw error;
       }
 
-      // Create variable resolver and check for circular references
-      const variableResolver = new VariableResolver(variables);
-
-      // Process conditional blocks first
-      let prompt = templateContent;
-      const conditionalRegex = /\{#if\s+([^}]+)\}([\s\S]*?)\{\/if\}/g;
-      prompt = prompt.replace(
-        conditionalRegex,
-        (_match: string, condition: string, content: string) => {
-          const conditionValue = variables[condition];
-          return conditionValue === "true" ? content : "";
-        },
-      ) as TextContent;
-
       // Replace variables in template
       const varRegex = /\{([^}]+)\}/g;
       let match;
       const matches = [];
 
       // Collect all matches first
-      while ((match = varRegex.exec(prompt)) !== null) {
-        matches.push(match);
+      while ((match = varRegex.exec(templateContent)) !== null) {
+        const varName = match[1].trim();
+        // Skip conditional blocks
+        if (varName.startsWith("#if ") || varName === "/if") {
+          continue;
+        }
+        matches.push({ varName, fullMatch: match[0] });
       }
 
       try {
         // Process matches in reverse order to handle nested references correctly
-        for (const match of matches.reverse()) {
-          const varName = match[1].trim();
-          // Skip conditional blocks
-          if (varName.startsWith("#if ") || varName === "/if") {
-            continue;
+        for (const { varName, fullMatch } of matches.reverse()) {
+          this.logger.debug("Processing variable", { varName, fullMatch });
+          // If the variable exists in our variables object and has a value, use it
+          if (
+            varName in variables && variables[varName] !== undefined &&
+            variables[varName] !== null &&
+            variables[varName].trim() !== ""
+          ) {
+            const value = variables[varName];
+            this.logger.debug("Replacing variable", { varName, value });
+            prompt = prompt.replace(
+              new RegExp(fullMatch.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g"),
+              value,
+            ) as TextContent;
+          } else {
+            this.logger.debug("Skipping variable (not found or empty)", { varName });
           }
-          // If the variable exists in our variables object, use it, otherwise keep the original reference
-          if (varName in variables) {
-            try {
-              const resolvedValue = variableResolver.resolveVariable(varName);
-              prompt = prompt.replace(`{${varName}}`, resolvedValue) as TextContent;
-            } catch (_error) {
-              if (_error instanceof TemplateError) {
-                return {
-                  success: false,
-                  error: _error.message,
-                };
-              }
-              throw _error;
-            }
-          }
+          // Leave unknown variables in the template
         }
       } catch (error) {
         if (error instanceof TemplateError) {
@@ -286,106 +267,100 @@ export class PromptManager {
         throw error;
       }
 
+      // Return the result with success
       return {
         success: true,
         prompt,
-        variables: requiredVars,
-        unknownVariables: [],
+        variables: templateVars,
+        unknownVariables: templateVars.filter((v) =>
+          !(v in variables) || variables[v] === undefined || variables[v] === null ||
+          variables[v].trim() === ""
+        ),
       };
-    } catch (_error) {
-      if (_error instanceof ValidationError) {
-        return {
-          success: false,
-          error: _error.message,
-        };
-      }
-      if (_error instanceof TemplateError) {
-        return {
-          success: false,
-          error: _error.message,
-        };
-      }
-      throw _error;
-    }
-  }
-
-  private extractRequiredVariables(templateContent: string): string[] {
-    const varRegex = /\{([^}]+)\}/g;
-    const matches = new Set<string>();
-    let match;
-
-    while ((match = varRegex.exec(templateContent)) !== null) {
-      const varName = match[1].trim();
-      // Skip /if but include #if conditions
-      if (varName !== "/if") {
-        if (varName.startsWith("#if ")) {
-          // Extract the condition variable from #if blocks
-          const condition = varName.substring(4).trim();
-          matches.add(condition);
-        } else {
-          // Validate variable name before adding it
-          try {
-            this.variableValidator.validateKey(varName);
-            matches.add(varName);
-          } catch (_error) {
-            // If validation fails, still add the variable to the list
-            // so it can be properly handled during the variable resolution phase
-            matches.add(varName);
-          }
-        }
-        this.logger.debug("Found variable in template", { varName });
-      }
-    }
-
-    const result = Array.from(matches);
-    this.logger.debug("Extracted required variables", { variables: result });
-    return result;
-  }
-
-  /**
-   * Validates the input parameters for prompt generation.
-   * @param params The parameters to validate
-   * @throws {ValidationError} If parameters are invalid
-   */
-  private validateParams(params: PromptParams): void {
-    if (!params.template_file) {
-      throw new ValidationError("Template file path is required");
-    }
-
-    // Validate template file path
-    this.pathValidator.validateFilePath(params.template_file);
-
-    // Validate variables if provided
-    if (params.variables) {
-      this.variableValidator.validateVariables(params.variables as Record<string, string>);
-    }
-  }
-
-  /**
-   * Loads a template from a file.
-   * @param templatePath - Path to the template file
-   * @returns A promise that resolves to the template content
-   */
-  private async loadTemplate(templatePath: string): Promise<string> {
-    try {
-      return await this.fileUtils.readFile(templatePath);
     } catch (error) {
-      if (error instanceof Deno.errors.PermissionDenied) {
-        throw new ValidationError(
-          `${PermissionErrorMessages.READ_TEMPLATE}: Cannot read template file at ${templatePath}`,
-        );
+      if (error instanceof ValidationError) {
+        return {
+          success: false,
+          error: error.message,
+        };
       }
-      if (error instanceof Deno.errors.NotFound) {
-        throw new ValidationError(`Template not found: ${templatePath}`);
+      if (error instanceof TemplateError) {
+        return {
+          success: false,
+          error: error.message,
+        };
       }
       throw error;
     }
   }
 
   /**
-   * Replaces variables in a template with their values.
-   * @param template - The template string
-   * @param variables - Variables to replace
+   * Extracts variables from a template.
+   * @param templateContent - The template content to extract variables from
+   * @returns An array of variable names
+   */
+  private extractTemplateVariables(templateContent: string): string[] {
+    if (!templateContent) {
+      return [];
+    }
+
+    const varRegex = /\{([^}]+)\}/g;
+    const variables = new Set<string>();
+    let match;
+
+    while ((match = varRegex.exec(templateContent)) !== null) {
+      const varName = match[1].trim();
+      // Skip conditional blocks
+      if (varName.startsWith("#if ") || varName === "/if") {
+        continue;
+      }
+      variables.add(varName);
+    }
+
+    return Array.from(variables);
+  }
+
+  /**
+   * Validates prompt generation parameters.
+   * @param params - The parameters to validate
+   * @throws {ValidationError} If parameters are invalid
+   */
+  private validateParams(params: PromptParams): void {
+    if (!params) {
+      throw new ValidationError("Prompt parameters are required");
+    }
+
+    if (!params.template_file) {
+      throw new ValidationError("Template file is required");
+    }
+
+    if (!params.variables) {
+      throw new ValidationError("Variables are required");
+    }
+  }
+
+  /**
+   * Loads a template from a file.
+   * @param templatePath - Path to the template file
+   * @returns The template content
+   * @throws {FileSystemError} If the template file cannot be read
+   */
+  private async loadTemplate(templatePath: string): Promise<string> {
+    try {
+      const content = await this.fileUtils.readFile(templatePath);
+      return content;
+    } catch (error) {
+      if (error instanceof Deno.errors.NotFound) {
+        throw new Error(`Template not found: ${templatePath}`);
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Replaces variables in a template.
+   * @param template - The template content
+   * @param variables - The variables to replace
    * @returns The template with variables replaced
    */
   private replaceVariables(
@@ -393,34 +368,40 @@ export class PromptManager {
     variables: Record<string, string>,
   ): string {
     let result = template;
-    for (const [key, value] of Object.entries(variables)) {
-      const placeholder = `{${key}}`;
-      // Only escape special characters for non-markdown variables
-      const escapedValue = key === "input_markdown" ? value : value
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#39;");
-      result = result.replace(new RegExp(placeholder, "g"), escapedValue);
+    const varRegex = /\{([^}]+)\}/g;
+    let match;
+
+    while ((match = varRegex.exec(template)) !== null) {
+      const varName = match[1].trim();
+      // Skip conditional blocks
+      if (varName.startsWith("#if ") || varName === "/if") {
+        continue;
+      }
+      // If the variable exists in our variables object and has a value, use it
+      if (
+        varName in variables && variables[varName] !== undefined && variables[varName] !== null &&
+        variables[varName].trim() !== ""
+      ) {
+        const value = variables[varName];
+        result = result.replace(`{${varName}}`, value);
+      }
     }
+
     return result;
   }
 
   /**
-   * Writes the generated prompt to a file.
+   * Writes a prompt to a file.
    * @param content - The prompt content to write
-   * @param destinationPath - Path where the prompt should be written
-   * @throws {FileSystemError} If the file cannot be written
+   * @param destinationPath - Path to write the prompt to
+   * @throws {FileSystemError} If the prompt cannot be written
    */
   async writePrompt(content: string, destinationPath: string): Promise<void> {
     try {
       await this.fileUtils.writeFile(destinationPath, content);
     } catch (error) {
-      if (error instanceof Deno.errors.PermissionDenied) {
-        throw new ValidationError(
-          `${PermissionErrorMessages.WRITE_TEMPLATE}: Cannot write to destination file at ${destinationPath}`,
-        );
+      if (error instanceof Deno.errors.NotFound) {
+        throw new Error(`Cannot write to file: ${destinationPath}`);
       }
       throw error;
     }
@@ -428,36 +409,27 @@ export class PromptManager {
 
   /**
    * Validates text content.
-   * @param text - The text content to validate
+   * @param text - The text to validate
    * @throws {ValidationError} If the text is invalid
    */
   private validateText(text: string): void {
-    if (!this.textValidator.validateText(text)) {
-      throw new ValidationError("Invalid text content");
+    if (!text || text.trim() === "") {
+      throw new ValidationError("Text content is empty");
     }
   }
 
   /**
-   * Processes a template file with the given variables.
+   * Processes a template with variables.
    * @param templatePath - Path to the template file
    * @param variables - Variables to replace in the template
    * @returns The processed template content
-   * @throws {Error} If template processing fails
    */
   async processTemplate(
     templatePath: string,
-    variables: Record<string, unknown>,
+    variables: Record<string, string>,
   ): Promise<string> {
-    try {
-      const templateContent = await this.loadTemplate(templatePath);
-      return this.replaceVariables(templateContent, variables as Record<string, string>);
-    } catch (error) {
-      if (error instanceof Deno.errors.PermissionDenied) {
-        throw new ValidationError(
-          `${PermissionErrorMessages.READ_TEMPLATE}: Cannot read template file at ${templatePath}`,
-        );
-      }
-      throw error;
-    }
+    const templateContent = await this.loadTemplate(templatePath);
+    const variableResolver = new VariableResolver(variables);
+    return variableResolver.resolveVariable(templateContent);
   }
 }

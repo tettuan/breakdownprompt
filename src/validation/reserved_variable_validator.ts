@@ -2,151 +2,97 @@
  * Reserved Variable Validator
  *
  * Purpose:
- * - Validate reserved variable definitions and types
- * - Ensure proper handling of reserved variable validation
- * - Handle validation errors
+ * - Validate reserved variable names and values
+ * - Ensure proper type checking and format validation
+ * - Handle reserved variable validation
  *
- * Intent:
- * - Provide reserved variable validation functionality
- * - Support type validation
- * - Handle error cases
+ * Background:
+ * The ReservedVariableValidator is responsible for validating reserved variable names and values
+ * according to the specified rules and types. All reserved variables are optional.
  */
 
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { ValidationError } from "../errors.ts";
+import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import type { TextContent as _TextContent } from "../types.ts";
 
-interface ReservedVariable {
-  name: string;
-  type: string;
-  value: unknown;
-}
+// Define reserved variable names
+const RESERVED_VARIABLES = new Set([
+  "schema_file",
+  "template_path",
+  "output_dir",
+  "config_file",
+  "prompt_file_path",
+]);
 
+/**
+ * A class for validating reserved variables and their values.
+ * Provides methods to ensure reserved variables meet the required format and type constraints.
+ */
 export class ReservedVariableValidator {
   private logger: BreakdownLogger;
-  private readonly VALID_NAME_REGEX = /^[a-zA-Z][a-zA-Z0-9_]*$/;
-  private readonly VALID_TYPES = ["date", "time", "timestamp", "string", "number", "boolean"];
+  private readonly VALID_KEY_REGEX = /^[a-zA-Z][a-zA-Z0-9_]*$/;
 
   constructor() {
     this.logger = new BreakdownLogger();
   }
 
-  validateDefinition(definition: { name: string; type: string }): boolean {
-    this.logger.debug("Validating reserved variable definition", { definition });
+  /**
+   * Validates a reserved variable key
+   * @param key - The key to validate
+   * @returns true if the key is valid
+   * @throws {ValidationError} If the key is invalid
+   */
+  validateKey(key: string): boolean {
+    this.logger.debug("Validating reserved variable key", { key });
 
-    if (!definition.name || typeof definition.name !== "string") {
-      throw new ValidationError("Invalid reserved variable definition");
+    if (!key || typeof key !== "string") {
+      throw new ValidationError("Invalid reserved variable name");
     }
 
-    if (!this.VALID_NAME_REGEX.test(definition.name)) {
-      throw new ValidationError("Invalid reserved variable definition");
+    if (!RESERVED_VARIABLES.has(key)) {
+      throw new ValidationError(`Non-reserved variable not allowed: ${key}`);
     }
 
-    if (!definition.type || typeof definition.type !== "string") {
-      throw new ValidationError("Invalid reserved variable definition");
+    if (key.includes("-")) {
+      throw new ValidationError(
+        `Invalid reserved variable name: ${key} (variable names cannot contain hyphens)`,
+      );
     }
 
-    if (!this.VALID_TYPES.includes(definition.type)) {
-      throw new ValidationError("Invalid reserved variable definition");
-    }
-
-    return true;
-  }
-
-  validateType(variable: ReservedVariable): boolean {
-    this.logger.debug("Validating reserved variable type", { variable });
-
-    if (!this.validateDefinition({ name: variable.name, type: variable.type })) {
-      throw new ValidationError("Invalid reserved variable type");
-    }
-
-    switch (variable.type) {
-      case "date":
-      case "time":
-        if (!(variable.value instanceof Date)) {
-          throw new ValidationError("Invalid reserved variable type");
-        }
-        break;
-      case "timestamp":
-        if (typeof variable.value !== "number" || variable.value <= 0) {
-          throw new ValidationError("Invalid reserved variable type");
-        }
-        break;
-      case "string":
-        if (typeof variable.value !== "string") {
-          throw new ValidationError("Invalid reserved variable type");
-        }
-        break;
-      case "number":
-        if (typeof variable.value !== "number" || isNaN(variable.value)) {
-          throw new ValidationError("Invalid reserved variable type");
-        }
-        break;
-      case "boolean":
-        if (typeof variable.value !== "boolean") {
-          throw new ValidationError("Invalid reserved variable type");
-        }
-        break;
-      default:
-        throw new ValidationError("Invalid reserved variable type");
+    if (!this.VALID_KEY_REGEX.test(key)) {
+      throw new ValidationError(`Invalid reserved variable name: ${key}`);
     }
 
     return true;
   }
 
-  validateValue(variable: ReservedVariable): boolean {
-    this.logger.debug("Validating reserved variable value", { variable });
+  /**
+   * Validates a set of reserved variables
+   * @param variables - The variables to validate
+   * @returns void
+   * @throws {ValidationError} If any variable is invalid
+   */
+  validateVariables(variables: Record<string, unknown>): void {
+    this.logger.debug("Validating reserved variables", { variables });
 
-    // First validate the definition
-    this.validateDefinition({ name: variable.name, type: variable.type });
+    // First, validate all variable names and values
+    for (const [key, value] of Object.entries(variables)) {
+      try {
+        this.validateKey(key);
+      } catch (error) {
+        throw error;
+      }
 
-    // Then check value-specific constraints
-    if (variable.value === null || variable.value === undefined) {
-      throw new ValidationError("Invalid reserved variable value");
+      // Skip validation for empty values since all variables are optional
+      if (value === undefined || value === null || value === "") {
+        this.logger.debug(`Empty value for optional reserved variable: ${key}`);
+        continue;
+      }
+
+      // Validate value type
+      if (typeof value !== "string") {
+        throw new ValidationError(`Invalid type for reserved variable: ${key}`);
+      }
     }
-
-    if (
-      variable.type === "string" && typeof variable.value === "string" &&
-      variable.value.trim() === ""
-    ) {
-      throw new ValidationError("Invalid reserved variable value");
-    }
-
-    if (variable.type === "timestamp" && typeof variable.value === "number" && variable.value < 0) {
-      throw new ValidationError("Invalid reserved variable value");
-    }
-
-    // Finally validate the type
-    switch (variable.type) {
-      case "date":
-      case "time":
-        if (!(variable.value instanceof Date)) {
-          throw new ValidationError("Invalid reserved variable value");
-        }
-        break;
-      case "timestamp":
-        if (typeof variable.value !== "number" || variable.value <= 0) {
-          throw new ValidationError("Invalid reserved variable value");
-        }
-        break;
-      case "string":
-        if (typeof variable.value !== "string") {
-          throw new ValidationError("Invalid reserved variable value");
-        }
-        break;
-      case "number":
-        if (typeof variable.value !== "number" || isNaN(variable.value)) {
-          throw new ValidationError("Invalid reserved variable value");
-        }
-        break;
-      case "boolean":
-        if (typeof variable.value !== "boolean") {
-          throw new ValidationError("Invalid reserved variable value");
-        }
-        break;
-      default:
-        throw new ValidationError("Invalid reserved variable value");
-    }
-
-    return true;
   }
 }

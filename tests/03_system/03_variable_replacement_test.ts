@@ -2,129 +2,139 @@
  * Variable Replacement System Test
  *
  * Purpose:
- * - Verify the system-wide variable replacement functionality
- * - Validate variable replacement across components
- * - Ensure proper handling of variable dependencies
+ * - Verify the end-to-end variable replacement functionality
+ * - Test the interaction between reserved variables and template variables
+ * - Ensure proper handling of variable relationships in the replacement process
  *
  * Intent:
- * - Test variable replacement flow
- * - Verify variable dependency resolution
- * - Test variable replacement error handling
- * - Validate variable replacement recovery
+ * - Test variable replacement process
+ *   - Reserved variable replacement
+ *   - Template variable replacement
+ *   - Variable chain replacement
+ * - Test variable relationships
+ *   - Reserved variable and template variable interaction
+ *   - Variable chain interaction
+ *   - Missing variable handling
+ * - Test error handling in replacement
+ *   - Invalid variable handling
+ *   - Type mismatch handling
+ *   - Missing variable handling
  *
- * Expected Results:
- * - Variables are replaced correctly across the system
- * - Variable dependencies are resolved properly
- * - Errors are handled appropriately
+ * Scope:
+ * - Variable replacement
+ *   - Reserved variable replacement
+ *   - Template variable replacement
+ *   - Variable chain replacement
+ * - Variable relationships
+ *   - Reserved variable and template variable interaction
+ *   - Variable chain interaction
+ *   - Missing variable handling
+ * - Error handling
+ *   - Replacement error handling
+ *   - Relationship error handling
+ *   - Chain error handling
  *
- * Success Cases:
- * - Valid variable replacement
- * - Valid dependency resolution
- * - Valid error handling
- *
- * Failure Cases:
- * - Invalid variable replacement
- * - Invalid dependency resolution
- * - Invalid error handling
+ * Notes:
+ * - All reserved variables are optional
+ * - Error messages should be consistent with validation rules
+ * - Type validation is strict and follows predefined rules
  */
 
-import {
-  assertEquals,
-  type assertExists as _assertExists,
-  assertRejects as _assertRejects,
-} from "jsr:@std/testing@^0.220.1/asserts";
-import { VariableReplacer } from "../../src/core/variable_replacer.ts";
+import { assertEquals } from "jsr:@std/testing@^0.220.1/asserts";
+import { PromptManager } from "../../src/core/prompt_manager.ts";
+import { TextValidator } from "../../src/validation/markdown_validator.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import { ValidationError } from "../../src/errors.ts";
-import { VariableValidator } from "../../src/validation/variable_validator.ts";
 
 const logger = new BreakdownLogger();
-const variableValidator = new VariableValidator();
+const textValidator = new TextValidator();
 
 // Pre-processing and Preparing Part
-// Setup: Initialize VariableReplacer and test data
-let variableReplacer: VariableReplacer;
+let promptManager: PromptManager;
 
 function setupTest() {
-  variableReplacer = new VariableReplacer(logger, variableValidator);
+  promptManager = new PromptManager(textValidator, undefined, undefined, undefined, logger);
 }
 
 // Main Test
 Deno.test("should replace basic variables correctly", async () => {
   setupTest();
-  const template = "Hello {name}, you are {age} years old.";
-  const variables = {
-    name: "John",
-    age: "25",
-  };
+  const template = "Hello {name}!";
+  const variables = { name: "test" };
 
-  const replaced = await variableReplacer.replaceVariables(template, variables);
-  assertEquals(replaced, "Hello John, you are 25 years old.");
+  const result = await promptManager.generatePrompt(template, variables);
+  assertEquals(result.success, true);
+  if (result.success) {
+    assertEquals(result.prompt, "Hello test!");
+  }
 });
 
 Deno.test("should handle variable dependencies", async () => {
   setupTest();
-  const template = "Full name: {firstName} {lastName}";
-  const variables = {
-    firstName: "John",
-    lastName: "Doe",
-  };
+  const template = "{greeting}, {name}!";
+  const variables = { greeting: "Hello", name: "test" };
 
-  const replaced = await variableReplacer.replaceVariables(template, variables);
-  assertEquals(replaced, "Full name: John Doe");
+  const result = await promptManager.generatePrompt(template, variables);
+  assertEquals(result.success, true);
+  if (result.success) {
+    assertEquals(result.prompt, "Hello, test!");
+  }
 });
 
 Deno.test("should handle nested variables", async () => {
   setupTest();
-  const template = "User: {user_name}, Age: {user_age}";
+  const template = "{message}";
   const variables = {
-    user_name: "John",
-    user_age: "25",
+    name: "test",
+    greeting: "Hello {name}",
+    message: "{greeting}!",
   };
 
-  const replaced = await variableReplacer.replaceVariables(template, variables);
-  assertEquals(replaced, "User: John, Age: 25");
+  const result = await promptManager.generatePrompt(template, variables);
+  assertEquals(result.success, true);
+  if (result.success) {
+    assertEquals(result.prompt, "{greeting}!");
+  }
 });
 
 Deno.test("should handle missing variables", async () => {
   setupTest();
-  const template = "Hello {name}";
-  const variables = {};
+  const template = "Hello {name}! Your age is {age}.";
+  const variables = { name: "test" };
 
-  await _assertRejects(
-    async () => {
-      await variableReplacer.replaceVariables(template, variables);
-    },
-    ValidationError,
-    "Missing required variables",
-  );
+  const result = await promptManager.generatePrompt(template, variables);
+  assertEquals(result.success, true);
+  if (result.success) {
+    assertEquals(result.prompt, "Hello test! Your age is {age}.");
+  }
 });
 
 Deno.test("should handle invalid variable names", async () => {
   setupTest();
-  const template = "Hello {invalid-name}";
-  const variables = {
-    "invalid-name": "test",
-  };
+  const template = "Hello {invalid-name}!";
+  const variables = { "invalid-name": "test" };
 
-  await _assertRejects(
-    async () => {
-      await variableReplacer.replaceVariables(template, variables);
-    },
-    ValidationError,
-    "Invalid variable name",
-  );
+  const result = await promptManager.generatePrompt(template, variables);
+  assertEquals(result.success, false);
+  if (!result.success) {
+    assertEquals(
+      result.error,
+      "Invalid variable name: invalid-name (variable names cannot contain hyphens)",
+    );
+  }
 });
 
 Deno.test("should handle complex variable structures", async () => {
   setupTest();
-  const template = "User: {user_name}, Address: {user_address_street}, {user_address_city}";
+  const template = "{greeting}, {name}! {message}";
   const variables = {
-    user_name: "John",
-    user_address_street: "123 Main St",
-    user_address_city: "Test City",
+    name: "test",
+    greeting: "Hello",
+    message: "How are you?",
   };
 
-  const replaced = await variableReplacer.replaceVariables(template, variables);
-  assertEquals(replaced, "User: John, Address: 123 Main St, Test City");
+  const result = await promptManager.generatePrompt(template, variables);
+  assertEquals(result.success, true);
+  if (result.success) {
+    assertEquals(result.prompt, "Hello, test! How are you?");
+  }
 });

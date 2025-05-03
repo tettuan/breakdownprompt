@@ -3,7 +3,7 @@
  *
  * Purpose:
  * - Validate text content according to rules
- * - Ensure text content is not empty
+ * - Allow empty text content
  * - Check for basic text structure
  */
 
@@ -17,28 +17,17 @@ import { ValidationError } from "../errors.ts";
 export class TextValidator {
   /**
    * Validates text content according to the rules:
-   * - Must not be empty
-   * - Must not be only whitespace
-   * - Must have at least one line
+   * - Empty text is allowed
+   * - Must be a string
    * @throws {ValidationError} If the text content is invalid
    */
   validateText(content: string): content is TextContent {
-    if (!content) {
-      throw new ValidationError("Text content is empty");
+    if (content === undefined || content === null) {
+      throw new ValidationError("Text content is undefined or null");
     }
 
-    // Trim the content before validation
-    const trimmedContent = content.trim();
-
-    // Check for empty content
-    if (trimmedContent.length === 0) {
-      throw new ValidationError("Text content is empty after trimming");
-    }
-
-    // Check for at least one line
-    const lines = trimmedContent.split("\n");
-    if (lines.length === 0) {
-      throw new ValidationError("Text content must have at least one line");
+    if (typeof content !== "string") {
+      throw new ValidationError("Text content must be a string");
     }
 
     return true;

@@ -157,3 +157,6 @@ deno.lock
 # OS
 .DS_Store
 Thumbs.db
+
+# Coverage directory
+coverage/

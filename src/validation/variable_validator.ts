@@ -3,18 +3,48 @@
  *
  * Purpose:
  * - Validate variable names and values
- * - Ensure proper type checking and format validation
- * - Handle required variable validation
+ * - Ensure variables meet specified rules
+ * - Handle variable type checking
+ * - Manage variable validation flow
+ *
+ * Scope:
+ * - Variable name validation
+ * - Variable value validation
+ * - Variable type checking
+ * - Variable validation flow
+ *
+ * Implementation:
+ * - Variable name validation methods
+ * - Variable value validation methods
+ * - Variable type checking methods
+ * - Variable validation flow methods
+ *
+ * Error Handling:
+ * - Invalid variable names
+ * - Invalid variable values
+ * - Invalid variable types
+ * - Invalid validation flow
  *
  * Background:
  * The VariableValidator is responsible for validating variable names and values
  * according to the specified rules and types.
+ *
+ * Variable Validation Rules:
+ * 1. Reserved Variables
+ *    - All reserved variables are optional
+ *    - Empty values (undefined, null, "") are allowed
+ *
+ * 2. Template Variables
+ *    - Variables referenced in templates are required
+ *    - Empty values are not allowed
+ *    - Variable names must follow strict format rules
  */
 
 import { ValidationError } from "../errors.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import type { TextContent, ValidVariableKey } from "../types.ts";
 import { TemplateError } from "../errors.ts";
+import { ReservedVariableValidator } from "./reserved_variable_validator.ts";
 
 /**
  * A class for validating variables and their values.
@@ -23,9 +53,11 @@ import { TemplateError } from "../errors.ts";
 export class VariableValidator {
   private logger: BreakdownLogger;
   private readonly VALID_KEY_REGEX = /^[a-zA-Z][a-zA-Z0-9_]*$/;
+  private reservedVariableValidator: ReservedVariableValidator;
 
   constructor() {
     this.logger = new BreakdownLogger();
+    this.reservedVariableValidator = new ReservedVariableValidator();
   }
 
   /**
@@ -106,129 +138,31 @@ export class VariableValidator {
   }
 
   /**
-   * Validates required variables
-   * @param required - List of required variable names
-   * @param variables - Variables to validate
-   * @returns true if all required variables are present
-   * @throws {ValidationError} If any required variable is missing
-   */
-  validateRequiredVariables(required: string[], variables: Record<string, unknown>): void {
-    this.logger.debug("Validating required variables", { required, variables });
-
-    const missingVars = required.filter((varName) => {
-      if (varName.startsWith("#if ") || varName === "/if") {
-        return false;
-      }
-      return !(varName in variables);
-    });
-
-    if (missingVars.length > 0) {
-      throw new ValidationError(`Missing required variables: ${missingVars.join(", ")}`);
-    }
-
-    for (const key of required) {
-      if (key.startsWith("#if ") || key === "/if") {
-        continue;
-      }
-
-      const value = variables[key];
-      if (
-        value === null || value === undefined || (typeof value === "string" && value.trim() === "")
-      ) {
-        throw new ValidationError(`Invalid value for required variable: ${key}`);
-      }
-    }
-  }
-
-  /**
    * Validates a set of variables
    * @param variables - The variables to validate
-   * @returns true if all variables are valid
+   * @param templateVariables - Optional set of variables referenced in template
+   * @returns void
    * @throws {ValidationError} If any variable is invalid
    */
-  validateVariables(variables: Record<string, string>): void {
-    this.logger.debug("Validating variables", { variables });
+  validateVariables(
+    variables: Record<string, unknown>,
+    templateVariables?: Set<string>,
+  ): void {
+    this.logger.debug("Validating variables", { variables, templateVariables });
 
-    // First, validate all variable names and values
-    for (const [key, value] of Object.entries(variables)) {
-      try {
-        this.validateKey(key);
-      } catch (error) {
-        if (error instanceof ValidationError) {
-          throw new ValidationError(`Invalid variable name: ${key}`);
+    // First validate reserved variables
+    this.reservedVariableValidator.validateVariables(variables);
+
+    // If template variables are provided, validate their presence and values
+    if (templateVariables) {
+      for (const varName of templateVariables) {
+        if (!(varName in variables)) {
+          throw new ValidationError(`Missing required variable: ${varName}`);
         }
-        throw error;
-      }
 
-      if (value === undefined || value === null || value.trim() === "") {
-        throw new ValidationError(`Invalid value for variable: ${key}`);
-      }
-    }
-
-    // Then check for circular references
-    const visited = new Set<string>();
-    const resolving = new Set<string>();
-
-    const checkCircularReferences = (key: string, path = new Set<string>()): void => {
-      if (path.has(key)) {
-        throw new TemplateError("Circular variable reference detected");
-      }
-
-      if (resolving.has(key)) {
-        throw new TemplateError("Circular variable reference detected");
-      }
-
-      if (visited.has(key)) {
-        return;
-      }
-
-      const value = variables[key];
-      if (value === null || value === undefined || value.trim() === "") {
-        throw new ValidationError(`Invalid value for variable: ${key}`);
-      }
-
-      resolving.add(key);
-      path.add(key);
-
-      try {
-        // Check for variable references in the value
-        const varRegex = /\{\{([^}]+)\}\}/g;
-        let match;
-        while ((match = varRegex.exec(value)) !== null) {
-          const referencedVar = match[1].trim();
-          // Skip conditional blocks
-          if (referencedVar.startsWith("#if ") || referencedVar === "/if") {
-            continue;
-          }
-          // Check for circular references
-          if (referencedVar in variables) {
-            checkCircularReferences(referencedVar, path);
-          }
-        }
-      } finally {
-        resolving.delete(key);
-        path.delete(key);
-        visited.add(key);
-      }
-    };
-
-    // Check each variable for circular references
-    for (const key of Object.keys(variables)) {
-      if (!visited.has(key)) {
-        checkCircularReferences(key);
-      }
-    }
-
-    // Also validate each variable's text content
-    for (const [key, value] of Object.entries(variables)) {
-      if (typeof value === "string") {
-        try {
-          this.validateTextContent(value);
-        } catch (error) {
-          if (error instanceof ValidationError) {
-            throw new ValidationError(`Invalid text content in variable ${key}: ${error.message}`);
-          }
-          throw error;
+        const value = variables[varName];
+        if (value === undefined || value === null || value === "") {
+          throw new ValidationError(`Empty value for required variable: ${varName}`);
         }
       }
     }
