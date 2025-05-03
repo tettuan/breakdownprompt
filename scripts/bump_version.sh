@@ -32,8 +32,36 @@ if [ -n "$(git status --porcelain)" ]; then
     exit 1
 fi
 
+# First, ensure both files have the same version
+echo "Checking current versions..."
+deno_version=$(deno eval "const config = JSON.parse(await Deno.readTextFile('deno.json')); console.log(config.version);")
+mod_version=$(grep -o 'export const VERSION = \"[0-9]\+\.[0-9]\+\.[0-9]\+\"' src/mod.ts | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+')
+
+if [ "$deno_version" != "$mod_version" ]; then
+    echo "Error: Version mismatch detected!"
+    echo "deno.json version: $deno_version"
+    echo "mod.ts version: $mod_version"
+    echo "Please fix the version mismatch first."
+    exit 1
+fi
+
+echo "Version consistency check passed: both files have version $deno_version"
+
 # Get the latest commit hash
 latest_commit=$(git rev-parse HEAD)
+
+# Check GitHub Actions status for all workflows
+echo "Checking GitHub Actions status..."
+for workflow in "ci.yml" "version-check.yml"; do
+    echo "Checking $workflow..."
+    gh run list --workflow=$workflow --limit=1 --json status,conclusion,headSha | jq -e '.[0].status == "completed" and .[0].conclusion == "success" and .[0].headSha == "'$latest_commit'"' > /dev/null
+
+    if [ $? -ne 0 ]; then
+        echo "Error: Latest GitHub Actions workflow ($workflow) has not completed successfully."
+        echo "Please ensure all tests pass before bumping version."
+        exit 1
+    fi
+done
 
 # Try to get latest version from JSR
 echo "Checking latest version from JSR..."
@@ -87,11 +115,6 @@ case $BUMP_TYPE in
 esac
 
 echo "New version: $new_version"
-
-# Show current versions
-echo "Current versions:"
-echo "deno.json: $(deno eval "const config = JSON.parse(await Deno.readTextFile('deno.json')); console.log(config.version);")"
-echo "mod.ts: $(grep -o 'export const VERSION = \"[0-9]\+\.[0-9]\+\.[0-9]\+\"' src/mod.ts | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+')"
 
 # Create temporary files for atomic updates with proper paths
 temp_deno=$(mktemp /tmp/deno.XXXXXX)
