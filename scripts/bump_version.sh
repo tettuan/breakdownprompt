@@ -96,11 +96,14 @@ esac
 
 echo "New version: $new_version"
 
-# Update only the version in deno.json
+# Update version in deno.json
 deno eval "const config = JSON.parse(await Deno.readTextFile('deno.json')); config.version = '$new_version'; await Deno.writeTextFile('deno.json', JSON.stringify(config, null, 2).trimEnd() + '\n');"
 
-# Commit the version change
-git add deno.json
+# Update version in src/mod.ts
+sed -i '' "s/export const VERSION = \"[0-9]\+\.[0-9]\+\.[0-9]\+\"/export const VERSION = \"$new_version\"/" src/mod.ts
+
+# Commit the version changes
+git add deno.json src/mod.ts
 git commit -m "chore: bump version to $new_version"
 
 # Create and push tag

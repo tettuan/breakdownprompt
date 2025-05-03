@@ -13,10 +13,12 @@ export type {
 export { FileSystemError, ValidationError } from "./errors.ts";
 
 /**
- * The current version of the package, read from deno.json.
+ * The current version of the package.
+ * This is defined as a constant to ensure consistent version information
+ * across different execution contexts, including tests and subprocesses.
  * @constant
  */
-export const VERSION: string = JSON.parse(Deno.readTextFileSync("./deno.json")).version;
+export const VERSION = "1.1.1";
 
 /**
  * Metadata about the package.
