@@ -94,7 +94,7 @@ done
 # 1. First, ensure both files have the same version
 echo "Checking current versions..."
 deno_version=$(deno eval "const config = JSON.parse(await Deno.readTextFile('deno.json')); console.log(config.version);")
-mod_version=$(grep -o 'export const VERSION = \"[0-9]\+\.[0-9]\+\.[0-9]\+\"' src/mod.ts | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+')
+mod_version=$(deno eval "const content = await Deno.readTextFile('src/mod.ts'); const match = content.match(/export const VERSION = \"([0-9]+\.[0-9]+\.[0-9]+)\"/); console.log(match[1]);")
 
 if [ "$deno_version" != "$mod_version" ]; then
     echo "Version mismatch detected!"
@@ -110,7 +110,7 @@ if [ "$deno_version" != "$mod_version" ]; then
     trap 'rm -f "$temp_deno" "$temp_mod"' EXIT
     
     # Update version in src/mod.ts to match deno.json
-    sed "s/export const VERSION = \"[0-9]\+\.[0-9]\+\.[0-9]\+\"/export const VERSION = \"$deno_version\"/" src/mod.ts > "$temp_mod"
+    deno eval "const content = await Deno.readTextFile('src/mod.ts'); await Deno.writeTextFile('$temp_mod', content.replace(/export const VERSION = \"[0-9]+\.[0-9]+\.[0-9]+\"/g, 'export const VERSION = \"$deno_version\"'));"
     
     # Show the changes
     echo -e "\nChanges to be made:"
@@ -121,7 +121,7 @@ if [ "$deno_version" != "$mod_version" ]; then
     mv "$temp_mod" src/mod.ts
     
     # Verify both files have the same version after sync
-    mod_version=$(grep -o 'export const VERSION = \"[0-9]\+\.[0-9]\+\.[0-9]\+\"' src/mod.ts | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+')
+    mod_version=$(deno eval "const content = await Deno.readTextFile('src/mod.ts'); const match = content.match(/export const VERSION = \"([0-9]+\.[0-9]+\.[0-9]+)\"/); console.log(match[1]);")
     
     if [ "$deno_version" != "$mod_version" ]; then
         echo "Error: Version sync failed!"
@@ -243,7 +243,7 @@ mv "$temp_mod" src/mod.ts
 
 # 9. Verify both files have the same new version
 deno_version=$(deno eval "const config = JSON.parse(await Deno.readTextFile('deno.json')); console.log(config.version);")
-mod_version=$(grep -o 'export const VERSION = \"[0-9]\+\.[0-9]\+\.[0-9]\+\"' src/mod.ts | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+')
+mod_version=$(deno eval "const content = await Deno.readTextFile('src/mod.ts'); const match = content.match(/export const VERSION = \"([0-9]+\.[0-9]+\.[0-9]+)\"/); console.log(match[1]);")
 
 if [ "$deno_version" != "$mod_version" ] || [ "$deno_version" != "$new_version" ]; then
     echo "Error: Version mismatch detected after applying changes!"
