@@ -104,11 +104,14 @@ echo "New version: $new_version"
 # Show current versions
 echo "Current versions:"
 echo "deno.json: $(deno eval "const config = JSON.parse(await Deno.readTextFile('deno.json')); console.log(config.version);")"
-echo "mod.ts: $(grep -o 'export const VERSION = "[0-9]\+\.[0-9]\+\.[0-9]\+"' src/mod.ts | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+')"
+echo "mod.ts: $(grep -o 'export const VERSION = \"[0-9]\+\.[0-9]\+\.[0-9]\+\"' src/mod.ts | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+')"
 
-# Create temporary files for atomic updates
-temp_deno=$(mktemp)
-temp_mod=$(mktemp)
+# Create temporary files for atomic updates with proper paths
+temp_deno=$(mktemp /tmp/deno.XXXXXX)
+temp_mod=$(mktemp /tmp/mod.XXXXXX)
+
+# Ensure temporary files are cleaned up on exit
+trap 'rm -f "$temp_deno" "$temp_mod"' EXIT
 
 # Update version in deno.json
 deno eval "const config = JSON.parse(await Deno.readTextFile('deno.json')); config.version = '$new_version'; await Deno.writeTextFile('$temp_deno', JSON.stringify(config, null, 2).trimEnd() + '\n');"
@@ -128,7 +131,6 @@ read -p "Do you want to proceed with updating versions to $new_version? (y/N) " 
 echo
 if [[ ! $REPLY =~ ^[Yy]$ ]]; then
     echo "Version bump aborted. No files have been modified."
-    rm "$temp_deno" "$temp_mod"
     exit 1
 fi
 
@@ -138,7 +140,7 @@ mv "$temp_mod" src/mod.ts
 
 # Verify both files have the same version after applying changes
 deno_version=$(deno eval "const config = JSON.parse(await Deno.readTextFile('deno.json')); console.log(config.version);")
-mod_version=$(grep -o 'export const VERSION = "[0-9]\+\.[0-9]\+\.[0-9]\+"' src/mod.ts | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+')
+mod_version=$(grep -o 'export const VERSION = \"[0-9]\+\.[0-9]\+\.[0-9]\+\"' src/mod.ts | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+')
 
 if [ "$deno_version" != "$mod_version" ]; then
     echo "Error: Version mismatch detected after applying changes!"
