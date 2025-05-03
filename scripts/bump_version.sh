@@ -117,14 +117,6 @@ if [ "$deno_version" != "$mod_version" ]; then
     echo "mod.ts:"
     diff src/mod.ts "$temp_mod" || true
     
-    # Ask for confirmation before proceeding
-    read -p "Do you want to proceed with syncing versions to $deno_version? (y/N) " -n 1 -r
-    echo
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        echo "Version sync aborted. No files have been modified."
-        exit 1
-    fi
-    
     # Apply the changes atomically
     mv "$temp_mod" src/mod.ts
     
@@ -244,14 +236,6 @@ echo "deno.json:"
 diff deno.json "$temp_deno" || true
 echo -e "\nmod.ts:"
 diff src/mod.ts "$temp_mod" || true
-
-# Ask for confirmation before proceeding
-read -p "Do you want to proceed with updating versions to $new_version? (y/N) " -n 1 -r
-echo
-if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-    echo "Version bump aborted. No files have been modified."
-    exit 1
-fi
 
 # Apply the changes atomically
 mv "$temp_deno" deno.json
