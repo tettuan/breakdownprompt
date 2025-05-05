@@ -16,6 +16,16 @@
 #   - Only proceed to lint and format checks if all tests pass.
 #   - Exit immediately on any error, with helpful debug output if DEBUG=true.
 #
+# Type Checking Strategy:
+#   - Two-phase type checking for optimal performance and error detection:
+#     1. Batch Mode: Quick check of all TypeScript files
+#        - All files are checked in a single deno check command
+#        - Fast feedback for clean codebases
+#     2. Individual Mode: Detailed check on batch failure
+#        - Automatically triggered when batch check fails
+#        - Checks each file individually to pinpoint errors
+#        - Provides specific error messages for each file
+#
 # Error Handling Strategy:
 #   - Two-phase test execution for better error diagnosis:
 #     1. Normal Mode: Quick run to identify failing tests
