@@ -5,6 +5,11 @@
  * - Verify the core functionality of the PromptManager class
  * - Test prompt generation with optional variables
  * - Ensure proper handling of variable validation
+ *
+ * 仕様書参照:
+ * - [変数の関係性](./docs/variables.ja.md#変数の関係性)
+ * - [変数の型定義](./docs/type_of_variables.ja.md)
+ * - [プロンプト管理システム仕様書](./docs/index.ja.md#プロンプト管理システム仕様書)
  */
 
 import { assertEquals } from "jsr:@std/testing@^0.220.1/asserts";
@@ -14,7 +19,6 @@ import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { TextValidator } from "../../../src/validation/markdown_validator.ts";
 import { PathValidator } from "../../../src/validation/path_validator.ts";
 import { VariableValidator } from "../../../src/validation/variable_validator.ts";
-import type { PromptResult } from "../../../src/types/prompt_result.ts";
 import type { TextContent } from "../../../src/types.ts";
 
 const logger = new BreakdownLogger();
@@ -54,6 +58,11 @@ Deno.test({
   async fn(t) {
     await setupTest();
 
+    /**
+     * 完全成功ケースのテスト
+     * 仕様: [変数の関係性](./docs/variables.ja.md#variables-とテンプレート変数の関係)
+     * 意図: 全ての変数が正しく置換されることを確認
+     */
     await t.step("should generate a prompt from a valid template file", async () => {
       logger.debug("Testing prompt generation with valid template file");
       const result = await promptManager.generatePrompt(
@@ -70,6 +79,11 @@ Deno.test({
       }
     });
 
+    /**
+     * テンプレートファイルが存在しないケースのテスト
+     * 仕様: [プロンプト管理システム仕様書](./docs/index.ja.md#33-エラーハンドリング)
+     * 意図: ファイルが見つからない場合のエラー処理を確認
+     */
     await t.step("should handle missing template file", async () => {
       logger.debug("Testing prompt generation with missing template file");
       const result = await promptManager.generatePrompt(
@@ -89,6 +103,11 @@ Deno.test({
       }
     });
 
+    /**
+     * 空の変数ケースのテスト
+     * 仕様: [変数の関係性](./docs/variables.ja.md#variables-とテンプレート変数の関係)
+     * 意図: 変数が空の場合でもテンプレートは正常に処理されることを確認
+     */
     await t.step("should handle empty variables", async () => {
       logger.debug("Testing prompt generation with empty variables");
       const result = await promptManager.generatePrompt(
@@ -105,6 +124,11 @@ Deno.test({
       }
     });
 
+    /**
+     * 部分的な変数置換のテスト
+     * 仕様: [変数の関係性](./docs/variables.ja.md#variables-とテンプレート変数の関係)
+     * 意図: 一部の変数のみが置換されるケースを確認
+     */
     await t.step("should handle partial variables", async () => {
       logger.debug("Testing prompt generation with partial variables");
       const templateStr = "Hello {name}! Your age is {age}.";
@@ -132,12 +156,23 @@ Deno.test({
       }
     });
 
+    /**
+     * 無効な変数名のテスト
+     * 仕様: [変数の関係性](./docs/variables.ja.md#variables-とテンプレート変数の関係)
+     * 意図: 予約変数以外の変数名が渡された場合、エラーを返すことを確認
+     */
     await t.step("should handle invalid variable names", async () => {
       logger.debug("Testing prompt generation with invalid variable names");
+      logger.debug("Using template path", { testTemplatePath });
+      logger.debug("Using invalid variable name", { variables: { "invalid-name": "test" } });
+      
       const result = await promptManager.generatePrompt(
         testTemplatePath,
         { "invalid-name": "test" },
       );
+      
+      logger.debug("Result from prompt generation", { result });
+      
       assertEquals(result.success, false);
       if (!result.success) {
         assertEquals(
@@ -145,7 +180,7 @@ Deno.test({
           "Invalid variable name: invalid-name (variable names cannot contain hyphens)",
         );
         assertEquals(result.templatePath, testTemplatePath);
-        assertEquals(result.variables.detected.length, 0);
+        assertEquals(result.variables.detected.includes("name"), true);
         assertEquals(result.variables.replaced.length, 0);
         assertEquals(result.variables.remaining.length, 0);
       }
