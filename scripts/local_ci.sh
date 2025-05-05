@@ -286,13 +286,22 @@ for entry_point in mod.ts cli.ts main.ts; do
     fi
 done
 
-# Check all TypeScript files in src directory
-echo "Checking library files..."
-find src -name "*.ts" -not -name "*.test.ts" | while read -r file; do
-    if ! deno check "$file"; then
-        handle_error "$file" "Type check failed" "false"
-    fi
-done
+# First phase: Batch check all TypeScript files
+echo "Checking library files (batch mode)..."
+ts_files=$(find src -name "*.ts" -not -name "*.test.ts")
+if ! deno check $ts_files; then
+    echo "
+===============================================================================
+>>> BATCH CHECK FAILED - SWITCHING TO INDIVIDUAL CHECKS <<<
+==============================================================================="
+    # Second phase: Individual check on failure
+    echo "Checking library files (individual mode)..."
+    echo "$ts_files" | while read -r file; do
+        if ! deno check "$file"; then
+            handle_error "$file" "Type check failed" "false"
+        fi
+    done
+fi
 
 # Try JSR type check with --allow-dirty if available
 echo "Running JSR type check..."
