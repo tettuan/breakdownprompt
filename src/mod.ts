@@ -18,7 +18,7 @@ export { FileSystemError, TemplateError, ValidationError } from "./errors.ts";
  * across different execution contexts, including tests and subprocesses.
  * @constant
  */
-export const VERSION = "1.1.4";
+export const VERSION = "1.2.0";
 
 /**
  * Metadata about the package.
