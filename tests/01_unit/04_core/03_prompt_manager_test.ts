@@ -14,10 +14,7 @@ import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { TextValidator } from "../../../src/validation/markdown_validator.ts";
 import { PathValidator } from "../../../src/validation/path_validator.ts";
 import { VariableValidator } from "../../../src/validation/variable_validator.ts";
-import type {
-  PromptErrorResult as _PromptErrorResult,
-  PromptSuccessResult as _PromptSuccessResult,
-} from "../../../src/types/prompt_result.ts";
+import type { PromptResult } from "../../../src/types/prompt_result.ts";
 import type { TextContent } from "../../../src/types.ts";
 
 const logger = new BreakdownLogger();
@@ -64,10 +61,12 @@ Deno.test({
         { name: "test" },
       );
       assertEquals(result.success, true);
-      if (result.success) {
-        assertEquals(result.prompt.includes("Hello, test!"), true);
-        assertEquals(result.variables.includes("name"), true);
-        assertEquals(result.unknownVariables?.length ?? 0, 0);
+      if (result.success && result.content) {
+        assertEquals(result.content.includes("Hello, test!"), true);
+        assertEquals(result.templatePath, testTemplatePath);
+        assertEquals(result.variables.detected.includes("name"), true);
+        assertEquals(result.variables.replaced.includes("name"), true);
+        assertEquals(result.variables.remaining.length, 0);
       }
     });
 
@@ -83,6 +82,10 @@ Deno.test({
           result.error,
           "Template not found: tests/00_fixtures/01_templates/nonexistent.md",
         );
+        assertEquals(result.templatePath, "tests/00_fixtures/01_templates/nonexistent.md");
+        assertEquals(result.variables.detected.length, 0);
+        assertEquals(result.variables.replaced.length, 0);
+        assertEquals(result.variables.remaining.length, 0);
       }
     });
 
@@ -93,8 +96,12 @@ Deno.test({
         {},
       );
       assertEquals(result.success, true);
-      if (result.success) {
-        assertEquals(result.prompt.includes("{name}"), true);
+      if (result.success && result.content) {
+        assertEquals(result.content.includes("{name}"), true);
+        assertEquals(result.templatePath, testTemplatePath);
+        assertEquals(result.variables.detected.includes("name"), true);
+        assertEquals(result.variables.replaced.length, 0);
+        assertEquals(result.variables.remaining.includes("name"), true);
       }
     });
 
@@ -115,11 +122,13 @@ Deno.test({
 
       assertEquals(result.success, true);
       if (result.success) {
-        assertEquals(result.prompt, "Hello test! Your age is {age}.");
-        assertEquals(result.variables.includes("name"), true);
-        assertEquals(result.variables.includes("age"), true);
-        assertEquals(result.unknownVariables?.includes("age"), true);
-        assertEquals(result.unknownVariables?.length, 1);
+        assertEquals(result.content, "Hello test! Your age is {age}.");
+        assertEquals(result.templatePath, "inline");
+        assertEquals(result.variables.detected.includes("name"), true);
+        assertEquals(result.variables.detected.includes("age"), true);
+        assertEquals(result.variables.replaced.includes("name"), true);
+        assertEquals(result.variables.remaining.includes("age"), true);
+        assertEquals(result.variables.remaining.length, 1);
       }
     });
 
@@ -135,6 +144,10 @@ Deno.test({
           result.error,
           "Invalid variable name: invalid-name (variable names cannot contain hyphens)",
         );
+        assertEquals(result.templatePath, testTemplatePath);
+        assertEquals(result.variables.detected.length, 0);
+        assertEquals(result.variables.replaced.length, 0);
+        assertEquals(result.variables.remaining.length, 0);
       }
     });
 
