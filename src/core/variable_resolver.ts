@@ -85,11 +85,6 @@ export class VariableResolver {
       throw new ValidationError("Variable name cannot be empty");
     }
 
-    // Skip conditional blocks
-    if (varName.startsWith("#if ") || varName === "/if") {
-      return this.variables[varName] || "";
-    }
-
     // Validate variable name
     this.validateVariableName(varName);
 
@@ -152,10 +147,6 @@ export class VariableResolver {
 
     while ((match = varRegex.exec(template)) !== null) {
       const varName = match[1].trim();
-      // Skip conditional blocks
-      if (varName.startsWith("#if ") || varName === "/if") {
-        continue;
-      }
 
       try {
         // Try to resolve the variable

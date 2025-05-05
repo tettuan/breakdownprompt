@@ -86,8 +86,8 @@ Deno.test({
 
       const result = await promptManager.generatePrompt(template, variables);
       assertEquals(result.success, true);
-      if (result.success) {
-        assertEquals(result.prompt, expectedOutput);
+      if (result.success && result.content) {
+        assertEquals(result.content, expectedOutput);
       }
     });
 
@@ -98,7 +98,6 @@ Deno.test({
         name: "テスト",
         weather: "晴れ",
         temperature: "25",
-        condition: "true",
         variable1: "テスト変数1",
         variable2: "テスト変数2",
         variable3: "テスト変数3",
@@ -106,9 +105,9 @@ Deno.test({
 
       const result = await promptManager.generatePrompt(testTemplatePath, variables);
       assertEquals(result.success, true);
-      if (result.success) {
-        assertExists(result.prompt);
-        assertEquals(typeof result.prompt, "string");
+      if (result.success && result.content) {
+        assertExists(result.content);
+        assertEquals(typeof result.content, "string");
         // Verify basic variables are replaced
         const basicVariables = {
           greeting: "こんにちは",
@@ -121,17 +120,11 @@ Deno.test({
         };
         Object.entries(basicVariables).forEach(([key, value]) => {
           assertEquals(
-            result.prompt.includes(value),
+            result.content!.includes(value),
             true,
             `Variable ${key} not replaced correctly`,
           );
         });
-        // Verify conditional text appears when condition is true
-        assertEquals(
-          result.prompt.includes("条件が真の場合に表示されるテキスト"),
-          true,
-          "Conditional text not shown when condition is true",
-        );
       }
     });
 
@@ -142,7 +135,6 @@ Deno.test({
         name: "テスト",
         weather: "晴れ",
         temperature: "25",
-        condition: "true",
         variable1: "テスト変数1",
         variable2: "テスト変数2",
         variable3: "テスト変数3",
@@ -150,11 +142,11 @@ Deno.test({
 
       const result = await promptManager.generatePrompt(testTemplatePath, variables);
       assertEquals(result.success, true);
-      if (result.success) {
-        assertExists(result.prompt);
-        assertEquals(typeof result.prompt, "string");
-        assertEquals(result.prompt.includes("こんにちは"), true);
-        assertEquals(result.prompt.includes("こんばんは"), true);
+      if (result.success && result.content) {
+        assertExists(result.content);
+        assertEquals(typeof result.content, "string");
+        assertEquals(result.content.includes("こんにちは"), true);
+        assertEquals(result.content.includes("こんばんは"), true);
       }
     });
 

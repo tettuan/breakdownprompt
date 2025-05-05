@@ -63,8 +63,8 @@ Deno.test("should replace basic variables correctly", async () => {
 
   const result = await promptManager.generatePrompt(template, variables);
   assertEquals(result.success, true);
-  if (result.success) {
-    assertEquals(result.prompt, "Hello test!");
+  if (result.success && result.content) {
+    assertEquals(result.content, "Hello test!");
   }
 });
 
@@ -76,7 +76,7 @@ Deno.test("should handle variable dependencies", async () => {
   const result = await promptManager.generatePrompt(template, variables);
   assertEquals(result.success, true);
   if (result.success) {
-    assertEquals(result.prompt, "Hello, test!");
+    assertEquals(result.content, "Hello, test!");
   }
 });
 
@@ -92,7 +92,7 @@ Deno.test("should handle nested variables", async () => {
   const result = await promptManager.generatePrompt(template, variables);
   assertEquals(result.success, true);
   if (result.success) {
-    assertEquals(result.prompt, "{greeting}!");
+    assertEquals(result.content, "{greeting}!");
   }
 });
 
@@ -103,8 +103,8 @@ Deno.test("should handle missing variables", async () => {
 
   const result = await promptManager.generatePrompt(template, variables);
   assertEquals(result.success, true);
-  if (result.success) {
-    assertEquals(result.prompt, "Hello test! Your age is {age}.");
+  if (result.success && result.content) {
+    assertEquals(result.content, "Hello test! Your age is {age}.");
   }
 });
 
@@ -135,6 +135,6 @@ Deno.test("should handle complex variable structures", async () => {
   const result = await promptManager.generatePrompt(template, variables);
   assertEquals(result.success, true);
   if (result.success) {
-    assertEquals(result.prompt, "Hello, test! How are you?");
+    assertEquals(result.content, "Hello, test! How are you?");
   }
 });

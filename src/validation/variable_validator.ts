@@ -113,10 +113,6 @@ export class VariableValidator {
     // Process matches in reverse order to handle nested references correctly
     for (const match of matches.reverse()) {
       const referencedVar = match[1].trim();
-      // Skip conditional blocks
-      if (referencedVar.startsWith("#if ") || referencedVar === "/if") {
-        continue;
-      }
       // Check for circular reference
       if (path.has(referencedVar)) {
         throw new TemplateError("Circular variable reference detected");

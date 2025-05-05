@@ -75,7 +75,7 @@ Deno.test("PromptManager - Variable Replacement", async (t) => {
     const template = "Hello {name}, your task is {task}";
     const variables = { name: "John", task: "Code Review" };
     const result: PromptResult = await promptManager.generatePrompt(template, variables);
-    
+
     assertEquals(result.success, true);
     if (result.success) {
       assertEquals(result.content, "Hello John, your task is Code Review");
@@ -90,7 +90,7 @@ Deno.test("PromptManager - Variable Replacement", async (t) => {
     const template = "Hello {name}, your task is {task}";
     const variables = { name: "John" };
     const result: PromptResult = await promptManager.generatePrompt(template, variables);
-    
+
     assertEquals(result.success, true);
     if (result.success) {
       assertEquals(result.content, "Hello John, your task is {task}");
@@ -105,7 +105,7 @@ Deno.test("PromptManager - Variable Replacement", async (t) => {
   await t.step("should handle empty variables object", async () => {
     const template = "Hello {name}, your task is {task}";
     const result: PromptResult = await promptManager.generatePrompt(template, {});
-    
+
     assertEquals(result.success, true);
     if (result.success) {
       assertEquals(result.content, template);
@@ -113,21 +113,6 @@ Deno.test("PromptManager - Variable Replacement", async (t) => {
       assertEquals(result.variables.detected.length, 2);
       assertEquals(result.variables.replaced.length, 0);
       assertEquals(result.variables.remaining.length, 2);
-    }
-  });
-
-  await t.step("should handle conditional blocks", async () => {
-    const template = "Hello {name}{#if task}, your task is {task}{/if}";
-    const variables = { name: "John", task: "Code Review" };
-    const result: PromptResult = await promptManager.generatePrompt(template, variables);
-    
-    assertEquals(result.success, true);
-    if (result.success) {
-      assertEquals(result.content, "Hello John, your task is Code Review");
-      assertEquals(result.templatePath, "inline");
-      assertEquals(result.variables.detected.length, 2);
-      assertEquals(result.variables.replaced.length, 2);
-      assertEquals(result.variables.remaining.length, 0);
     }
   });
 });

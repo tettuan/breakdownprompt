@@ -187,9 +187,30 @@ export class PromptManager {
 
       // Extract variables from template
       const templateVars = this.extractTemplateVariables(templateContent);
-      const detectedVariables = templateVars.filter(v => !v.startsWith("#if ") && v !== "/if");
+      const detectedVariables = templateVars;
       const replacedVariables: string[] = [];
       const remainingVariables: string[] = [];
+
+      // Validate variables
+      try {
+        for (const key of Object.keys(variables)) {
+          this.variableValidator.validateKey(key);
+        }
+      } catch (error) {
+        if (error instanceof ValidationError) {
+          return { 
+            success: false, 
+            error: error.message, 
+            templatePath,
+            variables: {
+              detected: detectedVariables,
+              replaced: replacedVariables,
+              remaining: remainingVariables,
+            },
+          };
+        }
+        throw error;
+      }
 
       // Replace variables in template
       let prompt = templateContent as TextContent;
@@ -200,10 +221,6 @@ export class PromptManager {
       // Collect all matches first
       while ((match = varRegex.exec(templateContent)) !== null) {
         const varName = match[1].trim();
-        // Skip conditional blocks
-        if (varName.startsWith("#if ") || varName === "/if") {
-          continue;
-        }
         matches.push({ varName, fullMatch: match[0] });
       }
 
@@ -288,10 +305,6 @@ export class PromptManager {
 
     while ((match = varRegex.exec(templateContent)) !== null) {
       const varName = match[1].trim();
-      // Skip conditional blocks
-      if (varName.startsWith("#if ") || varName === "/if") {
-        continue;
-      }
       variables.add(varName);
     }
 

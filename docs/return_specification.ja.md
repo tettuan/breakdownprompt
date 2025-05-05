@@ -3,6 +3,7 @@
 ## ライブラリの目的
 
 テンプレートの変数置換に特化したライブラリとして、以下の点に注力する：
+
 - テンプレートの変数検出と置換
 - 置換結果の正確な報告
 - テンプレート内容の保持
@@ -15,15 +16,15 @@ interface PromptResult {
   success: boolean;
   // エラーメッセージ（失敗時のみ）
   error?: string;
-  
+
   // テンプレート情報
-  templatePath: string;  // テンプレートファイルのパス
-  content?: string;     // 置換後のテンプレート（成功時のみ存在）
-  
+  templatePath: string; // テンプレートファイルのパス
+  content?: string; // 置換後のテンプレート（成功時のみ存在）
+
   // 変数置換の統計情報
   variables: {
-    detected: string[];  // 検出された変数名
-    replaced: string[];  // 置換された変数名
+    detected: string[]; // 検出された変数名
+    replaced: string[]; // 置換された変数名
     remaining: string[]; // 置換されずに残った変数名
   };
 }
