@@ -3,14 +3,14 @@
  * @module
  */
 
-// Re-export public APIs
+// Core functionality
 export { PromptManager } from "./core/prompt_manager.ts";
+export type { PromptResult } from "./types/prompt_result.ts";
 export type { PromptParams } from "./types/prompt_params.ts";
-export type {
-  PromptGenerationResult,
-  PromptSuccessResult as PromptResult,
-} from "./types/prompt_result.ts";
-export { FileSystemError, ValidationError } from "./errors.ts";
+export type { Variables } from "./types/variables.ts";
+
+// Error types
+export { FileSystemError, TemplateError, ValidationError } from "./errors.ts";
 
 /**
  * The current version of the package.
