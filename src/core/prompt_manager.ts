@@ -109,9 +109,9 @@ export class PromptManager {
           await this.pathValidator.validateFilePath(templatePath);
         } catch (error) {
           if (error instanceof ValidationError) {
-            return { 
-              success: false, 
-              error: error.message, 
+            return {
+              success: false,
+              error: error.message,
               templatePath,
               variables: {
                 detected: [],
@@ -127,9 +127,9 @@ export class PromptManager {
         try {
           templateContent = await this.loadTemplate(templatePath);
           if (!templateContent) {
-            return { 
-              success: false, 
-              error: `Template not found: ${templatePath}`, 
+            return {
+              success: false,
+              error: `Template not found: ${templatePath}`,
               templatePath,
               variables: {
                 detected: [],
@@ -142,7 +142,8 @@ export class PromptManager {
           if (error instanceof Deno.errors.PermissionDenied) {
             return {
               success: false,
-              error: `${PermissionErrorMessages.READ_TEMPLATE}: Cannot read template file at ${templatePath}`,
+              error:
+                `${PermissionErrorMessages.READ_TEMPLATE}: Cannot read template file at ${templatePath}`,
               templatePath,
               variables: {
                 detected: [],
@@ -152,9 +153,9 @@ export class PromptManager {
             };
           }
           if (error instanceof Deno.errors.NotFound) {
-            return { 
-              success: false, 
-              error: `Template not found: ${templatePath}`, 
+            return {
+              success: false,
+              error: `Template not found: ${templatePath}`,
               templatePath,
               variables: {
                 detected: [],
@@ -173,9 +174,9 @@ export class PromptManager {
 
       // Check for empty template
       if (!templateContent || templateContent.trim() === "") {
-        return { 
-          success: false, 
-          error: "Template is empty", 
+        return {
+          success: false,
+          error: "Template is empty",
           templatePath,
           variables: {
             detected: [],
@@ -198,9 +199,9 @@ export class PromptManager {
         }
       } catch (error) {
         if (error instanceof ValidationError) {
-          return { 
-            success: false, 
-            error: error.message, 
+          return {
+            success: false,
+            error: error.message,
             templatePath,
             variables: {
               detected: detectedVariables,

@@ -6,7 +6,8 @@
     "test": "LOG_LEVEL=debug deno test --allow-read --allow-write --allow-env",
     "fmt": "deno fmt",
     "lint": "deno lint",
-    "publish": "deno publish"
+    "publish": "deno publish",
+    "ci": "./scripts/local_ci.sh"
   },
   "imports": {
     "@std/": "jsr:@std/",

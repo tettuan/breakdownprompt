@@ -165,14 +165,14 @@ Deno.test({
       logger.debug("Testing prompt generation with invalid variable names");
       logger.debug("Using template path", { testTemplatePath });
       logger.debug("Using invalid variable name", { variables: { "invalid-name": "test" } });
-      
+
       const result = await promptManager.generatePrompt(
         testTemplatePath,
         { "invalid-name": "test" },
       );
-      
+
       logger.debug("Result from prompt generation", { result });
-      
+
       assertEquals(result.success, false);
       if (!result.success) {
         assertEquals(
