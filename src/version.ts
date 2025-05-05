@@ -28,4 +28,4 @@ export const META = {
   homepage: "https://github.com/tettuan/breakdownprompt",
   license: "MIT",
   author: "tettuan",
-} as const; 
+} as const;
