@@ -55,6 +55,7 @@
     "include": [
       "src/",
       "utils/",
+      "mod.ts",
       "README.md",
       "LICENSE"
     ],
