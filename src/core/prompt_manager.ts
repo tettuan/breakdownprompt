@@ -9,7 +9,7 @@
 
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { TemplateError, ValidationError } from "../errors.ts";
-import type { PromptGenerationResult } from "../types/prompt_result.ts";
+import type { PromptResult } from "../types/prompt_result.ts";
 import type { TextContent } from "../types.ts";
 import { FileUtils } from "../utils/file_utils.ts";
 import { TextValidator } from "../validation/markdown_validator.ts";
@@ -93,121 +93,106 @@ export class PromptManager {
   public async generatePrompt(
     templatePathOrContent: string,
     variables: Record<string, string>,
-  ): Promise<PromptGenerationResult> {
+  ): Promise<PromptResult> {
     try {
       let templateContent: string;
+      let templatePath: string;
 
       // If the input looks like a file path, try to load it
       if (
         templatePathOrContent.includes("/") ||
         (templatePathOrContent.includes(".") && templatePathOrContent.includes("/"))
       ) {
+        templatePath = templatePathOrContent;
         // Validate template path using PathValidator
         try {
-          await this.pathValidator.validateFilePath(templatePathOrContent);
+          await this.pathValidator.validateFilePath(templatePath);
         } catch (error) {
           if (error instanceof ValidationError) {
-            return { success: false, error: error.message };
+            return { 
+              success: false, 
+              error: error.message, 
+              templatePath,
+              variables: {
+                detected: [],
+                replaced: [],
+                remaining: [],
+              },
+            };
           }
           throw error;
         }
 
         // Load template content
         try {
-          templateContent = await this.loadTemplate(templatePathOrContent);
+          templateContent = await this.loadTemplate(templatePath);
           if (!templateContent) {
-            return { success: false, error: `Template not found: ${templatePathOrContent}` };
+            return { 
+              success: false, 
+              error: `Template not found: ${templatePath}`, 
+              templatePath,
+              variables: {
+                detected: [],
+                replaced: [],
+                remaining: [],
+              },
+            };
           }
         } catch (error) {
           if (error instanceof Deno.errors.PermissionDenied) {
             return {
               success: false,
-              error:
-                `${PermissionErrorMessages.READ_TEMPLATE}: Cannot read template file at ${templatePathOrContent}`,
+              error: `${PermissionErrorMessages.READ_TEMPLATE}: Cannot read template file at ${templatePath}`,
+              templatePath,
+              variables: {
+                detected: [],
+                replaced: [],
+                remaining: [],
+              },
             };
           }
           if (error instanceof Deno.errors.NotFound) {
-            return { success: false, error: `Template not found: ${templatePathOrContent}` };
+            return { 
+              success: false, 
+              error: `Template not found: ${templatePath}`, 
+              templatePath,
+              variables: {
+                detected: [],
+                replaced: [],
+                remaining: [],
+              },
+            };
           }
           throw error;
         }
       } else {
         // Use the input directly as template content
         templateContent = templatePathOrContent;
+        templatePath = "inline";
       }
 
       // Check for empty template
       if (!templateContent || templateContent.trim() === "") {
-        return { success: false, error: "Template is empty" };
+        return { 
+          success: false, 
+          error: "Template is empty", 
+          templatePath,
+          variables: {
+            detected: [],
+            replaced: [],
+            remaining: [],
+          },
+        };
       }
-
-      // Replace variables in template
-      let prompt = templateContent as TextContent;
 
       // Extract variables from template
       const templateVars = this.extractTemplateVariables(templateContent);
-
-      // Then validate variable names and values
-      try {
-        // First validate all variable names
-        for (const [_key] of Object.entries(variables)) {
-          try {
-            this.variableValidator.validateKey(_key);
-          } catch (error) {
-            if (error instanceof ValidationError) {
-              return {
-                success: false,
-                error: error.message,
-              };
-            }
-            throw error;
-          }
-        }
-
-        // Then validate all variables and their values
-        try {
-          // Skip reserved variable validation for prompt variables
-          // this.variableValidator.validateVariables(variables);
-          // Instead, just validate that the values are strings
-          for (const [_key, value] of Object.entries(variables)) {
-            if (
-              value !== undefined && value !== null && value !== "" && typeof value !== "string"
-            ) {
-              throw new ValidationError(`Invalid type for variable: ${_key}`);
-            }
-          }
-        } catch (error) {
-          if (error instanceof ValidationError) {
-            return {
-              success: false,
-              error: error.message,
-            };
-          }
-          if (error instanceof TemplateError) {
-            return {
-              success: false,
-              error: error.message,
-            };
-          }
-          throw error;
-        }
-      } catch (error) {
-        if (error instanceof ValidationError) {
-          return {
-            success: false,
-            error: error.message,
-          };
-        }
-        if (error instanceof TemplateError) {
-          return {
-            success: false,
-            error: error.message,
-          };
-        }
-        throw error;
-      }
+      const detectedVariables = templateVars.filter(v => !v.startsWith("#if ") && v !== "/if");
+      const replacedVariables: string[] = [];
+      const remainingVariables: string[] = [];
 
       // Replace variables in template
+      let prompt = templateContent as TextContent;
       const varRegex = /\{([^}]+)\}/g;
       let match;
       const matches = [];
@@ -238,42 +223,49 @@ export class PromptManager {
               new RegExp(fullMatch.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g"),
               value,
             ) as TextContent;
+            replacedVariables.push(varName);
           } else {
             this.logger.debug("Skipping variable (not found or empty)", { varName });
+            remainingVariables.push(varName);
           }
-          // Leave unknown variables in the template
         }
       } catch (error) {
         if (error instanceof TemplateError) {
           return {
             success: false,
             error: error.message,
+            templatePath,
+            variables: {
+              detected: detectedVariables,
+              replaced: replacedVariables,
+              remaining: remainingVariables,
+            },
           };
         }
         throw error;
       }
 
-      // Return the result with success
       return {
         success: true,
-        prompt,
-        variables: templateVars,
-        unknownVariables: templateVars.filter((v) =>
-          !(v in variables) || variables[v] === undefined || variables[v] === null ||
-          variables[v].trim() === ""
-        ),
+        templatePath,
+        content: prompt,
+        variables: {
+          detected: detectedVariables,
+          replaced: replacedVariables,
+          remaining: remainingVariables,
+        },
       };
     } catch (error) {
       if (error instanceof ValidationError) {
         return {
           success: false,
           error: error.message,
-        };
-      }
-      if (error instanceof TemplateError) {
-        return {
-          success: false,
-          error: error.message,
+          templatePath: templatePathOrContent,
+          variables: {
+            detected: [],
+            replaced: [],
+            remaining: [],
+          },
         };
       }
       throw error;
