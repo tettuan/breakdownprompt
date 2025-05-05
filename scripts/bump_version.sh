@@ -102,7 +102,7 @@ done
 # 1. First, ensure both files have the same version
 echo "Checking current versions..."
 deno_version=$(deno eval "const config = JSON.parse(await Deno.readTextFile('deno.json')); console.log(config.version);")
-mod_version=$(deno eval "const content = await Deno.readTextFile('src/mod.ts'); const match = content.match(/export const VERSION = \"([0-9]+\.[0-9]+\.[0-9]+)\"/); console.log(match[1]);")
+mod_version=$(deno eval "const content = await Deno.readTextFile('mod.ts'); const match = content.match(/export const VERSION = \"([0-9]+\.[0-9]+\.[0-9]+)\"/); console.log(match[1]);")
 
 if [ "$deno_version" != "$mod_version" ]; then
     echo "Version mismatch detected!"
@@ -117,19 +117,19 @@ if [ "$deno_version" != "$mod_version" ]; then
     # Ensure temporary files are cleaned up on exit
     trap 'rm -f "$temp_deno" "$temp_mod"' EXIT
     
-    # Update version in src/mod.ts to match deno.json
-    deno eval "const content = await Deno.readTextFile('src/mod.ts'); await Deno.writeTextFile('$temp_mod', content.replace(/export const VERSION = \"[0-9]+\.[0-9]+\.[0-9]+\"/g, 'export const VERSION = \"$deno_version\"'));"
+    # Update version in mod.ts to match deno.json
+    deno eval "const content = await Deno.readTextFile('mod.ts'); await Deno.writeTextFile('$temp_mod', content.replace(/export const VERSION = \"[0-9]+\.[0-9]+\.[0-9]+\"/g, 'export const VERSION = \"$deno_version\"'));"
     
     # Show the changes
     echo -e "\nChanges to be made:"
     echo "mod.ts:"
-    diff src/mod.ts "$temp_mod" || true
+    diff mod.ts "$temp_mod" || true
     
     # Apply the changes atomically
-    mv "$temp_mod" src/mod.ts
+    mv "$temp_mod" mod.ts
     
     # Verify both files have the same version after sync
-    mod_version=$(deno eval "const content = await Deno.readTextFile('src/mod.ts'); const match = content.match(/export const VERSION = \"([0-9]+\.[0-9]+\.[0-9]+)\"/); console.log(match[1]);")
+    mod_version=$(deno eval "const content = await Deno.readTextFile('mod.ts'); const match = content.match(/export const VERSION = \"([0-9]+\.[0-9]+\.[0-9]+)\"/); console.log(match[1]);")
     
     if [ "$deno_version" != "$mod_version" ]; then
         echo "Error: Version sync failed!"
@@ -235,23 +235,23 @@ trap 'rm -f "$temp_deno" "$temp_mod"' EXIT
 # Update version in deno.json
 deno eval "const config = JSON.parse(await Deno.readTextFile('deno.json')); config.version = '$new_version'; await Deno.writeTextFile('$temp_deno', JSON.stringify(config, null, 2).trimEnd() + '\n');"
 
-# Update version in src/mod.ts
-deno eval "const content = await Deno.readTextFile('src/mod.ts'); await Deno.writeTextFile('$temp_mod', content.replace(/export const VERSION = \"[0-9]+\.[0-9]+\.[0-9]+\"/g, 'export const VERSION = \"$new_version\"'));"
+# Update version in mod.ts
+deno eval "const content = await Deno.readTextFile('mod.ts'); await Deno.writeTextFile('$temp_mod', content.replace(/export const VERSION = \"[0-9]+\.[0-9]+\.[0-9]+\"/g, 'export const VERSION = \"$new_version\"'));"
 
 # Show the changes
 echo -e "\nChanges to be made:"
 echo "deno.json:"
 diff deno.json "$temp_deno" || true
 echo -e "\nmod.ts:"
-diff src/mod.ts "$temp_mod" || true
+diff mod.ts "$temp_mod" || true
 
 # Apply the changes atomically
 mv "$temp_deno" deno.json
-mv "$temp_mod" src/mod.ts
+mv "$temp_mod" mod.ts
 
 # 9. Verify both files have the same new version
 deno_version=$(deno eval "const config = JSON.parse(await Deno.readTextFile('deno.json')); console.log(config.version);")
-mod_version=$(deno eval "const content = await Deno.readTextFile('src/mod.ts'); const match = content.match(/export const VERSION = \"([0-9]+\.[0-9]+\.[0-9]+)\"/); console.log(match[1]);")
+mod_version=$(deno eval "const content = await Deno.readTextFile('mod.ts'); const match = content.match(/export const VERSION = \"([0-9]+\.[0-9]+\.[0-9]+)\"/); console.log(match[1]);")
 
 if [ "$deno_version" != "$mod_version" ] || [ "$deno_version" != "$new_version" ]; then
     echo "Error: Version mismatch detected after applying changes!"
@@ -265,7 +265,7 @@ fi
 echo "Version consistency check passed: both files updated to $new_version"
 
 # 10. Commit both files in the same commit
-git add deno.json src/mod.ts
+git add deno.json mod.ts
 git commit -m "chore: bump version to $new_version"
 
 # 11. Create and push tag
