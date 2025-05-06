@@ -7,7 +7,7 @@ on:
 
 jobs:
   publish:
-    if: github.ref_type == 'tag' && github.base_ref == 'main'
+    if: github.ref_type == 'tag'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -15,6 +15,19 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check if tag is on main
+        id: check-tag
+        run: |
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+          if git merge-base --is-ancestor $TAG_NAME main; then
+            echo "Tag is on main branch"
+          else
+            echo "Tag is not on main branch"
+            exit 1
+          fi
 
       - name: Setup Deno
         uses: denoland/setup-deno@v2.0.2
