@@ -1,6 +1,6 @@
 {
   "name": "@tettuan/breakdownprompt",
-  "version": "1.2.4",
+  "version": "1.2.1",
   "exports": "./mod.ts",
   "tasks": {
     "test": "LOG_LEVEL=debug deno test --allow-read --allow-write --allow-env",
@@ -42,7 +42,9 @@
     ],
     "exclude": [
       ".git/",
-      ".cursor/"
+      ".cursor/",
+      "tests/00_fixtures/01_templates/05_invalid/",
+      "tests/00_fixtures/02_output/"
     ],
     "useTabs": false,
     "lineWidth": 100,
@@ -71,5 +73,11 @@
       "tests/"
     ],
     "exclude": []
+  },
+  "lint": {
+    "exclude": [
+      "tests/00_fixtures/01_templates/05_invalid/",
+      "tests/00_fixtures/02_output/"
+    ]
   }
 }
