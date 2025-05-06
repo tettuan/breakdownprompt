@@ -37,10 +37,10 @@ jobs:
         with:
           deno-version: v2.x
 
-      - name: Update cache
+      - name: Update cache and generate lock file
         run: |
           rm -f deno.lock
-          deno cache src/mod.ts
+          deno cache --lock=deno.lock --lock-write src/mod.ts
 
       - name: Commit lock file
         run: |
