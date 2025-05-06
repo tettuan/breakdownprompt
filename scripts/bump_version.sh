@@ -11,58 +11,62 @@
 #        Default: --patch
 #
 # Flow:
-# 1. Version Sync Check
+# 1. Branch Check
+#    - Ensures script is running on main branch
+#    - Prevents version bump on non-main branches
+#
+# 2. Version Sync Check
 #    - Checks if deno.json and src/mod.ts have matching versions
 #    - If mismatch found, updates src/mod.ts to match deno.json
 #    - Fails if version sync cannot be achieved
 #
-# 2. Git Status Check
+# 3. Git Status Check
 #    - Ensures no un-staged changes exist
 #    - Prevents version bump on dirty working directory
 #
-# 3. Local CI Check
+# 4. Local CI Check
 #    - Runs local_ci.sh to verify code quality
 #    - Ensures tests pass before version bump
 #
-# 4. GitHub Actions Status
+# 5. GitHub Actions Status
 #    - Verifies ci.yml and version-check.yml workflows
 #    - Ensures all workflows are completed and successful
 #
-# 5. JSR Version Check
+# 6. JSR Version Check
 #    - Fetches published versions from JSR
 #    - Determines latest released version
 #    - Falls back to local version if JSR unavailable
 #
-# 6. GitHub Tags Cleanup
+# 7. GitHub Tags Cleanup
 #    - Fetches all tags from remote
 #    - Removes tags that are ahead of latest JSR version
 #    - Keeps tags that match published JSR versions
 #
-# 7. New Version Generation
+# 8. New Version Generation
 #    - Increments version based on bump type:
 #      * major: X.0.0
 #      * minor: x.Y.0
 #      * patch: x.y.Z
 #
-# 8. Version Update
+# 9. Version Update
 #    - Updates version in both deno.json and src/mod.ts
 #    - Uses atomic file operations with temporary files
 #    - Shows changes before applying
 #
-# 9. Version Verification
-#    - Verifies both files have the same new version
-#    - Ensures version update was successful
+# 10. Version Verification
+#     - Verifies both files have the same new version
+#     - Ensures version update was successful
 #
-# 10. Git Commit
-#     - Commits version changes with standard message
-#     - Includes both deno.json and src/mod.ts
+# 11. Git Commit
+#      - Commits version changes with standard message
+#      - Includes both deno.json and src/mod.ts
 #
-# 11. Git Tag
-#     - Creates new tag with version (vX.Y.Z)
+# 12. Git Tag
+#      - Creates new tag with version (vX.Y.Z)
 #
-# 12. Push Changes
-#     - Pushes commit to main branch
-#     - Pushes new tag to remote
+# 13. Push Changes
+#      - Pushes commit to main branch
+#      - Pushes new tag to remote
 #
 # Exit Codes:
 # 0 - Success
@@ -98,6 +102,14 @@ while [[ $# -gt 0 ]]; do
             ;;
     esac
 done
+
+# Check if we're on main branch
+current_branch=$(git rev-parse --abbrev-ref HEAD)
+if [ "$current_branch" != "main" ]; then
+    echo "Error: This script must be run on the main branch."
+    echo "Current branch: $current_branch"
+    exit 1
+fi
 
 # 1. First, ensure both files have the same version
 echo "Checking current versions..."
