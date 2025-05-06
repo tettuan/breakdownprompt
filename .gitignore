@@ -147,9 +147,6 @@ test_output/
 test_fixtures/
 .test_output/
 
-# Deno
-deno.lock
-
 # IDE
 .vscode/
 .idea/
