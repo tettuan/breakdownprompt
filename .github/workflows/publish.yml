@@ -33,7 +33,7 @@ jobs:
           fi
 
       - name: Setup Deno
-        uses: denoland/setup-deno@v2.0.2
+        uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
 
