@@ -40,7 +40,7 @@ jobs:
       - name: Update cache and generate lock file
         run: |
           rm -f deno.lock
-          deno cache --lock=deno.lock --lock-write src/mod.ts
+          deno cache --lock=deno.lock mod.ts
 
       - name: Commit lock file
         run: |
