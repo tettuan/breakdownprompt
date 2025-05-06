@@ -22,7 +22,9 @@ jobs:
         id: check-tag
         run: |
           TAG_NAME=${GITHUB_REF#refs/tags/}
-          if git merge-base --is-ancestor $TAG_NAME main; then
+          TAG_COMMIT=$(git rev-parse $TAG_NAME)
+          # Check if tag's commit is in main branch history
+          if git rev-list main | grep -q "^$TAG_COMMIT$"; then
             echo "Tag is on main branch"
           else
             echo "Tag is not on main branch"
