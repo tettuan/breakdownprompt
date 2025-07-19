@@ -7,7 +7,8 @@
     "fmt": "deno fmt",
     "lint": "deno lint",
     "publish": "deno publish",
-    "ci": "./scripts/local_ci.sh"
+    "ci": "deno run --allow-read --allow-write --allow-env --allow-net --allow-run jsr:@aidevtool/ci",
+    "ci:dirty": "deno run --allow-read --allow-write --allow-env --allow-net --allow-run jsr:@aidevtool/ci --allow-dirty"
   },
   "imports": {
     "@std/": "jsr:@std/",
