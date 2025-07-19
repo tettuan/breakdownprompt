@@ -52,7 +52,7 @@ import { ReservedVariableValidator } from "./reserved_variable_validator.ts";
  */
 export class VariableValidator {
   private logger: BreakdownLogger;
-  private readonly VALID_KEY_REGEX = /^[a-zA-Z][a-zA-Z0-9_]*$/;
+  private readonly VALID_KEY_REGEX = /^(uv-[a-zA-Z0-9_]+|[a-zA-Z][a-zA-Z0-9_]*)$/;
   private reservedVariableValidator: ReservedVariableValidator;
 
   constructor() {
@@ -73,13 +73,12 @@ export class VariableValidator {
       throw new ValidationError("Invalid variable name");
     }
 
-    if (key.includes("-")) {
-      throw new ValidationError(
-        `Invalid variable name: ${key} (variable names cannot contain hyphens)`,
-      );
-    }
-
     if (!this.VALID_KEY_REGEX.test(key)) {
+      if (key.includes("-")) {
+        throw new ValidationError(
+          `Invalid variable name: ${key} (variable names cannot contain hyphens)`,
+        );
+      }
       throw new ValidationError(`Invalid variable name: ${key}`);
     }
 

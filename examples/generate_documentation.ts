@@ -19,9 +19,10 @@ async function main() {
   const template = "./examples/templates/documentation.md";
   const variables = {
     schema_file: "./examples/templates/schema/docs.schema.json",
-    input_text: "Generate comprehensive documentation for the following code:\n- API endpoints\n- Function parameters\n- Return values\n- Usage examples",
+    input_text:
+      "Generate comprehensive documentation for the following code:\n- API endpoints\n- Function parameters\n- Return values\n- Usage examples",
     input_text_file: "./examples/templates/input/code_to_document.ts",
-    destination_path: "./examples/templates/docs/output/"
+    destination_path: "./examples/templates/docs/output/",
   };
 
   try {
@@ -29,7 +30,7 @@ async function main() {
     const result = await manager.generatePrompt(template, variables);
     if (result.success) {
       console.log("Generated documentation prompt:");
-      console.log(result.prompt);
+      console.log(result.content);
     } else {
       console.error("Error generating documentation prompt:", result.error);
     }
@@ -42,4 +43,4 @@ async function main() {
 
 if (import.meta.main) {
   main();
-} 
+}

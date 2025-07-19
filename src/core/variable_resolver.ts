@@ -37,7 +37,7 @@ export class VariableResolver {
   private visited: Set<string>;
   private resolving: Set<string>;
   private resolvedVars: Map<string, string>;
-  private readonly VALID_KEY_REGEX = /^[a-zA-Z][a-zA-Z0-9_]*$/;
+  private readonly VALID_KEY_REGEX = /^(uv-[a-zA-Z0-9_]+|[a-zA-Z][a-zA-Z0-9_]*)$/;
 
   /**
    * Creates a new VariableResolver instance.
@@ -60,13 +60,12 @@ export class VariableResolver {
       throw new ValidationError("Invalid variable name");
     }
 
-    if (varName.includes("-")) {
-      throw new ValidationError(
-        `Invalid variable name: ${varName} (variable names cannot contain hyphens)`,
-      );
-    }
-
     if (!this.VALID_KEY_REGEX.test(varName)) {
+      if (varName.includes("-")) {
+        throw new ValidationError(
+          `Invalid variable name: ${varName} (variable names cannot contain hyphens)`,
+        );
+      }
       throw new ValidationError(`Invalid variable name: ${varName}`);
     }
   }

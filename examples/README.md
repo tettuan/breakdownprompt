@@ -5,44 +5,58 @@ This directory contains practical examples demonstrating how to use the @tettuan
 ## Examples Overview
 
 ### 1. Basic Usage (`basic_usage.ts`)
+
 A foundational example showing the core functionality:
+
 - Loading a prompt template
 - Setting up variables for replacement
 - Basic error handling
 - Simple output generation
 
 ### 2. Task Generation (`generate_task_prompt.ts`)
+
 Shows how to generate a task description prompt:
+
 - Creating structured task descriptions
 - Specifying input files and output locations
 - Using templates for consistent task formatting
 
 ### 3. Code Review (`generate_code_review.ts`)
+
 Demonstrates generating code review prompts:
+
 - Creating review requests with specific criteria
 - Managing review files and output locations
 - Structuring review guidelines
 
 ### 4. Documentation Generation (`generate_documentation.ts`)
+
 Shows how to generate documentation prompts:
+
 - Creating documentation requests
 - Managing source files and output locations
 - Specifying documentation requirements
 
 ### 5. Input Text File Only (`input_text_file_only.ts`)
+
 Demonstrates using only file-based input:
+
 - Using file paths for template and variables
 - Handling file-based input text
 - Managing output locations
 
 ### 6. Absolute Path Usage (`absolute_path_usage.ts`)
+
 Shows how to use absolute paths with PromptParams:
+
 - Using absolute paths for input and output
 - Handling path validation
 - Managing file operations with absolute paths
 
 ### 7. Temporary Path Usage (`temp_path_usage.ts`)
+
 Demonstrates handling temporary files:
+
 - Creating and using temporary directories
 - Managing temporary file paths
 - Cleaning up temporary resources

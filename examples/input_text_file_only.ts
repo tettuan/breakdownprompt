@@ -26,11 +26,11 @@ async function main() {
     const result = await promptManager.generatePrompt(templatePath, variables);
     if (result.success) {
       console.log("Generated content:");
-      console.log(result.prompt);
+      console.log(result.content);
       console.log("\nVariables found in template:");
       console.log(result.variables);
       console.log("\nUnknown variables (will be kept as is):");
-      console.log(result.unknownVariables);
+      console.log(result.variables.remaining);
     } else {
       console.error("Error:", result.error);
     }
@@ -39,4 +39,4 @@ async function main() {
   }
 }
 
-main(); 
+main();
