@@ -1,13 +1,14 @@
 {
   "name": "@tettuan/breakdownprompt",
-  "version": "1.2.2",
+  "version": "1.2.4",
   "exports": "./mod.ts",
   "tasks": {
     "test": "LOG_LEVEL=debug deno test --allow-read --allow-write --allow-env",
     "fmt": "deno fmt",
     "lint": "deno lint",
     "publish": "deno publish",
-    "ci": "./scripts/local_ci.sh"
+    "ci": "deno run --allow-read --allow-write --allow-env --allow-net --allow-run jsr:@aidevtool/ci",
+    "ci:dirty": "deno run --allow-read --allow-write --allow-env --allow-net --allow-run jsr:@aidevtool/ci --allow-dirty"
   },
   "imports": {
     "@std/": "jsr:@std/",
@@ -42,7 +43,9 @@
     ],
     "exclude": [
       ".git/",
-      ".cursor/"
+      ".cursor/",
+      "tests/00_fixtures/01_templates/05_invalid/",
+      "tests/00_fixtures/02_output/"
     ],
     "useTabs": false,
     "lineWidth": 100,
@@ -71,5 +74,11 @@
       "tests/"
     ],
     "exclude": []
+  },
+  "lint": {
+    "exclude": [
+      "tests/00_fixtures/01_templates/05_invalid/",
+      "tests/00_fixtures/02_output/"
+    ]
   }
 }

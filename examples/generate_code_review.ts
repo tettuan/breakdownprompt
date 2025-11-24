@@ -19,9 +19,10 @@ async function main() {
   const template = "./examples/templates/code_review.md";
   const variables = {
     schema_file: "./examples/templates/schema/review.schema.json",
-    input_text: "Please review the following code changes for:\n- Code quality\n- Performance impact\n- Security considerations",
+    input_text:
+      "Please review the following code changes for:\n- Code quality\n- Performance impact\n- Security considerations",
     input_text_file: "./examples/templates/input/changes_to_review.ts",
-    destination_path: "./examples/templates/review/output/"
+    destination_path: "./examples/templates/review/output/",
   };
 
   try {
@@ -29,7 +30,7 @@ async function main() {
     const result = await manager.generatePrompt(template, variables);
     if (result.success) {
       console.log("Generated code review prompt:");
-      console.log(result.prompt);
+      console.log(result.content);
     } else {
       console.error("Error generating code review prompt:", result.error);
     }
@@ -42,4 +43,4 @@ async function main() {
 
 if (import.meta.main) {
   main();
-} 
+}

@@ -22,10 +22,10 @@ describe("PromptManager", () => {
 
       assertEquals(result.success, true);
       if (result.success) {
-        assertExists(result.prompt);
-        assertEquals(result.prompt.includes("John"), true);
-        assertEquals(result.prompt.includes("30"), true);
-        assertEquals(result.prompt.includes("Tokyo"), true);
+        assertExists(result.content);
+        assertEquals(result.content!.includes("John"), true);
+        assertEquals(result.content!.includes("30"), true);
+        assertEquals(result.content!.includes("Tokyo"), true);
       }
     });
 
@@ -40,9 +40,9 @@ describe("PromptManager", () => {
 
       assertEquals(result.success, true);
       if (result.success) {
-        assertExists(result.prompt);
-        assertEquals(result.prompt.includes("John"), true);
-        assertEquals(result.prompt.includes("30"), true);
+        assertExists(result.content);
+        assertEquals(result.content!.includes("John"), true);
+        assertEquals(result.content!.includes("30"), true);
       }
     });
 
@@ -56,9 +56,9 @@ describe("PromptManager", () => {
 
       assertEquals(result.success, true);
       if (result.success) {
-        assertExists(result.unknownVariables);
-        assertEquals(result.unknownVariables.includes("age"), true);
-        assertEquals(result.unknownVariables.includes("city"), true);
+        assertExists(result.variables.remaining);
+        assertEquals(result.variables.remaining.includes("age"), true);
+        assertEquals(result.variables.remaining.includes("city"), true);
       }
     });
 
@@ -73,7 +73,7 @@ describe("PromptManager", () => {
 
       assertEquals(result.success, false);
       if (!result.success) {
-        assertEquals(result.error.includes("directory traversal"), true);
+        assertEquals(result.error!.includes("directory traversal"), true);
       }
     });
 
@@ -87,7 +87,7 @@ describe("PromptManager", () => {
 
       assertEquals(result.success, false);
       if (!result.success) {
-        assertEquals(result.error.includes("Invalid variable name"), true);
+        assertEquals(result.error!.includes("Invalid variable name"), true);
       }
     });
   });

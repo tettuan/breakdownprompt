@@ -23,7 +23,7 @@ async function main() {
     input_text: "This is a sample input text for the basic prompt.",
     schema_file: "./examples/templates/schema/base.schema.json",
     input_text_file: "./examples/templates/input/sample.txt",
-    destination_path: "./examples/templates/output/"
+    destination_path: "./examples/templates/output/",
   };
 
   try {
@@ -31,7 +31,7 @@ async function main() {
     const result = await manager.generatePrompt(template, variables);
     if (result.success) {
       console.log("Generated content:");
-      console.log(result.prompt);
+      console.log(result.content);
     } else {
       console.error("Error generating prompt:", result.error);
     }

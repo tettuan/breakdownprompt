@@ -21,7 +21,7 @@ async function main() {
     schema_file: "./examples/templates/schema/task.schema.json",
     input_text: "Analyze the following code and suggest improvements",
     input_text_file: "./examples/templates/input/code_to_analyze.ts",
-    destination_path: "./examples/templates/task/output/"
+    destination_path: "./examples/templates/task/output/",
   };
 
   try {
@@ -29,7 +29,7 @@ async function main() {
     const result = await manager.generatePrompt(template, variables);
     if (result.success) {
       console.log("Generated task prompt:");
-      console.log(result.prompt);
+      console.log(result.content);
     } else {
       console.error("Error generating task prompt:", result.error);
     }
@@ -42,4 +42,4 @@ async function main() {
 
 if (import.meta.main) {
   main();
-} 
+}

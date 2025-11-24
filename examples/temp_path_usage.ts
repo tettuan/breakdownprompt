@@ -5,10 +5,9 @@
  * temporary files with absolute paths in BreakdownParams.
  */
 
-import { PromptManager } from "../src/mod.ts";
+import { PromptManager } from "../mod.ts";
 import { FileUtils } from "../src/utils/file_utils.ts";
 import { TextValidator } from "../src/validation/markdown_validator.ts";
-import type { PromptGenerationResult } from "../src/types/prompt_result.ts";
 import { PathValidator } from "../src/validation/path_validator.ts";
 import { resolve } from "@std/path";
 
@@ -21,10 +20,12 @@ const promptManager = new PromptManager(textValidator, pathValidator);
 async function main() {
   try {
     // Create a temporary directory in the system temp directory
-    const tempDir = resolve(await Deno.makeTempDir({
-      prefix: "breakdown_",
-      dir: "/tmp"
-    }));
+    const tempDir = resolve(
+      await Deno.makeTempDir({
+        prefix: "breakdown_",
+        dir: "/tmp",
+      }),
+    );
 
     // Add the temporary directory as an allowed prefix
     pathValidator.addAllowedPrefix(tempDir);
@@ -43,17 +44,17 @@ Variables:
     await Deno.writeTextFile(inputPath, sampleContent);
 
     // Generate the prompt
-    const result: PromptGenerationResult = await promptManager.generatePrompt(
+    const result = await promptManager.generatePrompt(
       inputPath,
       {
         title: "Temporary File Example",
-        content: "This is a test content for temporary file handling"
-      }
+        content: "This is a test content for temporary file handling",
+      },
     );
 
     if (result.success) {
       // Write the result to the output file
-      await fileUtils.writeFile(outputPath, result.prompt);
+      await fileUtils.writeFile(outputPath, result.content!);
 
       console.log("Prompt generated successfully!");
       console.log(`Temporary directory: ${tempDir}`);
@@ -81,4 +82,4 @@ Variables:
 // Run the example
 if (import.meta.main) {
   await main();
-} 
+}

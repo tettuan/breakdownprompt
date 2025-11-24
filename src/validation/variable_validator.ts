@@ -74,6 +74,11 @@ export class VariableValidator {
     }
 
     if (!this.VALID_KEY_REGEX.test(key)) {
+      if (key.includes("-")) {
+        throw new ValidationError(
+          `Invalid variable name: ${key} (variable names cannot contain hyphens)`,
+        );
+      }
       throw new ValidationError(`Invalid variable name: ${key}`);
     }
 

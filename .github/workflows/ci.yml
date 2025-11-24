@@ -25,7 +25,7 @@ jobs:
         run: deno lint
 
       - name: Type check
-        run: deno check src/mod.ts
+        run: deno check mod.ts
 
       - name: Run tests with coverage
         run: deno test --coverage=coverage --allow-read --allow-write --allow-env

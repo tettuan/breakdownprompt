@@ -5,7 +5,7 @@
  * for both input and output parameters.
  */
 
-import { PromptManager } from "../src/mod.ts";
+import { PromptManager } from "../mod.ts";
 import { PathValidator } from "../src/validation/path_validator.ts";
 import { FileUtils } from "../src/utils/file_utils.ts";
 
@@ -21,10 +21,11 @@ async function main() {
   try {
     // Create prompt parameters
     const variables = {
-      input_text: "Generate comprehensive documentation for the following code:\n- API endpoints\n- Function parameters\n- Return values\n- Usage examples",
+      input_text:
+        "Generate comprehensive documentation for the following code:\n- API endpoints\n- Function parameters\n- Return values\n- Usage examples",
       input_text_file: "examples/templates/input/code_to_document.ts",
       schema_file: "examples/templates/schema/docs.schema.json",
-      destination_path: "examples/templates/docs/output/"
+      destination_path: "examples/templates/docs/output/",
     };
 
     // Generate the prompt
@@ -35,7 +36,7 @@ async function main() {
       console.log(`Input file: ${inputPath}`);
       console.log("\nGenerated prompt:");
       console.log("----------------");
-      console.log(result.prompt);
+      console.log(result.content);
     } else {
       console.error("Failed to generate prompt:", result.error);
     }
@@ -51,4 +52,4 @@ async function main() {
 // Run the example
 if (import.meta.main) {
   await main();
-} 
+}
