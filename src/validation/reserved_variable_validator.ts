@@ -30,7 +30,7 @@ const RESERVED_VARIABLES = new Set([
  */
 export class ReservedVariableValidator {
   private logger: BreakdownLogger;
-  private readonly VALID_KEY_REGEX = /^[a-zA-Z][a-zA-Z0-9_]*$/;
+  private readonly VALID_KEY_REGEX = /^[a-zA-Z][a-zA-Z0-9_-]*$/;
 
   constructor() {
     this.logger = new BreakdownLogger();
@@ -51,12 +51,6 @@ export class ReservedVariableValidator {
 
     if (!RESERVED_VARIABLES.has(key)) {
       throw new ValidationError(`Non-reserved variable not allowed: ${key}`);
-    }
-
-    if (key.includes("-")) {
-      throw new ValidationError(
-        `Invalid reserved variable name: ${key} (variable names cannot contain hyphens)`,
-      );
     }
 
     if (!this.VALID_KEY_REGEX.test(key)) {

@@ -108,18 +108,15 @@ Deno.test("should handle missing variables", async () => {
   }
 });
 
-Deno.test("should handle invalid variable names", async () => {
+Deno.test("should handle hyphenated variable names", async () => {
   setupTest();
-  const template = "Hello {invalid-name}!";
-  const variables = { "invalid-name": "test" };
+  const template = "Hello {hyphenated-name}!";
+  const variables = { "hyphenated-name": "test" };
 
   const result = await promptManager.generatePrompt(template, variables);
-  assertEquals(result.success, false);
-  if (!result.success) {
-    assertEquals(
-      result.error,
-      "Invalid variable name: invalid-name (variable names cannot contain hyphens)",
-    );
+  assertEquals(result.success, true);
+  if (result.success) {
+    assertEquals(result.content, "Hello test!");
   }
 });
 

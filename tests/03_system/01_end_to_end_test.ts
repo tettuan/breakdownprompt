@@ -165,24 +165,18 @@ Deno.test({
       }
     });
 
-    await t.step("should handle invalid variable names", async () => {
-      logger.debug("Testing invalid variable names");
-      const variables = { "invalid-name": "test" };
+    await t.step("should handle hyphenated variable names", async () => {
+      logger.debug("Testing hyphenated variable names");
+      const variables = { "hyphenated-name": "test", name: "World" };
 
       const result = await promptManager.generatePrompt(testTemplatePath, variables);
-      assertEquals(result.success, false);
-      if (!result.success) {
-        assertEquals(
-          result.error,
-          "Invalid variable name: invalid-name (variable names cannot contain hyphens)",
-        );
-      }
+      assertEquals(result.success, true);
     });
 
     await t.step(
-      "should handle partial failures with mixed valid and invalid variables",
+      "should handle mixed valid variables including hyphenated names",
       async () => {
-        logger.debug("Testing partial failures");
+        logger.debug("Testing mixed valid variables");
         const variables = {
           greeting: "こんにちは",
           name: "テスト",
@@ -192,17 +186,11 @@ Deno.test({
           variable1: "テスト変数1",
           variable2: "テスト変数2",
           variable3: "テスト変数3",
-          "invalid-name": "test",
+          "hyphenated-name": "test",
         };
 
         const result = await promptManager.generatePrompt(testTemplatePath, variables);
-        assertEquals(result.success, false);
-        if (!result.success) {
-          assertEquals(
-            result.error,
-            "Invalid variable name: invalid-name (variable names cannot contain hyphens)",
-          );
-        }
+        assertEquals(result.success, true);
       },
     );
 

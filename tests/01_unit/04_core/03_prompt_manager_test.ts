@@ -157,33 +157,23 @@ Deno.test({
     });
 
     /**
-     * 無効な変数名のテスト
+     * ハイフン付き変数名のテスト
      * 仕様: [変数の関係性](./docs/variables.ja.md#variables-とテンプレート変数の関係)
-     * 意図: 予約変数以外の変数名が渡された場合、エラーを返すことを確認
+     * 意図: ハイフン付き変数名が正常に処理されることを確認
      */
-    await t.step("should handle invalid variable names", async () => {
-      logger.debug("Testing prompt generation with invalid variable names");
+    await t.step("should handle hyphenated variable names", async () => {
+      logger.debug("Testing prompt generation with hyphenated variable names");
       logger.debug("Using template path", { testTemplatePath });
-      logger.debug("Using invalid variable name", { variables: { "invalid-name": "test" } });
+      logger.debug("Using hyphenated variable name", { variables: { "hyphenated-name": "test" } });
 
       const result = await promptManager.generatePrompt(
         testTemplatePath,
-        { "invalid-name": "test" },
+        { "hyphenated-name": "test", name: "World" },
       );
 
       logger.debug("Result from prompt generation", { result });
 
-      assertEquals(result.success, false);
-      if (!result.success) {
-        assertEquals(
-          result.error,
-          "Invalid variable name: invalid-name (variable names cannot contain hyphens)",
-        );
-        assertEquals(result.templatePath, testTemplatePath);
-        assertEquals(result.variables.detected.includes("name"), true);
-        assertEquals(result.variables.replaced.length, 0);
-        assertEquals(result.variables.remaining.length, 0);
-      }
+      assertEquals(result.success, true);
     });
 
     await cleanupTest();
