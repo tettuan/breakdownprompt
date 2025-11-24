@@ -27,7 +27,7 @@
 ```typescript
 // 1. キーの命名規則を表現する型
 type ValidVariableKey = string & {
-  readonly _brand: unique symbol; // 英数字とアンダースコアのみ、先頭は英字の制約
+  readonly _brand: unique symbol; // 英数字、アンダースコア、ハイフンが使用可能、先頭は英字の制約
 };
 
 // 2. パス形式の値の型
@@ -58,7 +58,7 @@ type Variables = Partial<
 
 - 変数名（キー）の制約を表現する型
 - 制約：
-  - 英数字とアンダースコアのみ使用可能
+  - 英数字、アンダースコア、ハイフンが使用可能
   - 先頭は英字のみ
   - 大文字小文字を区別する
 

@@ -182,7 +182,7 @@ Template variables are:
    - `destination_path`: Valid directory path
 
 2. **Variable Name Rules**
-   - Alphanumeric and underscore only
+   - Alphanumeric, underscore, and hyphen allowed
    - Must start with letter
    - Case sensitive
    - No duplicate keys allowed

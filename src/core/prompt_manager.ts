@@ -16,7 +16,6 @@ import { TextValidator } from "../validation/markdown_validator.ts";
 import { PathValidator } from "../validation/path_validator.ts";
 import { VariableValidator } from "../validation/variable_validator.ts";
 import type { PromptReader as _PromptReader } from "./prompt_reader.ts";
-import { VariableResolver } from "./variable_resolver.ts";
 import type { PromptParams } from "../types/prompt_params.ts";
 import { PermissionErrorMessages } from "../errors/permission_errors.ts";
 
@@ -408,20 +407,5 @@ export class PromptManager {
     if (!text || text.trim() === "") {
       throw new ValidationError("Text content is empty");
     }
-  }
-
-  /**
-   * Processes a template with variables.
-   * @param templatePath - Path to the template file
-   * @param variables - Variables to replace in the template
-   * @returns The processed template content
-   */
-  async processTemplate(
-    templatePath: string,
-    variables: Record<string, string>,
-  ): Promise<string> {
-    const templateContent = await this.loadTemplate(templatePath);
-    const variableResolver = new VariableResolver(variables);
-    return variableResolver.resolveVariable(templateContent);
   }
 }

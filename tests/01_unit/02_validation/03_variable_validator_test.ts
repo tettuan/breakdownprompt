@@ -56,7 +56,6 @@ Deno.test("should validate basic variable names", async () => {
 Deno.test("should reject invalid variable names", async () => {
   setupTest();
   const invalidNames = [
-    "invalid-name",
     "1name",
     "name!",
     "name@",

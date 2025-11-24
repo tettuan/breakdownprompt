@@ -163,13 +163,16 @@ Deno.test("Variable Edge Cases", async (t) => {
     assertEquals(result.success, false);
   });
 
-  await t.step("should handle special characters in variable names", async () => {
+  await t.step("should handle hyphenated variable names", async () => {
     setupTest();
     const template = "Hello {name-with-hyphen}!";
     const variables = { "name-with-hyphen": "test" };
 
     const result = await promptManager.generatePrompt(template, variables);
-    assertEquals(result.success, false);
+    assertEquals(result.success, true);
+    if (result.success) {
+      assertEquals(result.content, "Hello test!");
+    }
   });
 
   await t.step("should handle long variable names", async () => {
