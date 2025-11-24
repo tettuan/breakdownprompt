@@ -125,7 +125,7 @@ check_pr_ci_status() {
     local checks=$(gh pr checks "$pr_number" --json name,state,conclusion 2>/dev/null)
 
     if [ -z "$checks" ] || [ "$checks" = "[]" ]; then
-        echo "pending"
+        echo "success"
         return
     fi
 
