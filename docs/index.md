@@ -189,7 +189,7 @@ The variables parameter accepted by BreakdownPrompt allows the following variabl
 #### Variable Name (Key) Constraint Rules
 
 1. Key Naming Rules
-   - Only alphanumeric and underscore allowed
+   - Alphanumeric, underscore, and hyphen allowed
    - Must start with a letter
    - Case-sensitive naming rules allowed
 
@@ -326,7 +326,7 @@ Variables in templates are defined in the following format:
 
 #### 3.3.1 Variable Name Rules
 
-- Only alphanumeric and underscore allowed
+- Alphanumeric, underscore, and hyphen allowed
 - Must start with a letter
 - Case-sensitive
 

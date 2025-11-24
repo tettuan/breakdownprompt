@@ -71,7 +71,7 @@ The Prompt Management System is a framework for template-based prompt generation
 ##### Behavior
 
 1. Variable Name Validation
-   - Alphanumeric and underscore only
+   - Alphanumeric, underscore, and hyphen allowed
    - First character must be a letter
    - Case sensitivity
    - Matching with reserved variables
