@@ -67,8 +67,11 @@ export const TEST_PARAMS = {
 
 // Setup: Mock console methods to capture output
 let capturedOutput: string[] = [];
+// deno-lint-ignore no-console
 const originalConsoleLog = console.log;
+// deno-lint-ignore no-console
 const originalConsoleWarn = console.warn;
+// deno-lint-ignore no-console
 const originalConsoleError = console.error;
 
 function formatArgs(...args: unknown[]): string {
@@ -103,16 +106,22 @@ function mockConsoleError(...args: unknown[]): void {
 // Setup: Logger test environment
 function setupLoggerTest(): void {
   capturedOutput = [];
+  // deno-lint-ignore no-console
   console.log = mockConsoleLog;
+  // deno-lint-ignore no-console
   console.warn = mockConsoleWarn;
+  // deno-lint-ignore no-console
   console.error = mockConsoleError;
   // Set environment variable for log level
   Deno.env.set("LOG_LEVEL", "debug");
 }
 
 function teardownLoggerTest(): void {
+  // deno-lint-ignore no-console
   console.log = originalConsoleLog;
+  // deno-lint-ignore no-console
   console.warn = originalConsoleWarn;
+  // deno-lint-ignore no-console
   console.error = originalConsoleError;
   // Clean up environment variable
   Deno.env.delete("LOG_LEVEL");

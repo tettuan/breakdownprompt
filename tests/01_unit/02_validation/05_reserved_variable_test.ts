@@ -42,7 +42,7 @@ import { BreakdownLogger } from "@tettuan/breakdownlogger";
 let reservedVariableValidator: ReservedVariableValidator;
 let _logger: BreakdownLogger;
 
-function setupTest() {
+function setupTest(): void {
   reservedVariableValidator = new ReservedVariableValidator();
   _logger = new BreakdownLogger();
 }

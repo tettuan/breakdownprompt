@@ -35,7 +35,7 @@ import { ParameterValidator } from "../../../src/validation/parameter_validator.
 // Setup: Initialize ParameterValidator and test data
 let parameterValidator: ParameterValidator;
 
-function setupTest() {
+function setupTest(): void {
   parameterValidator = new ParameterValidator();
 }
 

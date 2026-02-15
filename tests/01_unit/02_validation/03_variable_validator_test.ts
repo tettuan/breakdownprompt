@@ -32,7 +32,7 @@ import { ValidationError } from "../../../src/errors.ts";
 // Setup: Initialize VariableValidator for testing variable name format
 let variableValidator: VariableValidator;
 
-function setupTest() {
+function setupTest(): void {
   variableValidator = new VariableValidator();
 }
 

@@ -19,13 +19,13 @@ const tempDir = await Deno.makeTempDir({
   prefix: "breakdown_test_",
 });
 
-function setupTest() {
+function setupTest(): void {
   pathValidator = new PathValidator();
   // Add the test temp directory as an allowed prefix
   pathValidator.addAllowedPrefix(tempDir);
 }
 
-async function cleanupTest() {
+async function cleanupTest(): Promise<void> {
   try {
     await Deno.remove(tempDir, { recursive: true });
   } catch (_error) {
@@ -36,7 +36,7 @@ async function cleanupTest() {
 // Main Test
 Deno.test({
   name: "Absolute Path Validation Tests",
-  async fn(t) {
+  async fn(t): Promise<void> {
     setupTest();
 
     await t.step("should validate absolute path in temporary directory", async () => {
