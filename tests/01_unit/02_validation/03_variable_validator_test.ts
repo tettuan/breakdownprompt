@@ -24,11 +24,7 @@
  * - Error messages should be consistent with the validation rules
  */
 
-import {
-  assertEquals,
-  type assertExists as _assertExists,
-  assertRejects,
-} from "@std/assert";
+import { assertEquals, type assertExists as _assertExists, assertRejects } from "@std/assert";
 import { VariableValidator } from "../../../src/validation/variable_validator.ts";
 import { ValidationError } from "../../../src/errors.ts";
 
