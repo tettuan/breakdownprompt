@@ -44,7 +44,7 @@ const logger = new BreakdownLogger();
 // Setup: Initialize ParameterManager and test data
 let parameterManager: ParameterManager;
 
-function setupTest() {
+function setupTest(): void {
   parameterManager = new ParameterManager(logger);
 }
 

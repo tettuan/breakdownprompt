@@ -23,9 +23,9 @@ describe("PromptManager", () => {
       assertEquals(result.success, true);
       if (result.success) {
         assertExists(result.content);
-        assertEquals(result.content!.includes("John"), true);
-        assertEquals(result.content!.includes("30"), true);
-        assertEquals(result.content!.includes("Tokyo"), true);
+        assertEquals(result.content?.includes("John"), true);
+        assertEquals(result.content?.includes("30"), true);
+        assertEquals(result.content?.includes("Tokyo"), true);
       }
     });
 
@@ -41,8 +41,8 @@ describe("PromptManager", () => {
       assertEquals(result.success, true);
       if (result.success) {
         assertExists(result.content);
-        assertEquals(result.content!.includes("John"), true);
-        assertEquals(result.content!.includes("30"), true);
+        assertEquals(result.content?.includes("John"), true);
+        assertEquals(result.content?.includes("30"), true);
       }
     });
 
@@ -73,7 +73,7 @@ describe("PromptManager", () => {
 
       assertEquals(result.success, false);
       if (!result.success) {
-        assertEquals(result.error!.includes("directory traversal"), true);
+        assertEquals(result.error?.includes("directory traversal"), true);
       }
     });
 
@@ -87,7 +87,7 @@ describe("PromptManager", () => {
 
       assertEquals(result.success, false);
       if (!result.success) {
-        assertEquals(result.error!.includes("Invalid variable name"), true);
+        assertEquals(result.error?.includes("Invalid variable name"), true);
       }
     });
   });

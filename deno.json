@@ -72,7 +72,34 @@
     "exclude": []
   },
   "lint": {
+    "rules": {
+      "tags": ["recommended", "jsr"],
+      "include": [
+        "ban-untagged-todo",
+        "default-param-last",
+        "eqeqeq",
+        "explicit-function-return-type",
+        "explicit-module-boundary-types",
+        "guard-for-in",
+        "no-console",
+        "no-eval",
+        "no-external-import",
+        "no-implicit-declare-namespace-export",
+        "no-inferrable-types",
+        "no-non-null-asserted-optional-chain",
+        "no-non-null-assertion",
+        "no-self-compare",
+        "no-sparse-arrays",
+        "no-sync-fn-in-async-fn",
+        "no-throw-literal",
+        "no-useless-rename",
+        "single-var-declarator",
+        "triple-slash-reference",
+        "verbatim-module-syntax"
+      ]
+    },
     "exclude": [
+      "examples/",
       "tests/00_fixtures/01_templates/05_invalid/",
       "tests/00_fixtures/02_output/"
     ]

@@ -51,7 +51,7 @@ const _logger = new BreakdownLogger();
 // Setup: Initialize VariableValidator for testing reserved variable integration
 let variableValidator: VariableValidator;
 
-function setupTest() {
+function setupTest(): void {
   variableValidator = new VariableValidator();
 }
 

@@ -39,7 +39,7 @@ const fileUtils = new FileUtils();
 const testPath = "./tests/00_fixtures/temp_test.md";
 const testBasicPath = "./tests/00_fixtures/01_templates/01_basic.md";
 
-async function setupTest() {
+async function setupTest(): Promise<void> {
   // Ensure clean state
   await cleanupTest();
   // Create test directory if it doesn't exist
@@ -50,7 +50,7 @@ async function setupTest() {
   }
 }
 
-async function cleanupTest() {
+async function cleanupTest(): Promise<void> {
   try {
     const exists = await fileUtils.exists(testPath);
     if (exists) {
@@ -64,7 +64,7 @@ async function cleanupTest() {
 // Main Test
 Deno.test({
   name: "FileUtils - Basic Operations",
-  async fn(t) {
+  async fn(t): Promise<void> {
     await setupTest();
 
     await t.step("should read file content", async () => {
@@ -95,7 +95,7 @@ Deno.test({
 
 Deno.test({
   name: "FileUtils - Path Operations",
-  async fn(t) {
+  async fn(t): Promise<void> {
     await t.step("should normalize paths", () => {
       logger.debug("Testing path normalization");
       const normalized = fileUtils.normalizePath("./test/../test/file.md");
@@ -120,7 +120,7 @@ Deno.test({
 
 Deno.test({
   name: "FileUtils - Error Handling",
-  async fn(t) {
+  async fn(t): Promise<void> {
     await t.step("should handle non-existent files", async () => {
       logger.debug("Testing non-existent file handling");
       try {

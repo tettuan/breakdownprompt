@@ -51,7 +51,7 @@ const textValidator = new TextValidator();
 // Pre-processing and Preparing Part
 let promptManager: PromptManager;
 
-function setupTest() {
+function setupTest(): void {
   promptManager = new PromptManager(textValidator, undefined, undefined, undefined, logger);
 }
 
