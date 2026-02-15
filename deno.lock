@@ -9,7 +9,7 @@
     "jsr:@std/path@1": "1.0.9",
     "jsr:@std/path@~0.220.1": "0.220.1",
     "jsr:@std/testing@~0.220.1": "0.220.1",
-    "jsr:@tettuan/breakdownlogger@~0.1.10": "0.1.10",
+    "jsr:@tettuan/breakdownlogger@^1.1.1": "1.1.1",
     "npm:vitest@^3.1.2": "3.2.4_vite@7.0.5__picomatch@4.0.3"
   },
   "jsr": {
@@ -53,8 +53,8 @@
         "jsr:@std/assert@~0.220.1"
       ]
     },
-    "@tettuan/breakdownlogger@0.1.10": {
-      "integrity": "3094af14f9271234b01280c4cf379d36f7b429531a434f169d3dce569d60e146"
+    "@tettuan/breakdownlogger@1.1.1": {
+      "integrity": "21fc81012649b01cd3adc71c7f432454508d565e3030439d511389a844d371cf"
     }
   },
   "npm": {
@@ -750,7 +750,7 @@
       "jsr:@std/path@~0.220.1",
       "jsr:@std/testing@*",
       "jsr:@std/testing@^1.0.11",
-      "jsr:@tettuan/breakdownlogger@~0.1.10",
+      "jsr:@tettuan/breakdownlogger@^1.1.1",
       "npm:vitest@^3.1.2"
     ]
   }
