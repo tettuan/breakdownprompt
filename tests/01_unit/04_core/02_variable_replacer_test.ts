@@ -38,11 +38,7 @@
  * - Missing required variables
  */
 
-import {
-  assertEquals,
-  type assertExists as _assertExists,
-  assertRejects,
-} from "jsr:@std/testing@^0.220.1/asserts";
+import { assertEquals, type assertExists as _assertExists, assertRejects } from "@std/assert";
 import { VariableReplacer } from "../../../src/core/variable_replacer.ts";
 import type { VariableValidator } from "../../../src/validation/variable_validator.ts";
 import { ValidationError } from "../../../src/errors.ts";

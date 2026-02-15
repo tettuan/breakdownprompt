@@ -28,7 +28,7 @@
  * - Invalid variables
  */
 
-import { assertEquals } from "jsr:@std/testing@^0.220.1/asserts";
+import { assertEquals } from "@std/assert";
 import { ParameterValidator } from "../../../src/validation/parameter_validator.ts";
 
 // Pre-processing and Preparing Part

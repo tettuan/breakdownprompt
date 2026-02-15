@@ -7,7 +7,7 @@
  * - Ensure system-specific paths are handled properly
  */
 
-import { assertEquals } from "jsr:@std/testing@^0.220.1/asserts";
+import { assertEquals } from "@std/assert";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { PathValidator } from "../../../src/validation/path_validator.ts";
 

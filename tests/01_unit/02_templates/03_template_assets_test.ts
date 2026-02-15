@@ -7,7 +7,7 @@
  * - Ensure proper handling of template variables
  */
 
-import { assertEquals, assertRejects } from "jsr:@std/testing@^0.220.1/asserts";
+import { assertEquals, assertRejects } from "@std/assert";
 import { TemplateFile } from "../../../src/core/template_file.ts";
 import { FileUtils } from "../../../src/utils/file_utils.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";

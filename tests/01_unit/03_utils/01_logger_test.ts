@@ -11,7 +11,7 @@
  * across all test files, following the patterns in docs/design_pattern.ja.md.
  */
 
-import { join } from "https://deno.land/std/path/mod.ts";
+import { join } from "@std/path";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { assertEquals, type assertThrows as _assertThrows } from "@std/assert";
 import type { ValidationError as _ValidationError } from "../../../src/errors.ts";

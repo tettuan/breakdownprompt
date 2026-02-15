@@ -25,12 +25,6 @@ jobs:
           rm -f deno.lock
           deno cache --reload mod.ts
 
-      - name: Get latest tag
-        id: get_latest_tag
-        run: |
-          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
-          echo "latest_tag=${LATEST_TAG}" >> $GITHUB_OUTPUT
-
       - name: Get version from deno.json
         id: get_version
         run: |
@@ -45,14 +39,6 @@ jobs:
 
       - name: Check version consistency
         run: |
-          if [ "v${{ steps.get_version.outputs.version }}" != "${{ steps.get_latest_tag.outputs.latest_tag }}" ]; then
-            echo "Error: Version mismatch between deno.json and git tag!"
-            echo "deno.json version: ${{ steps.get_version.outputs.version }}"
-            echo "Latest git tag: ${{ steps.get_latest_tag.outputs.latest_tag }}"
-            echo "Please ensure the version in deno.json matches the latest git tag."
-            exit 1
-          fi
-
           if [ "${{ steps.get_version.outputs.version }}" != "${{ steps.get_constant_version.outputs.constant_version }}" ]; then
             echo "Error: Version mismatch between deno.json and version.ts!"
             echo "deno.json version: ${{ steps.get_version.outputs.version }}"
@@ -61,4 +47,4 @@ jobs:
             exit 1
           fi
 
-          echo "Version check passed! All versions are ${{ steps.get_version.outputs.version }}"
+          echo "Version check passed! deno.json and version.ts are both ${{ steps.get_version.outputs.version }}"

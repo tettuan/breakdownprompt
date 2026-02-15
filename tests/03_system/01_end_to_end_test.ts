@@ -31,11 +31,7 @@
  * - Partial failures
  */
 
-import {
-  assertEquals,
-  assertExists,
-  type assertRejects as _assertRejects,
-} from "jsr:@std/testing@^0.220.1/asserts";
+import { assertEquals, assertExists, type assertRejects as _assertRejects } from "@std/assert";
 import { PromptManager } from "../../src/core/prompt_manager.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import type { ValidationError as _ValidationError } from "../../src/errors.ts";

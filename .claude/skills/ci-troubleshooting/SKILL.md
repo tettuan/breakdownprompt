@@ -41,12 +41,29 @@ Bash({
 
 | Rule | Error | Fix |
 |------|-------|-----|
+| `no-import-prefix` | Inline `jsr:`, `npm:`, `https:` in import | Use import map alias from deno.json |
 | `no-console` | console.log in library code | Add `// deno-lint-ignore no-console` |
 | `prefer-ascii` | Japanese in comments | Change to English |
 | `no-await-in-loop` | await in for loop | Add ignore or refactor to Promise.all |
 | `eqeqeq` | `!=` instead of `!==` | Use strict equality |
 | `explicit-function-return-type` | Missing return type | Add `: ReturnType` |
 | `ban-unused-ignore` | Unused lint ignore | Remove or adjust ignore list |
+
+### no-import-prefix (重要)
+
+**すべてのimportはdeno.jsonのimport mapエントリを使用する。**
+
+```typescript
+// NG: インラインimport
+import { assertEquals } from "jsr:@std/assert@^1.0.11";
+import { join } from "https://deno.land/std/path/mod.ts";
+
+// OK: import mapエイリアス
+import { assertEquals } from "@std/assert";
+import { join } from "@std/path";
+```
+
+新しい依存を追加する場合は、まず `deno.json` の `imports` にエントリを追加してからコードで使用する。
 
 ### File-Level Lint Ignore
 

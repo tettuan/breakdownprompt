@@ -28,11 +28,7 @@
  * - Invalid error handling
  */
 
-import {
-  assertEquals,
-  type assertExists as _assertExists,
-  assertRejects,
-} from "jsr:@std/testing@^0.220.1/asserts";
+import { assertEquals, type assertExists as _assertExists, assertRejects } from "@std/assert";
 import { ParameterManager } from "../../src/core/parameter_manager.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { ValidationError } from "../../src/errors.ts";

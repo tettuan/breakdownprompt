@@ -1,5 +1,5 @@
-import { beforeEach, describe, it } from "https://deno.land/std@0.208.0/testing/bdd.ts";
-import { assertEquals, assertExists } from "https://deno.land/std@0.208.0/assert/mod.ts";
+import { beforeEach, describe, it } from "@std/testing/bdd";
+import { assertEquals, assertExists } from "@std/assert";
 import { PromptManager } from "./prompt_manager.ts";
 
 describe("PromptManager", () => {

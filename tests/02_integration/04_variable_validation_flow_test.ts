@@ -40,7 +40,7 @@
  * - Type validation is strict and follows predefined rules
  */
 
-import { assertRejects } from "jsr:@std/testing@^0.220.1/asserts";
+import { assertRejects } from "@std/assert";
 import { VariableValidator } from "../../src/validation/variable_validator.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { ValidationError } from "../../src/errors.ts";

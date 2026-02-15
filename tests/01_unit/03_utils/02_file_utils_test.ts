@@ -28,7 +28,7 @@
  * - File system errors
  */
 
-import { assertEquals } from "jsr:@std/testing@^0.220.1/asserts";
+import { assertEquals } from "@std/assert";
 import { FileUtils } from "../../../src/utils/file_utils.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
