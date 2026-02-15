@@ -16,10 +16,7 @@
  * - Test permission checks
  */
 
-import {
-  assertEquals,
-  type assertThrows as _assertThrows,
-} from "@std/assert";
+import { assertEquals, type assertThrows as _assertThrows } from "@std/assert";
 import { PathValidator } from "../../../src/validation/path_validator.ts";
 import { ValidationError } from "../../../src/errors.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
