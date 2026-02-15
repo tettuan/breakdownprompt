@@ -52,7 +52,7 @@ const _logger = new BreakdownLogger();
 let variableProcessor: VariableProcessor;
 let variableValidator: VariableValidator;
 
-function setupTest() {
+function setupTest(): void {
   variableProcessor = new VariableProcessor();
   variableValidator = new VariableValidator();
 }

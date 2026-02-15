@@ -52,7 +52,7 @@ const _logger = new BreakdownLogger();
 let variableMatcher: VariableMatcher;
 let variableValidator: VariableValidator;
 
-function setupTest() {
+function setupTest(): void {
   variableMatcher = new VariableMatcher();
   variableValidator = new VariableValidator();
 }

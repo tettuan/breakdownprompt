@@ -47,7 +47,7 @@ let promptManager: PromptManager;
 const testTemplatePath = "tests/00_fixtures/01_templates/02_with_variables.md";
 const testOutputPath = "tests/00_fixtures/02_output/test_output.md";
 
-async function setupTest() {
+async function setupTest(): Promise<void> {
   promptManager = new PromptManager(textValidator);
   // Create test output directory if it doesn't exist
   try {
@@ -57,7 +57,7 @@ async function setupTest() {
   }
 }
 
-async function cleanupTest() {
+async function cleanupTest(): Promise<void> {
   try {
     const exists = await fileUtils.exists(testOutputPath);
     if (exists) {
@@ -71,7 +71,7 @@ async function cleanupTest() {
 // Main Test
 Deno.test({
   name: "End-to-End System Test",
-  async fn(t) {
+  async fn(t): Promise<void> {
     await setupTest();
 
     await t.step("should process complete flow with direct template", async () => {
@@ -116,7 +116,7 @@ Deno.test({
         };
         Object.entries(basicVariables).forEach(([key, value]) => {
           assertEquals(
-            result.content!.includes(value),
+            result.content?.includes(value) ?? false,
             true,
             `Variable ${key} not replaced correctly`,
           );

@@ -42,7 +42,7 @@ export function formatAsStructured(content: string, format: "json" | "yaml" = "j
  * @param directory Optional directory path
  * @returns Formatted filename with full path
  */
-export function formatFilename(prefix: string, extension = "md", directory?: string): string {
+export function formatFilename(prefix: string, directory?: string, extension = "md"): string {
   const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
   const filename = `${prefix}_${timestamp}.${extension}`;
   return directory ? join(directory, filename) : filename;

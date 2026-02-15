@@ -27,7 +27,7 @@ let templateFile: TemplateFile;
 const testTemplatePath = "tests/00_fixtures/01_templates/01_basic.md";
 const testOutputPath = "tests/00_fixtures/02_output/test_output.md";
 
-async function setupTest() {
+async function setupTest(): Promise<void> {
   templateFile = new TemplateFile(fileUtils, logger);
   // Ensure clean state
   await cleanupTest();
@@ -39,7 +39,7 @@ async function setupTest() {
   }
 }
 
-async function cleanupTest() {
+async function cleanupTest(): Promise<void> {
   try {
     await Deno.remove(testOutputPath);
   } catch (_error) {
@@ -50,7 +50,7 @@ async function cleanupTest() {
 // Main Test
 Deno.test({
   name: "TemplateFile - Basic template operations",
-  async fn(t) {
+  async fn(t): Promise<void> {
     await setupTest();
 
     await t.step("should load template from file", async () => {

@@ -55,7 +55,7 @@ let validateRequiredVariables: (required: string[], variables: Record<string, un
 let mockVariableValidator: VariableValidator;
 let variableReplacer: VariableReplacer;
 
-function setupTest() {
+function setupTest(): void {
   _validateKey = (_key: string) => {
     if (
       _key === "name" || _key === "age" || _key === "message" || _key === "greeting" ||

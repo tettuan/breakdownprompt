@@ -32,7 +32,7 @@ let promptManager: PromptManager;
 const testTemplatePath = "tests/00_fixtures/01_templates/01_basic.md";
 const testOutputPath = "tests/00_fixtures/02_output/test_output.md";
 
-async function setupTest() {
+async function setupTest(): Promise<void> {
   promptManager = new PromptManager(textValidator, undefined, undefined, undefined, logger);
   // Ensure clean state
   await cleanupTest();
@@ -44,7 +44,7 @@ async function setupTest() {
   }
 }
 
-async function cleanupTest() {
+async function cleanupTest(): Promise<void> {
   try {
     await Deno.remove(testOutputPath);
   } catch (_error) {
@@ -55,7 +55,7 @@ async function cleanupTest() {
 // Main Test
 Deno.test({
   name: "PromptManager - Basic prompt generation",
-  async fn(t) {
+  async fn(t): Promise<void> {
     await setupTest();
 
     /**

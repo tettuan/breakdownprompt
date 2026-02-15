@@ -43,7 +43,7 @@ const logger = new BreakdownLogger();
 // Setup: Initialize ErrorHandler and test data
 let errorHandler: ErrorHandler;
 
-function setupTest() {
+function setupTest(): void {
   errorHandler = new ErrorHandler(logger);
 }
 
