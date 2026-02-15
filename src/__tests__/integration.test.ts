@@ -1,4 +1,4 @@
-import { assertEquals } from "jsr:@std/testing@^0.220.1/asserts";
+import { assertEquals } from "@std/assert";
 import { PromptManager } from "../core/prompt_manager.ts";
 
 Deno.test("BreakdownPrompt Integration Tests", async (t) => {
