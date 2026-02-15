@@ -38,7 +38,7 @@
  * - Invalid processing flow
  */
 
-import { assertEquals, assertRejects } from "jsr:@std/testing@^0.220.1/asserts";
+import { assertEquals, assertRejects } from "@std/assert";
 import { VariableProcessor } from "../../../src/core/variable_processor.ts";
 import { VariableValidator } from "../../../src/validation/variable_validator.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";

@@ -17,11 +17,7 @@
     "@std/log": "jsr:@std/log@^0.224.14",
     "@std/path": "jsr:@std/path@^0.220.1",
     "@std/testing": "jsr:@std/testing@^1.0.11",
-    "std/": "jsr:@std/",
-    "testing/": "jsr:@std/testing/",
-    "@tettuan/breakdownlogger": "jsr:@tettuan/breakdownlogger@^1.1.1",
-    "$std/": "https://deno.land/std@0.208.0/",
-    "vitest": "npm:vitest@^3.1.2"
+    "@tettuan/breakdownlogger": "jsr:@tettuan/breakdownlogger@^1.1.1"
   },
   "compilerOptions": {
     "lib": [

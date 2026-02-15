@@ -35,7 +35,7 @@ import {
   assertEquals,
   assertExists,
   type assertRejects as _assertRejects,
-} from "jsr:@std/testing@^0.220.1/asserts";
+} from "@std/assert";
 import { ErrorHandler } from "../../../src/utils/error_handler.ts";
 import { ValidationError } from "../../../src/errors.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";

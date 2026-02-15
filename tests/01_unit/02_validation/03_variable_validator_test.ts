@@ -28,7 +28,7 @@ import {
   assertEquals,
   type assertExists as _assertExists,
   assertRejects,
-} from "jsr:@std/testing@^0.220.1/asserts";
+} from "@std/assert";
 import { VariableValidator } from "../../../src/validation/variable_validator.ts";
 import { ValidationError } from "../../../src/errors.ts";
 

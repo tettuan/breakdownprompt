@@ -1,4 +1,4 @@
-import { assertEquals } from "https://deno.land/std@0.131.0/testing/asserts.ts";
+import { assertEquals } from "@std/assert";
 import { PromptManager } from "../../../src/core/prompt_manager.ts";
 import { TextValidator } from "../../../src/validation/markdown_validator.ts";
 import { PathValidator } from "../../../src/validation/path_validator.ts";
