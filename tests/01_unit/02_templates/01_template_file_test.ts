@@ -19,7 +19,7 @@ import {
   assertEquals,
   type assertExists as _assertExists,
   assertRejects,
-} from "jsr:@std/testing@^0.220.1/asserts";
+} from "@std/assert";
 import { TemplateFile } from "../../../src/core/template_file.ts";
 import type { FileUtils } from "../../../src/utils/file_utils.ts";
 import type { PathValidator as _PathValidator } from "../../../src/validation/path_validator.ts";

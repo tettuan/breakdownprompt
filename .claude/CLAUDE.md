@@ -95,7 +95,7 @@ export { META, VERSION } from "./src/version.ts";
 - Reserved variables: `schema_file`, `input_text`, `input_text_file`, `destination_path`
 - Formatting: 2-space indent, no tabs, 100 char line width, double quotes, semicolons
 - Test file naming: `*_test.ts`
-- Import policy: use `@std/` (JSR), not `https://deno.land/` URLs
+- Import policy: MUST use import map aliases from `deno.json` (e.g., `@std/assert`, `@std/path`). NEVER use inline `jsr:`, `npm:`, or `https:` prefixes in import statements (violates `no-import-prefix` lint rule)
 
 ## Version Management
 - `deno.json` → `"version": "x.y.z"`

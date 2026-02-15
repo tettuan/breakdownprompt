@@ -38,9 +38,11 @@ Review code changes for quality and correctness.
 - Corresponding tests exist in `tests/` for new/changed functionality
 - Tests follow the hierarchy: `01_unit/` -> `02_integration/` -> `03_system/`
 
-### Import Policy
-- Use `@std/` imports (JSR), not `https://deno.land/` URLs
-- Use import map entries from `deno.json`
+### Import Policy (MUST)
+- **MUST** use import map aliases from `deno.json` (e.g., `@std/assert`, `@std/path`)
+- **NEVER** use inline `jsr:`, `npm:`, or `https://deno.land/` in import statements
+- Violation causes `no-import-prefix` lint failure in CI
+- New dependencies: add to `deno.json` imports first, then use the alias
 
 ### Formatting
 - 2-space indent, no tabs, 100 char line width

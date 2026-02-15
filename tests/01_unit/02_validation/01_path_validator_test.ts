@@ -19,11 +19,11 @@
 import {
   assertEquals,
   type assertThrows as _assertThrows,
-} from "jsr:@std/testing@^0.220.1/asserts";
+} from "@std/assert";
 import { PathValidator } from "../../../src/validation/path_validator.ts";
 import { ValidationError } from "../../../src/errors.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import { join } from "jsr:@std/path@^0.220.1/join";
+import { join } from "@std/path/join";
 
 const _logger = new BreakdownLogger();
 
