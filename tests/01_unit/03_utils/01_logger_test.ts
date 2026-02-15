@@ -65,11 +65,13 @@ export const TEST_PARAMS = {
   },
 };
 
-// Setup: Mock console.log to capture output
+// Setup: Mock console methods to capture output
 let capturedOutput: string[] = [];
 const originalConsoleLog = console.log;
+const originalConsoleWarn = console.warn;
+const originalConsoleError = console.error;
 
-function mockConsoleLog(...args: unknown[]): void {
+function formatArgs(...args: unknown[]): string {
   const formattedArgs = args.map((arg) => {
     if (typeof arg === "object" && arg !== null) {
       if (arg instanceof Error) {
@@ -83,19 +85,35 @@ function mockConsoleLog(...args: unknown[]): void {
     }
     return String(arg);
   });
-  capturedOutput.push(formattedArgs.join(" "));
+  return formattedArgs.join(" ");
+}
+
+function mockConsoleLog(...args: unknown[]): void {
+  capturedOutput.push(formatArgs(...args));
+}
+
+function mockConsoleWarn(...args: unknown[]): void {
+  capturedOutput.push(formatArgs(...args));
+}
+
+function mockConsoleError(...args: unknown[]): void {
+  capturedOutput.push(formatArgs(...args));
 }
 
 // Setup: Logger test environment
 function setupLoggerTest(): void {
   capturedOutput = [];
   console.log = mockConsoleLog;
+  console.warn = mockConsoleWarn;
+  console.error = mockConsoleError;
   // Set environment variable for log level
   Deno.env.set("LOG_LEVEL", "debug");
 }
 
 function teardownLoggerTest(): void {
   console.log = originalConsoleLog;
+  console.warn = originalConsoleWarn;
+  console.error = originalConsoleError;
   // Clean up environment variable
   Deno.env.delete("LOG_LEVEL");
 }

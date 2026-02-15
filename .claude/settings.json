@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(deno task test*)",
+      "Bash(deno task lint*)",
+      "Bash(deno task fmt*)",
+      "Bash(deno task ci*)",
+      "Bash(deno check *)",
+      "Bash(scripts/local_ci.sh*)",
+      "Bash(scripts/bump_version.sh*)",
+      "Bash(LOG_LEVEL=* deno test *)",
+      "Bash(DEBUG=* scripts/local_ci.sh*)"
+    ]
+  }
+}
