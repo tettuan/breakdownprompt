@@ -6,35 +6,23 @@ disable-model-invocation: true
 allowed-tools: [Bash, Read]
 ---
 
-Run the version bump script with PR workflow.
+`deno.json` と `src/version.ts` のバージョンを同期させるため、`scripts/bump_version.sh $ARGUMENTS` を実行する（デフォルト: `--patch`）。
 
-```bash
-scripts/bump_version.sh $ARGUMENTS
-```
-
-Default: `--patch`
-
-## Version files
+## Version Files
 
 | File | Field |
 |------|-------|
 | `deno.json` | `"version": "x.y.z"` |
 | `src/version.ts` | `export const VERSION = "x.y.z"` |
 
-Both files MUST have matching versions.
+両ファイルのバージョンは一致必須。
 
-## Script workflow
+## Script Flow
 
 ```
-A-1: Version update (deno.json, src/version.ts) with JSR latest check
-A-2: Local CI check → commit & push
-A-3: Create PR to develop
-B-1: Wait for PR merge (remote CI must pass)
-B-2: Create PR to main
-C-1: Wait for PR merge (remote CI must pass)
-C-2: Create vtag on main merge commit
+A-1: Version update (JSR latest check) → A-2: Local CI → commit & push → A-3: PR to develop
+B-1: PR merge 待ち → B-2: PR to main
+C-1: PR merge 待ち → C-2: vtag on main
 ```
 
-Use `--status` to check progress. Use `--step` for single-step execution.
-
-Only run when explicitly ordered. Do not speculate about releases.
+`--status` で進捗確認、`--step` で1ステップ実行。明示的指示があるときのみ実行する。

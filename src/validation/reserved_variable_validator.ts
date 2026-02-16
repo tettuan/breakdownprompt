@@ -13,7 +13,6 @@
 
 import { ValidationError } from "../errors.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import type { TextContent as _TextContent } from "../types.ts";
 
 // Define reserved variable names
 const RESERVED_VARIABLES = new Set([
@@ -33,7 +32,7 @@ export class ReservedVariableValidator {
   private readonly VALID_KEY_REGEX = /^[a-zA-Z][a-zA-Z0-9_-]*$/;
 
   constructor() {
-    this.logger = new BreakdownLogger();
+    this.logger = new BreakdownLogger("validate");
   }
 
   /**

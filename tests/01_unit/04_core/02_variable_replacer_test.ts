@@ -2,284 +2,378 @@
  * Variable Replacer Unit Test
  *
  * Purpose:
- * - Verify the core functionality of the VariableReplacer class
- * - Validate variable replacement in templates according to specifications
- * - Ensure proper handling of variable types and formats
- * - Test template variable discovery
- * - Test optional variable handling
- *
- * Intent:
- * - Test basic variable replacement
- * - Verify multiple variable replacement
- * - Test special character handling
- * - Validate error handling
- * - Verify variable validation
- * - Test template variable discovery
- * - Test optional variable handling
- *
- * Expected Results:
- * - Variables are replaced correctly in templates
- * - Special characters are handled properly
- * - Error cases are handled appropriately
- * - Template variables are discovered correctly
- * - Optional variables are handled correctly
- *
- * Success Cases:
- * - Single variable replacement
- * - Multiple variable replacement
- * - Special character handling
- * - Empty template handling
- * - Template variable discovery
- * - Optional variable handling
- *
- * Failure Cases:
- * - Invalid variable names
- * - Invalid variable values
- * - Missing required variables
+ * - Verify extractVariables, validateKeys, and replaceAll methods
+ * - Validate variable extraction from templates
+ * - Ensure proper variable replacement behavior
+ * - Test key validation
  */
 
-import { assertEquals, type assertExists as _assertExists, assertRejects } from "@std/assert";
+import { assertEquals, assertThrows } from "@std/assert";
 import { VariableReplacer } from "../../../src/core/variable_replacer.ts";
 import type { VariableValidator } from "../../../src/validation/variable_validator.ts";
 import { ValidationError } from "../../../src/errors.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import type { TextContent } from "../../../src/types.ts";
 
 const logger = new BreakdownLogger();
 
-// Pre-processing and Preparing Part
-// Setup: Mock functions and objects for validation
-let _validateKey: (key: string) => boolean;
-let _validateTextContent: (text: string) => boolean;
-let validateRequiredVariables: (required: string[], variables: Record<string, unknown>) => void;
 let mockVariableValidator: VariableValidator;
 let variableReplacer: VariableReplacer;
 
 function setupTest(): void {
-  _validateKey = (_key: string) => {
-    if (
-      _key === "name" || _key === "age" || _key === "message" || _key === "greeting" ||
-      _key === "city" || _key === "optional"
-    ) {
-      return true;
-    }
-    throw new ValidationError("Invalid variable name");
-  };
-
-  _validateTextContent = (_text: string) => {
-    if (
-      _text === "test" || _text === "25" || _text === "Hello, World!" || _text === "Hello" ||
-      _text === "World" || _text === "optional"
-    ) {
-      return true;
-    }
-    throw new ValidationError("Invalid variable value");
-  };
-
-  validateRequiredVariables = (required: string[], variables: Record<string, unknown>) => {
-    const missingVars = required.filter((varName) => {
-      const value = variables[varName];
-      return value === undefined || value === null ||
-        (typeof value === "string" && value.trim() === "");
-    });
-
-    if (missingVars.length > 0) {
-      throw new ValidationError(`Missing required variables: ${missingVars.join(", ")}`);
-    }
-  };
-
   mockVariableValidator = {
-    validateKey: (key: string) => _validateKey(key),
-    validateTextContent: (text: string) => _validateTextContent(text),
-    validateRequiredVariables: (required: string[], variables: Record<string, unknown>) =>
-      validateRequiredVariables(required, variables),
+    validateKey: (key: string) => {
+      if (/^[a-zA-Z][a-zA-Z0-9_-]*$/.test(key)) {
+        return true;
+      }
+      throw new ValidationError(`Invalid variable name: ${key}`);
+    },
+    validateTextContent: (_text: string) => true,
     validateVariables: (_variables: Record<string, unknown>) => {},
   } as unknown as VariableValidator;
 
-  // Initialize VariableReplacer with logger
   variableReplacer = new VariableReplacer(logger, mockVariableValidator);
 }
 
-// Main Test
-Deno.test("should replace single variable", async () => {
-  setupTest();
-  const template = "Hello {name}!" as TextContent;
-  const variables = { name: "test" };
-  const expectedOutput = "Hello test!";
+// --- extractVariables ---
 
-  const result = await variableReplacer.replaceVariables(template, variables);
-  assertEquals(result, expectedOutput);
+Deno.test("extractVariables - should discover template variables", () => {
+  setupTest();
+  const result = variableReplacer.extractVariables(
+    "Hello {name}! Your age is {age}. Optional: {optional}",
+  );
+  assertEquals(result, ["name", "age", "optional"]);
 });
 
-Deno.test("should handle optional variables", async () => {
+Deno.test("extractVariables - should handle template with no variables", () => {
   setupTest();
-  const template = "Hello {name}! Optional: {optional}" as TextContent;
-  const variables = { name: "test" };
-  const expectedOutput = "Hello test! Optional: ";
-
-  const result = await variableReplacer.replaceVariables(template, variables);
-  assertEquals(result, expectedOutput);
+  const result = variableReplacer.extractVariables("Hello World!");
+  assertEquals(result, []);
 });
 
-Deno.test("should handle empty variables", async () => {
+Deno.test("extractVariables - should handle empty content", () => {
   setupTest();
-  const template = "Hello {name}!" as TextContent;
-  const variables = {};
-  const expectedOutput = "Hello !";
-
-  const result = await variableReplacer.replaceVariables(template, variables);
-  assertEquals(result, expectedOutput);
+  const result = variableReplacer.extractVariables("");
+  assertEquals(result, []);
 });
 
-Deno.test("should replace multiple variables", async () => {
+Deno.test("extractVariables - should deduplicate variables", () => {
   setupTest();
-  const template = "Hello {name}! Your age is {age}." as TextContent;
-  const variables = { name: "test", age: "25" };
-  const expectedOutput = "Hello test! Your age is 25.";
-
-  const result = await variableReplacer.replaceVariables(template, variables);
-  assertEquals(result, expectedOutput);
+  const result = variableReplacer.extractVariables("{name} and {name}");
+  assertEquals(result, ["name"]);
 });
 
-Deno.test("should handle partial variable replacement with optional variables", async () => {
+Deno.test("extractVariables - should handle special characters in template", () => {
   setupTest();
-  const template = "Hello {name}! Your age is {age}. Optional: {optional}" as TextContent;
-  const variables = { name: "test" };
-  const expectedOutput = "Hello test! Your age is . Optional: ";
-
-  const result = await variableReplacer.replaceVariables(template, variables);
-  assertEquals(result, expectedOutput);
+  const result = variableReplacer.extractVariables(
+    "Hello {name}! This is a special character: @#$%",
+  );
+  assertEquals(result, ["name"]);
 });
 
-Deno.test("should handle special characters in variables", async () => {
-  setupTest();
-  const template = "Message: {message}" as TextContent;
-  const variables = { message: "Hello, World!" };
-  const expectedOutput = "Message: Hello, World!";
+// --- validateKeys ---
 
-  const result = await variableReplacer.replaceVariables(template, variables);
-  assertEquals(result, expectedOutput);
+Deno.test("validateKeys - should accept valid keys", () => {
+  setupTest();
+  variableReplacer.validateKeys({ name: "test", age: "25" });
 });
 
-Deno.test("should handle special characters in template", async () => {
+Deno.test("validateKeys - should reject invalid keys", () => {
   setupTest();
-  const template = "Hello {name}! This is a special character: @#$%" as TextContent;
-  const variables = { name: "test" };
-  const expectedOutput = "Hello test! This is a special character: @#$%";
-
-  const result = await variableReplacer.replaceVariables(template, variables);
-  assertEquals(result, expectedOutput);
-});
-
-Deno.test("should handle invalid variable names", async () => {
-  setupTest();
-  const template = "Hello {invalid-name}!" as TextContent;
-  const variables = { "invalid-name": "test" };
-
-  await assertRejects(
-    async () => {
-      await variableReplacer.replaceVariables(template, variables);
-    },
+  assertThrows(
+    () => variableReplacer.validateKeys({ "123invalid": "test" }),
     ValidationError,
     "Invalid variable name",
   );
 });
 
-Deno.test("should handle invalid variable values", async () => {
+Deno.test("validateKeys - should handle empty variables", () => {
   setupTest();
-  const template = "Hello {age}!" as TextContent;
-  const variables = { age: "invalid" };
+  variableReplacer.validateKeys({});
+});
 
-  await assertRejects(
-    async () => {
-      await variableReplacer.replaceVariables(template, variables);
-    },
+// --- replaceAll ---
+
+Deno.test("replaceAll - should replace single variable", () => {
+  setupTest();
+  const result = variableReplacer.replaceAll("Hello {name}!", { name: "test" });
+  assertEquals(result.content, "Hello test!");
+  assertEquals(result.replaced, ["name"]);
+  assertEquals(result.remaining, []);
+});
+
+Deno.test("replaceAll - should replace multiple variables", () => {
+  setupTest();
+  const result = variableReplacer.replaceAll(
+    "Hello {name}! Your age is {age}.",
+    { name: "test", age: "25" },
+  );
+  assertEquals(result.content, "Hello test! Your age is 25.");
+  assertEquals(result.replaced.length, 2);
+  assertEquals(result.remaining, []);
+});
+
+Deno.test("replaceAll - should leave missing variables in content", () => {
+  setupTest();
+  const result = variableReplacer.replaceAll(
+    "Hello {name}! Your age is {age}.",
+    { name: "test" },
+  );
+  assertEquals(result.content, "Hello test! Your age is {age}.");
+  assertEquals(result.replaced, ["name"]);
+  assertEquals(result.remaining, ["age"]);
+});
+
+Deno.test("replaceAll - should handle empty variables record", () => {
+  setupTest();
+  const result = variableReplacer.replaceAll("Hello {name}!", {});
+  assertEquals(result.content, "Hello {name}!");
+  assertEquals(result.replaced, []);
+  assertEquals(result.remaining, ["name"]);
+});
+
+Deno.test("replaceAll - should handle template with no variables", () => {
+  setupTest();
+  const result = variableReplacer.replaceAll("Hello World!", { name: "test" });
+  assertEquals(result.content, "Hello World!");
+  assertEquals(result.replaced, []);
+  assertEquals(result.remaining, []);
+});
+
+Deno.test("replaceAll - should handle special characters in values", () => {
+  setupTest();
+  const result = variableReplacer.replaceAll("Message: {message}", {
+    message: "Hello, World!",
+  });
+  assertEquals(result.content, "Message: Hello, World!");
+});
+
+Deno.test("replaceAll - should handle special characters in template", () => {
+  setupTest();
+  const result = variableReplacer.replaceAll(
+    "Hello {name}! This is a special character: @#$%",
+    { name: "test" },
+  );
+  assertEquals(result.content, "Hello test! This is a special character: @#$%");
+});
+
+Deno.test("replaceAll - should handle empty template", () => {
+  setupTest();
+  const result = variableReplacer.replaceAll("", { name: "test" });
+  assertEquals(result.content, "");
+  assertEquals(result.replaced, []);
+  assertEquals(result.remaining, []);
+});
+
+Deno.test("replaceAll - should treat empty string values as remaining", () => {
+  setupTest();
+  const result = variableReplacer.replaceAll("Hello {name}!", { name: "" });
+  assertEquals(result.content, "Hello {name}!");
+  assertEquals(result.replaced, []);
+  assertEquals(result.remaining, ["name"]);
+});
+
+// --- replaceAll: regex special chars in values ---
+
+Deno.test("replaceAll - $& in value is preserved literally", () => {
+  setupTest();
+  const result = variableReplacer.replaceAll("Price: {price}", {
+    price: "price $& here",
+  });
+  assertEquals(result.content, "Price: price $& here");
+});
+
+Deno.test("replaceAll - $1 in value is preserved literally", () => {
+  setupTest();
+  const result = variableReplacer.replaceAll("Ref: {ref}", {
+    ref: "ref $1 here",
+  });
+  assertEquals(result.content, "Ref: ref $1 here");
+});
+
+Deno.test("replaceAll - $$ in value is preserved literally", () => {
+  setupTest();
+  const result = variableReplacer.replaceAll("Cost: {cost}", {
+    cost: "cost $$100",
+  });
+  assertEquals(result.content, "Cost: cost $$100");
+});
+
+Deno.test("replaceAll - backslash in value is preserved", () => {
+  setupTest();
+  const result = variableReplacer.replaceAll("Path: {path}", {
+    path: "path\\to\\file",
+  });
+  assertEquals(result.content, "Path: path\\to\\file");
+});
+
+// --- replaceAll: brace edge cases ---
+
+Deno.test("replaceAll - nested braces {a{b}} matches greedy inner", () => {
+  setupTest();
+  // regex /\{([^}]+)\}/ matches {a{b} capturing "a{b" (greedy up to first })
+  const result = variableReplacer.replaceAll("{a{b}}", { "a{b": "replaced" });
+  // "a{b" is found in variables, so it gets replaced leaving trailing "}"
+  assertEquals(result.content, "replaced}");
+  assertEquals(result.replaced.length, 1);
+});
+
+Deno.test("replaceAll - adjacent {a}{b} both replaced independently", () => {
+  setupTest();
+  const result = variableReplacer.replaceAll("{a}{b}", { a: "X", b: "Y" });
+  assertEquals(result.content, "XY");
+  assertEquals(result.replaced, ["b", "a"]);
+});
+
+Deno.test("replaceAll - whitespace { name } trimmed to name", () => {
+  setupTest();
+  const result = variableReplacer.replaceAll("Hello { name }!", {
+    name: "world",
+  });
+  assertEquals(result.content, "Hello world!");
+  assertEquals(result.replaced, ["name"]);
+});
+
+Deno.test("replaceAll - duplicate {name}...{name} all replaced", () => {
+  setupTest();
+  const result = variableReplacer.replaceAll("{name} and {name}", {
+    name: "X",
+  });
+  assertEquals(result.content, "X and X");
+  assertEquals(result.replaced, ["name", "name"]);
+  assertEquals(result.remaining, []);
+});
+
+// --- replaceVariables ---
+
+Deno.test("replaceVariables - replaces known variables", () => {
+  setupTest();
+  const result = variableReplacer.replaceVariables(
+    "Hello {name}!" as import("../../../src/types/variables.ts").TextContent,
+    { name: "world" },
+  );
+  assertEquals(result, "Hello world!");
+});
+
+Deno.test("replaceVariables - undefined value becomes empty string", () => {
+  setupTest();
+  const result = variableReplacer.replaceVariables(
+    "Hello {name}!" as import("../../../src/types/variables.ts").TextContent,
+    { name: undefined },
+  );
+  assertEquals(result, "Hello !");
+});
+
+Deno.test("replaceVariables - null value becomes empty string", () => {
+  setupTest();
+  const result = variableReplacer.replaceVariables(
+    "Hello {name}!" as import("../../../src/types/variables.ts").TextContent,
+    { name: null },
+  );
+  assertEquals(result, "Hello !");
+});
+
+Deno.test("replaceVariables - non-string value converted via String()", () => {
+  setupTest();
+  const result = variableReplacer.replaceVariables(
+    "Count: {count}" as import("../../../src/types/variables.ts").TextContent,
+    { count: 42 },
+  );
+  assertEquals(result, "Count: 42");
+});
+
+Deno.test("replaceVariables - invalid key throws ValidationError", () => {
+  setupTest();
+  assertThrows(
+    () =>
+      variableReplacer.replaceVariables(
+        "Hello {name}!" as import("../../../src/types/variables.ts").TextContent,
+        { "": "test" },
+      ),
     ValidationError,
-    "Invalid variable value",
+    "Invalid variable name",
   );
 });
 
-Deno.test("should validate variable names", async () => {
-  setupTest();
-  const template = "Hello {name}!" as TextContent;
-  const variables = { name: "test" };
+Deno.test("replaceVariables - calls validateTextContent on values", () => {
+  let textValidatorCalled = false;
+  const mockValidator = {
+    validateKey: (key: string) => {
+      if (/^[a-zA-Z][a-zA-Z0-9_-]*$/.test(key)) {
+        return true;
+      }
+      throw new ValidationError(`Invalid variable name: ${key}`);
+    },
+    validateTextContent: (_text: string) => {
+      textValidatorCalled = true;
+      return true;
+    },
+    validateVariables: (_variables: Record<string, unknown>) => {},
+  } as unknown as import("../../../src/validation/variable_validator.ts").VariableValidator;
 
-  const result = await variableReplacer.replaceVariables(template, variables);
-  assertEquals(result, "Hello test!");
+  const replacer = new VariableReplacer(logger, mockValidator);
+  replacer.replaceVariables(
+    "Hello {name}!" as import("../../../src/types/variables.ts").TextContent,
+    { name: "world" },
+  );
+  assertEquals(textValidatorCalled, true);
 });
 
-Deno.test("should validate variable values", async () => {
-  setupTest();
-  const template = "Hello {name}!" as TextContent;
-  const variables = { name: "test" };
+Deno.test("replaceVariables - calls validateVariables on group", () => {
+  let groupValidatorCalled = false;
+  const mockValidator = {
+    validateKey: (key: string) => {
+      if (/^[a-zA-Z][a-zA-Z0-9_-]*$/.test(key)) {
+        return true;
+      }
+      throw new ValidationError(`Invalid variable name: ${key}`);
+    },
+    validateTextContent: (_text: string) => true,
+    validateVariables: (_variables: Record<string, unknown>) => {
+      groupValidatorCalled = true;
+    },
+  } as unknown as import("../../../src/validation/variable_validator.ts").VariableValidator;
 
-  const result = await variableReplacer.replaceVariables(template, variables);
-  assertEquals(result, "Hello test!");
+  const replacer = new VariableReplacer(logger, mockValidator);
+  replacer.replaceVariables(
+    "Hello {name}!" as import("../../../src/types/variables.ts").TextContent,
+    { name: "world" },
+  );
+  assertEquals(groupValidatorCalled, true);
 });
 
-Deno.test("should handle empty template", async () => {
+Deno.test("replaceVariables - $& in values preserved (regex safety)", () => {
   setupTest();
-  const template = "" as TextContent;
-  const variables = { name: "test" };
-  const expectedOutput = "";
-
-  const result = await variableReplacer.replaceVariables(template, variables);
-  assertEquals(result, expectedOutput);
+  const result = variableReplacer.replaceVariables(
+    "Value: {val}" as import("../../../src/types/variables.ts").TextContent,
+    { val: "price $& here" },
+  );
+  assertEquals(result, "Value: price $& here");
 });
 
-Deno.test("should handle template with no variables", async () => {
+Deno.test("replaceVariables - whitespace { name } not matched (differs from replaceAll)", () => {
   setupTest();
-  const template = "Hello World!" as TextContent;
-  const variables = { name: "test" };
-  const expectedOutput = "Hello World!";
-
-  const result = await variableReplacer.replaceVariables(template, variables);
-  assertEquals(result, expectedOutput);
+  const result = variableReplacer.replaceVariables(
+    "Hello { name }!" as import("../../../src/types/variables.ts").TextContent,
+    { name: "world" },
+  );
+  // replaceVariables uses literal "{name}" search, so "{ name }" is NOT matched
+  assertEquals(result, "Hello { name }!");
 });
 
-Deno.test("should handle undefined variable values", async () => {
+Deno.test("replaceVariables - empty string value replaces with empty", () => {
   setupTest();
-  const template = "Hello {name}!" as TextContent;
-  const variables = { name: undefined };
-  const expectedOutput = "Hello !";
-
-  const result = await variableReplacer.replaceVariables(template, variables);
-  assertEquals(result, expectedOutput);
+  const result = variableReplacer.replaceVariables(
+    "Hello {name}!" as import("../../../src/types/variables.ts").TextContent,
+    { name: "" },
+  );
+  assertEquals(result, "Hello !");
 });
 
-Deno.test("should handle null variable values", async () => {
+Deno.test("replaceVariables - duplicate occurrences all replaced", () => {
   setupTest();
-  const template = "Hello {name}!" as TextContent;
-  const variables = { name: null };
-  const expectedOutput = "Hello !";
-
-  const result = await variableReplacer.replaceVariables(template, variables);
-  assertEquals(result, expectedOutput);
-});
-
-Deno.test("should discover template variables", () => {
-  setupTest();
-  const template = "Hello {name}! Your age is {age}. Optional: {optional}" as TextContent;
-  const expectedVariables = ["name", "age", "optional"];
-
-  const result = variableReplacer.extractVariables(template);
-  assertEquals(result, expectedVariables);
-});
-
-Deno.test("should handle template with no variables in discovery", () => {
-  setupTest();
-  const template = "Hello World!" as TextContent;
-  const expectedVariables: string[] = [];
-
-  const result = variableReplacer.extractVariables(template);
-  assertEquals(result, expectedVariables);
-});
-
-Deno.test("should handle template with special characters in discovery", () => {
-  setupTest();
-  const template = "Hello {name}! This is a special character: @#$%" as TextContent;
-  const expectedVariables = ["name"];
-
-  const result = variableReplacer.extractVariables(template);
-  assertEquals(result, expectedVariables);
+  const result = variableReplacer.replaceVariables(
+    "{name} and {name}" as import("../../../src/types/variables.ts").TextContent,
+    { name: "X" },
+  );
+  assertEquals(result, "X and X");
 });
