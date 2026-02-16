@@ -1,86 +1,33 @@
-# BreakdownPrompt - Project Context
+# BreakdownPrompt
 
-## Overview
-Deno TypeScript library for managing and generating prompts from templates with variable replacement.
-Published as `@tettuan/breakdownprompt` on JSR.
+テンプレートの変数置換でプロンプトを生成する Deno TypeScript ライブラリ。`@tettuan/breakdownprompt` として JSR に公開する。
 
-## Branch Rules (MUST FOLLOW)
+## Branch Rules
 
-**NEVER commit directly to `main` or `develop`.** All changes go through this flow:
-
-```
-feature/*, fix/*, refactor/*, docs/*  (work branches)
-  ↓ PR (squash merge)
-release/vX.Y.Z
-  ↓ PR (merge commit)
-develop
-  ↓ PR (merge commit)
-main → vtag → JSR publish (automatic)
-```
-
-### When starting any work:
-
-1. Determine the current release branch: `git branch -a | grep release`
-2. If a release branch exists, branch from it: `git checkout -b feature/xxx release/vX.Y.Z`
-3. If no release branch exists, create one from develop first:
-   ```
-   git checkout develop && git pull origin develop
-   git checkout -b release/vX.Y.Z
-   ```
-   Then branch from it: `git checkout -b feature/xxx`
-
-### When committing:
-
-- Commit to your work branch (feature/*, fix/*, refactor/*, docs/*)
-- NEVER commit to main or develop directly
-- Push and create PR to the release branch
-
-### Branch naming:
-
-| Type | Prefix | Example |
-|------|--------|---------|
-| New feature | `feature/` | `feature/add-custom-variables` |
-| Bug fix | `fix/` | `fix/path-validation-error` |
-| Refactoring | `refactor/` | `refactor/replacer-module` |
-| Documentation | `docs/` | `docs/update-api-reference` |
-| Release prep | `release/` | `release/v1.2.6` |
-
-### Prohibited operations:
-
-- `git push origin main` — NEVER
-- `git push origin develop` — NEVER
-- `git commit` while on main or develop — NEVER
-- `git checkout -b feature/* main` — NEVER (branch from release/*)
-- `git checkout -b feature/* develop` — NEVER (branch from release/*)
+main/develop への直接コミット・push は禁止。work branch → release/* → develop → main の順に PR でマージする。→ `/branch-management`
 
 ## Tech Stack
-- Runtime: Deno
-- Language: TypeScript (strict mode)
-- Testing: `deno test` with `@std/testing` and `@std/assert`
-- Logging: `@tettuan/breakdownlogger`
-- CI: `scripts/local_ci.sh` (local), GitHub Actions (remote)
 
-## Project Structure
-- `mod.ts` - Package entry point (public exports)
-- `src/` - Source code
-  - `core/` - Core logic (PromptManager, VariableReplacer, VariableMatcher, VariableProcessor)
-  - `validation/` - Validators (path, variable, markdown, reserved variable, parameter)
-  - `replacers/` - Variable replacer implementations (schema_file, input_text, input_text_file, destination_path)
-  - `types/` - Type definitions (PromptParams, PromptResult, Variables)
-  - `errors/` - Error classes (ValidationError, TemplateError, FileSystemError)
-  - `utils/` - Utilities (format, file, error handler)
-  - `version.ts` - VERSION constant and META
-- `tests/` - Test hierarchy
-  - `00_fixtures/` - Test fixtures and templates
-  - `01_unit/` - Unit tests
-  - `02_integration/` - Integration tests
-  - `03_system/` - System/E2E tests
-- `docs/` - Documentation (English *.md + Japanese *.ja.md)
-- `scripts/` - Shell scripts
-  - `local_ci.sh` - Local CI pipeline
-  - `bump_version.sh` - Version bump with PR workflow
+Deno / TypeScript (strict) / `@std/testing` + `@std/assert` / `@tettuan/breakdownlogger` / CI: `scripts/local_ci.sh` + GitHub Actions
+
+## Structure
+
+```
+mod.ts                  公開エクスポート
+src/core/               PromptManager, VariableReplacer, VariableMatcher, VariableProcessor
+src/validation/         path, variable, markdown, reserved variable, parameter
+src/replacers/          schema_file, input_text, input_text_file, destination_path
+src/types/              PromptParams, PromptResult, Variables
+src/errors/             ValidationError, TemplateError, FileSystemError
+src/utils/              format, file, error handler
+src/version.ts          VERSION, META
+tests/                  00_fixtures / 01_unit / 02_integration / 03_system
+docs/                   *.md (English) + *.ja.md (Japanese)
+scripts/                local_ci.sh, bump_version.sh
+```
 
 ## Public API
+
 ```typescript
 export { PromptManager } from "./src/core/prompt_manager.ts";
 export type { PromptResult } from "./src/types/prompt_result.ts";
@@ -91,20 +38,32 @@ export { META, VERSION } from "./src/version.ts";
 ```
 
 ## Conventions
-- Variable format in templates: `{variable_name}` (curly braces, snake_case, hyphens allowed)
-- Reserved variables: `schema_file`, `input_text`, `input_text_file`, `destination_path`
-- Formatting: 2-space indent, no tabs, 100 char line width, double quotes, semicolons
-- Test file naming: `*_test.ts`
-- Import policy: MUST use import map aliases from `deno.json` (e.g., `@std/assert`, `@std/path`). NEVER use inline `jsr:`, `npm:`, or `https:` prefixes in import statements (violates `no-import-prefix` lint rule)
 
-## Version Management
-- `deno.json` → `"version": "x.y.z"`
-- `src/version.ts` → `export const VERSION = "x.y.z"`
-- Both MUST match. Automated via `scripts/bump_version.sh`
+- テンプレート変数: `{snake_case}` (ハイフン可)。予約変数: `schema_file`, `input_text`, `input_text_file`, `destination_path`
+- フォーマット: 2スペース、100文字幅、ダブルクォート、セミコロン。テスト: `*_test.ts`
+- import: `deno.json` の import map エイリアス必須。インライン `jsr:`/`npm:`/`https:` は `no-import-prefix` lint 違反
 
 ## Commands
-- `deno task test` - Run tests
-- `deno task fmt` - Format code
-- `deno task lint` - Lint code
-- `scripts/local_ci.sh` - Full local CI
-- `scripts/bump_version.sh` - Version bump with PR workflow
+
+`deno task fmt` / `deno task lint` / → `/run-tests` (テスト) / `/local-ci` (CI) / `/bump-version` (バージョン)
+
+## Skills
+
+| Skill | 概要 |
+|-------|------|
+| `branch-management` | ブランチ戦略・PRフロー |
+| `bump-version` | バージョン同期 |
+| `release-procedure` | リリース手順 |
+| `local-ci` | ローカルCI |
+| `ci-troubleshooting` | CIエラー診断 |
+| `run-tests` | テスト実行 |
+| `review` | コードレビュー |
+| `fix-checklist` | 修正前の根本原因特定 |
+| `refactoring` | リファクタリング前の契約検証 |
+| `workflow` | Conductor パターンで委譲 |
+| `update-docs` | ドキュメント更新 |
+| `docs-consistency` | ドキュメント⇔実装の整合性 |
+| `update-changelog` | CHANGELOG更新 |
+| `absolute-path-checker` | 絶対パス混入チェック |
+| `breakdownlogger-implement-logger` | Logger配置・KEY命名 |
+| `breakdownlogger-debug-with-logger` | 3-phase デバッグ |

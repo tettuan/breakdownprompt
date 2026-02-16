@@ -42,8 +42,10 @@ export class TemplateFile {
    * @throws Error if file cannot be read
    */
   async read(filePath: string): Promise<string> {
+    this.logger.debug("read called", { filePath });
     try {
       const content = await this.fileUtils.readFile(filePath);
+      this.logger.debug("read returning", { contentLength: content.length });
       return content;
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : String(error);

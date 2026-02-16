@@ -71,7 +71,7 @@ export class PromptManager {
     pathValidator: PathValidator = new PathValidator(),
     variableValidator: VariableValidator = new VariableValidator(),
     fileUtils: FileUtils = new FileUtils(),
-    logger: BreakdownLogger = new BreakdownLogger(),
+    logger: BreakdownLogger = new BreakdownLogger("prompt"),
   ) {
     this.textValidator = textValidator;
     this.pathValidator = pathValidator;
@@ -93,6 +93,10 @@ export class PromptManager {
     templatePathOrContent: string,
     variables: Record<string, string>,
   ): Promise<PromptResult> {
+    this.logger.debug("generatePrompt called", {
+      templatePathOrContent: templatePathOrContent.substring(0, 80),
+      variableKeys: Object.keys(variables),
+    });
     try {
       let templateContent: string;
       let templatePath: string;
@@ -262,6 +266,12 @@ export class PromptManager {
         throw error;
       }
 
+      this.logger.debug("generatePrompt returning success", {
+        templatePath,
+        detected: detectedVariables.length,
+        replaced: replacedVariables.length,
+        remaining: remainingVariables.length,
+      });
       return {
         success: true,
         templatePath,
@@ -274,6 +284,7 @@ export class PromptManager {
       };
     } catch (error) {
       if (error instanceof ValidationError) {
+        this.logger.error("generatePrompt validation failed", { error: error.message });
         return {
           success: false,
           error: error.message,
@@ -337,8 +348,10 @@ export class PromptManager {
    * @throws {FileSystemError} If the template file cannot be read
    */
   private async loadTemplate(templatePath: string): Promise<string> {
+    this.logger.debug("loadTemplate called", { templatePath });
     try {
       const content = await this.fileUtils.readFile(templatePath);
+      this.logger.debug("loadTemplate returning", { contentLength: content.length });
       return content;
     } catch (error) {
       if (error instanceof Deno.errors.NotFound) {

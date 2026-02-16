@@ -56,7 +56,7 @@ export class VariableValidator {
   private reservedVariableValidator: ReservedVariableValidator;
 
   constructor() {
-    this.logger = new BreakdownLogger();
+    this.logger = new BreakdownLogger("validate");
     this.reservedVariableValidator = new ReservedVariableValidator();
   }
 

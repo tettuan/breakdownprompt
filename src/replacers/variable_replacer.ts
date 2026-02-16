@@ -8,7 +8,7 @@ import type {
 } from "../types.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
-const _logger = new BreakdownLogger();
+const logger = new BreakdownLogger("replace");
 
 /**
  * Options for variable replacement.
@@ -59,6 +59,7 @@ export class VariableReplacer implements VariableReplacer {
    * - Must be a valid variable name
    */
   validate(value: unknown): Promise<boolean> {
+    logger.debug("validate called", { value: typeof value === "string" ? value : typeof value });
     if (typeof value !== "string") {
       return Promise.resolve(false);
     }
@@ -76,6 +77,7 @@ export class VariableReplacer implements VariableReplacer {
    * - Returns the normalized value
    */
   async replace(value: unknown): Promise<string> {
+    logger.debug("replace called", { value: typeof value === "string" ? value : typeof value });
     if (typeof value !== "string") {
       return "";
     }
@@ -84,6 +86,7 @@ export class VariableReplacer implements VariableReplacer {
       return "";
     }
 
+    logger.debug("replace returning", { value });
     return value;
   }
 }

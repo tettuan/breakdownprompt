@@ -5,81 +5,40 @@ description: How to approach work. Applies to all tasks including implementation
 
 # Workflow
 
-Main Agent acts as conductor: plan, delegate, judge, integrate. Never do hands-on work yourself.
+Main Agent はコンテキストを判断に集中させるため、調査・実装を全て Sub Agent に委譲する Conductor パターンで動く。
 
-```mermaid
-flowchart LR
-    A[Plan] --> B[Done Criteria] --> C[Team] --> D[ToDo]
-    D --> E[Delegate] --> F[Record] --> G{Next?}
-    G -->|Y| E
-    G -->|N| H[Done]
-```
+## Conductor Rule
 
-## Conductor Pattern
-
-Delegate all investigation and implementation to Sub Agents to preserve context for decision-making.
+Plan → Done Criteria → Team → ToDo → Delegate → Record → Next の順で進める。
 
 | Do | Do NOT |
 |----|--------|
-| Plan, delegate, judge, integrate | Explore files, write code, run tests |
-| Record progress after each ToDo | Work on multiple ToDos simultaneously |
-| Launch parallel Sub Agents for independent tasks | Hold context that Sub Agents should hold |
+| 計画・委譲・判断・統合 | ファイル探索・コード記述・テスト実行 |
+| 各 ToDo 完了後に記録 | 複数 ToDo の同時作業 |
+| 独立タスクは並列 Sub Agent | Sub Agent が持つべきコンテキストを保持 |
 
-### Delegation criteria
+トリビアル修正（typo、3行以下）→ 自分で実行。それ以外 → 委譲。迷ったら委譲。
 
-| Condition | Action |
-|-----------|--------|
-| Trivial fix (typo, 3 lines) or single known-location edit | Self |
-| Investigation, multi-file change, or insufficient info | Delegate |
+## Sub Agent Types
 
-When in doubt, delegate.
-
-### Sub Agent types
-
-| Purpose | Agent Type |
-|---------|-----------|
-| Search, explore | Explore |
-| Design comparison | Plan |
-| Implement, test, verify | general-purpose |
+Explore (検索・探索) / Plan (設計比較) / general-purpose (実装・テスト・検証)
 
 ## Rules
 
-| # | Rule |
-|---|------|
-| 1 | Conductor delegates all hands-on work to Sub Agents |
-| 2 | Externalize thinking to `tmp/<task>/` (plan.md, progress.md, analysis.md) |
-| 3 | Complete one -> record -> next. No self-parallelism (Sub Agent parallelism is fine) |
-| 4 | Decompose Plan into ToDos via TaskCreate |
-| 5 | Team table in plan.md. First row is always Conductor. 1 role = 1 purpose |
-| 6 | Delegate by type: explore=Explore / design=Plan / implement+verify=general-purpose |
-| 7 | Define Done Criteria first. Incomplete until all items pass |
-| 8 | Record to progress.md immediately on completion |
-| 9 | Technical decisions: decide without asking. Policy decisions: present options with recommendation |
-| 10 | Visualize dependencies and ToDo map in analysis.md with Mermaid |
-| 11 | Structural code changes require `refactoring` skill first |
+1. 手作業は Sub Agent に委譲する
+2. 思考を `tmp/<task>/` に外化する (plan.md, progress.md, analysis.md)
+3. 1つ完了 → 記録 → 次へ（Sub Agent 並列は可）
+4. Plan を TaskCreate で ToDo に分解する
+5. plan.md に Team 表を書く（先頭行は常に Conductor）
+6. 技術判断は自分で決める。方針判断は選択肢+推奨を提示する
+7. 構造的コード変更には `/refactoring` skill を先に使う
 
-## tmp/ structure
+## tmp/ Structure
 
 ```
 tmp/<task>/
 ├── plan.md        # Goal, Done Criteria, Team, Approach, Scope
-├── progress.md    # Incremental records
+├── progress.md    # 逐次記録
 ├── analysis.md    # Mermaid diagrams
 └── investigation/ # Sub Agent results
-```
-
-## Plan template
-
-```markdown
-# Plan: <task name>
-## Goal
-## Done Criteria
-- [ ] <checkable condition>
-## Team
-| Role | Purpose | Agent Type | ToDo |
-|------|---------|-----------|------|
-| Conductor | Plan, delegate, judge, integrate | Main Agent | Overall |
-## Approach
-## Scope
-Do: / Do not:
 ```

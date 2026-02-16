@@ -33,7 +33,7 @@ export class ReservedVariableValidator {
   private readonly VALID_KEY_REGEX = /^[a-zA-Z][a-zA-Z0-9_-]*$/;
 
   constructor() {
-    this.logger = new BreakdownLogger();
+    this.logger = new BreakdownLogger("validate");
   }
 
   /**

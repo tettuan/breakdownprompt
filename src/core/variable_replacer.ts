@@ -32,6 +32,10 @@ export class VariableReplacer {
    * @returns Content with variables replaced
    */
   public replaceVariables(content: TextContent, variables: Record<string, unknown>): TextContent {
+    this.logger.debug("replaceVariables called", {
+      contentLength: content.length,
+      variableKeys: Object.keys(variables),
+    });
     // First validate all variable names
     for (const [key] of Object.entries(variables)) {
       try {
@@ -95,6 +99,7 @@ export class VariableReplacer {
       result = result.replace(`{${varName}}`, String(value)) as TextContent;
     }
 
+    this.logger.debug("replaceVariables returning", { resultLength: result.length });
     return result;
   }
 

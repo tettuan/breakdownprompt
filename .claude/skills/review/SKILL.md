@@ -7,45 +7,16 @@ allowed-tools: [Read, Grep, Glob, Bash]
 
 # Code Review
 
-Review code changes for quality and correctness.
+コード品質と規約準拠を担保するため、`$ARGUMENTS` 指定ファイル（未指定時は `git diff`）を以下の観点でレビューする。
 
-## Steps
+| 観点 | 基準 |
+|------|------|
+| 型安全性 | strict mode 準拠、`any` 禁止（正当理由なし）、`PromptResult`/`PromptParams`/`Variables` 型の適切な使用 |
+| 命名 | テンプレート変数: `{snake_case}`、TS: camelCase (変数/関数), PascalCase (型/クラス)、テスト: `*_test.ts` |
+| エラー処理 | `ValidationError`/`TemplateError`/`FileSystemError` を使用、`PromptResult.success` で伝搬 |
+| パス検証 | `src/validation/path_validator.ts` 経由、絶対パス禁止 (`/absolute-path-checker`) |
+| テスト | 新規・変更に対応するテストが `01_unit/` → `02_integration/` → `03_system/` に存在 |
+| import | `deno.json` の import map エイリアス必須、インライン `jsr:`/`npm:`/`https:` 禁止 |
+| フォーマット | 2スペース、100文字幅、ダブルクォート、セミコロン |
 
-1. If `$ARGUMENTS` is provided, review the specified file or path.
-   Otherwise, review staged or unstaged git changes via `git diff`.
-
-2. Check for:
-
-### Type Safety
-- Strict mode compliance
-- Proper use of `PromptResult`, `PromptParams`, `Variables` types
-- No `any` types without justification
-
-### Naming Conventions
-- Template variables: `{snake_case}` with curly braces (hyphens allowed)
-- TypeScript code: camelCase for variables/functions, PascalCase for types/classes
-- Test files: `*_test.ts`
-
-### Error Handling
-- Use project error classes: `ValidationError`, `TemplateError`, `FileSystemError`
-- Proper error propagation via `PromptResult.success`
-
-### Path Validation
-- File-related parameters validated through `src/validation/path_validator.ts`
-- No absolute paths in implementation code (see `/absolute-path-checker`)
-
-### Test Coverage
-- Corresponding tests exist in `tests/` for new/changed functionality
-- Tests follow the hierarchy: `01_unit/` -> `02_integration/` -> `03_system/`
-
-### Import Policy (MUST)
-- **MUST** use import map aliases from `deno.json` (e.g., `@std/assert`, `@std/path`)
-- **NEVER** use inline `jsr:`, `npm:`, or `https://deno.land/` in import statements
-- Violation causes `no-import-prefix` lint failure in CI
-- New dependencies: add to `deno.json` imports first, then use the alias
-
-### Formatting
-- 2-space indent, no tabs, 100 char line width
-- Double quotes, semicolons
-
-3. Report findings with file paths and line numbers.
+ファイルパスと行番号付きで報告する。

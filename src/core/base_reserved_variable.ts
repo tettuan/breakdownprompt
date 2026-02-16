@@ -32,7 +32,7 @@ export abstract class BaseReservedVariable {
   protected value: unknown;
 
   constructor(name: string, type: string, value: unknown) {
-    this.logger = new BreakdownLogger();
+    this.logger = new BreakdownLogger("replace");
     this.name = name;
     this.type = type;
     this.value = value;

@@ -14,7 +14,7 @@ import { ValidationError } from "../errors.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { fromFileUrl, isAbsolute, normalize } from "@std/path";
 
-const _logger = new BreakdownLogger();
+const logger = new BreakdownLogger("validate");
 
 /**
  * A class for validating file and directory paths.
@@ -52,7 +52,7 @@ export class PathValidator {
       Deno.cwd(),
     ];
 
-    _logger.debug(`Allowed prefixes: ${this.allowedPrefixes.join(", ")}`);
+    logger.debug("PathValidator initialized", { allowedPrefixes: this.allowedPrefixes });
   }
 
   /**
@@ -62,9 +62,12 @@ export class PathValidator {
    * @throws {ValidationError} If the path is invalid
    */
   async validateFilePath(path: string): Promise<string> {
+    logger.debug("validateFilePath called", { path });
     try {
       await this.validatePath(path);
-      return this.normalizePath(path);
+      const normalized = this.normalizePath(path);
+      logger.debug("validateFilePath returning", { normalized });
+      return normalized;
     } catch (error) {
       if (error instanceof ValidationError) {
         throw error;
@@ -80,9 +83,12 @@ export class PathValidator {
    * @throws {ValidationError} If the path is invalid
    */
   async validateDirectoryPath(path: string): Promise<string> {
+    logger.debug("validateDirectoryPath called", { path });
     try {
       await this.validatePath(path);
-      return this.normalizePath(path);
+      const normalized = this.normalizePath(path);
+      logger.debug("validateDirectoryPath returning", { normalized });
+      return normalized;
     } catch (error) {
       if (error instanceof ValidationError) {
         throw error;

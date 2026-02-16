@@ -39,7 +39,7 @@ export class VariableProcessor {
   private logger: BreakdownLogger;
 
   constructor() {
-    this.logger = new BreakdownLogger();
+    this.logger = new BreakdownLogger("replace");
   }
 
   // Base class processing
