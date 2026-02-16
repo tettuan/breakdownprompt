@@ -138,7 +138,7 @@ export class FileUtils {
    */
   joinPaths(...paths: string[]): string {
     try {
-      return join(...paths);
+      return join(...paths as [string, ...string[]]);
     } catch (_error) {
       throw new ValidationError("Failed to join paths");
     }
