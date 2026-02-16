@@ -34,7 +34,12 @@ export class TemplateLoader {
   }
 
   isFilePath(input: string): boolean {
-    return input.includes("/");
+    const result = input.includes("/");
+    this.logger.debug("isFilePath decision", {
+      input: input.substring(0, 40),
+      isFile: result,
+    });
+    return result;
   }
 
   async load(input: string): Promise<TemplateLoadResult> {
@@ -54,10 +59,17 @@ export class TemplateLoader {
         content = await this.fileUtils.readFile(templatePath);
       } catch (error) {
         if (error instanceof Deno.errors.PermissionDenied) {
+          this.logger.error("PermissionDenied reading template", {
+            templatePath,
+          });
           throw new ValidationError(
             `${PermissionErrorMessages.READ_TEMPLATE}: Cannot read template file at ${templatePath}`,
           );
         }
+        this.logger.error("Unexpected error reading template", {
+          templatePath,
+          error: String(error),
+        });
         throw error;
       }
 

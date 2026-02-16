@@ -106,7 +106,7 @@ export class VariableReplacer {
         this.logger.debug("Replacing variable", { varName, value });
         result = result.replace(
           new RegExp(fullMatch.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g"),
-          value,
+          () => value,
         );
         replaced.push(varName);
       } else {
@@ -176,16 +176,22 @@ export class VariableReplacer {
       matches.push({ varName: match[1].trim() });
     }
 
+    this.logger.debug("replaceVariables: replacing", {
+      matchCount: matches.length,
+      stringKeys: Object.keys(stringVariables),
+    });
+
     let result: string = content;
     for (const { varName } of matches.reverse()) {
       const value = variables[varName];
 
       if (value === undefined || value === null) {
-        result = result.replace(`{${varName}}`, "");
+        result = result.replace(`{${varName}}`, () => "");
         continue;
       }
 
-      result = result.replace(`{${varName}}`, String(value));
+      const stringValue = String(value);
+      result = result.replace(`{${varName}}`, () => stringValue);
     }
 
     this.logger.debug("replaceVariables returning", {

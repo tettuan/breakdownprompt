@@ -12,7 +12,7 @@
  * - [プロンプト管理システム仕様書](./docs/index.ja.md#プロンプト管理システム仕様書)
  */
 
-import { assertEquals } from "@std/assert";
+import { assertEquals, assertRejects } from "@std/assert";
 import { PromptManager } from "../../../src/core/prompt_manager.ts";
 import { FileUtils } from "../../../src/utils/file_utils.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
@@ -177,6 +177,43 @@ Deno.test({
     });
 
     await cleanupTest();
+  },
+  sanitizeResources: false,
+  sanitizeOps: false,
+});
+
+// --- writePrompt tests ---
+
+Deno.test({
+  name: "PromptManager - writePrompt",
+  async fn(t): Promise<void> {
+    const tmpDir = await Deno.makeTempDir();
+
+    await t.step("writes content to file", async () => {
+      const pm = new PromptManager(textValidator, undefined, undefined, undefined, logger);
+      const dest = `${tmpDir}/write_test.md`;
+      await pm.writePrompt("Hello prompt!", dest);
+      const content = await Deno.readTextFile(dest);
+      assertEquals(content, "Hello prompt!");
+    });
+
+    await t.step("throws for nonexistent directory", async () => {
+      const pm = new PromptManager(textValidator, undefined, undefined, undefined, logger);
+      await assertRejects(
+        () => pm.writePrompt("content", `${tmpDir}/no_such_dir/file.md`),
+      );
+    });
+
+    await t.step("overwrites existing file", async () => {
+      const pm = new PromptManager(textValidator, undefined, undefined, undefined, logger);
+      const dest = `${tmpDir}/overwrite_test.md`;
+      await pm.writePrompt("first", dest);
+      await pm.writePrompt("second", dest);
+      const content = await Deno.readTextFile(dest);
+      assertEquals(content, "second");
+    });
+
+    await Deno.remove(tmpDir, { recursive: true });
   },
   sanitizeResources: false,
   sanitizeOps: false,

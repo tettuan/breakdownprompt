@@ -129,12 +129,24 @@ export class PromptManager {
    * @param destinationPath - Path to write the prompt to
    */
   async writePrompt(content: string, destinationPath: string): Promise<void> {
+    this.logger.debug("writePrompt called", {
+      contentLength: content.length,
+      destinationPath,
+    });
     try {
       await this.fileUtils.writeFile(destinationPath, content);
+      this.logger.debug("writePrompt completed", { destinationPath });
     } catch (error) {
       if (error instanceof Deno.errors.NotFound) {
+        this.logger.error("writePrompt failed: directory not found", {
+          destinationPath,
+        });
         throw new Error(`Cannot write to file: ${destinationPath}`);
       }
+      this.logger.error("writePrompt failed: unexpected error", {
+        destinationPath,
+        error: String(error),
+      });
       throw error;
     }
   }
