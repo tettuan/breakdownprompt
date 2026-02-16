@@ -10,7 +10,7 @@
  * across different execution contexts, including tests and subprocesses.
  * @constant
  */
-export const VERSION = "1.2.7";
+export const VERSION = "1.2.8";
 
 /**
  * Metadata about the package.
