@@ -72,10 +72,6 @@ export class TemplateLoader {
         });
         throw error;
       }
-
-      if (!content) {
-        throw new ValidationError(`Template not found: ${templatePath}`);
-      }
     } else {
       content = input;
       templatePath = "inline";

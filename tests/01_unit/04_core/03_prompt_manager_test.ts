@@ -14,6 +14,7 @@
 
 import { assertEquals, assertRejects } from "@std/assert";
 import { PromptManager } from "../../../src/core/prompt_manager.ts";
+import { ValidationError } from "../../../src/errors.ts";
 import { FileUtils } from "../../../src/utils/file_utils.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { TextValidator } from "../../../src/validation/markdown_validator.ts";
@@ -201,6 +202,8 @@ Deno.test({
       const pm = new PromptManager(textValidator, undefined, undefined, undefined, logger);
       await assertRejects(
         () => pm.writePrompt("content", `${tmpDir}/no_such_dir/file.md`),
+        ValidationError,
+        "Failed to write file",
       );
     });
 
@@ -215,6 +218,4 @@ Deno.test({
 
     await Deno.remove(tmpDir, { recursive: true });
   },
-  sanitizeResources: false,
-  sanitizeOps: false,
 });

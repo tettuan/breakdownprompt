@@ -22,7 +22,7 @@ let variableReplacer: VariableReplacer;
 function setupTest(): void {
   mockVariableValidator = {
     validateKey: (key: string) => {
-      if (/^[a-zA-Z][a-zA-Z0-9_]*$/.test(key)) {
+      if (/^[a-zA-Z][a-zA-Z0-9_-]*$/.test(key)) {
         return true;
       }
       throw new ValidationError(`Invalid variable name: ${key}`);
@@ -80,7 +80,7 @@ Deno.test("validateKeys - should accept valid keys", () => {
 Deno.test("validateKeys - should reject invalid keys", () => {
   setupTest();
   assertThrows(
-    () => variableReplacer.validateKeys({ "invalid-name": "test" }),
+    () => variableReplacer.validateKeys({ "123invalid": "test" }),
     ValidationError,
     "Invalid variable name",
   );
@@ -221,7 +221,7 @@ Deno.test("replaceAll - adjacent {a}{b} both replaced independently", () => {
   setupTest();
   const result = variableReplacer.replaceAll("{a}{b}", { a: "X", b: "Y" });
   assertEquals(result.content, "XY");
-  assertEquals(result.replaced.length, 2);
+  assertEquals(result.replaced, ["b", "a"]);
 });
 
 Deno.test("replaceAll - whitespace { name } trimmed to name", () => {
@@ -239,9 +239,8 @@ Deno.test("replaceAll - duplicate {name}...{name} all replaced", () => {
     name: "X",
   });
   assertEquals(result.content, "X and X");
-  // replaceAll processes each match, so "name" appears once per occurrence
-  assertEquals(result.replaced.includes("name"), true);
-  assertEquals(result.remaining.length, 0);
+  assertEquals(result.replaced, ["name", "name"]);
+  assertEquals(result.remaining, []);
 });
 
 // --- replaceVariables ---
@@ -299,7 +298,7 @@ Deno.test("replaceVariables - calls validateTextContent on values", () => {
   let textValidatorCalled = false;
   const mockValidator = {
     validateKey: (key: string) => {
-      if (/^[a-zA-Z][a-zA-Z0-9_]*$/.test(key)) {
+      if (/^[a-zA-Z][a-zA-Z0-9_-]*$/.test(key)) {
         return true;
       }
       throw new ValidationError(`Invalid variable name: ${key}`);
@@ -323,7 +322,7 @@ Deno.test("replaceVariables - calls validateVariables on group", () => {
   let groupValidatorCalled = false;
   const mockValidator = {
     validateKey: (key: string) => {
-      if (/^[a-zA-Z][a-zA-Z0-9_]*$/.test(key)) {
+      if (/^[a-zA-Z][a-zA-Z0-9_-]*$/.test(key)) {
         return true;
       }
       throw new ValidationError(`Invalid variable name: ${key}`);
@@ -349,4 +348,32 @@ Deno.test("replaceVariables - $& in values preserved (regex safety)", () => {
     { val: "price $& here" },
   );
   assertEquals(result, "Value: price $& here");
+});
+
+Deno.test("replaceVariables - whitespace { name } not matched (differs from replaceAll)", () => {
+  setupTest();
+  const result = variableReplacer.replaceVariables(
+    "Hello { name }!" as import("../../../src/types/variables.ts").TextContent,
+    { name: "world" },
+  );
+  // replaceVariables uses literal "{name}" search, so "{ name }" is NOT matched
+  assertEquals(result, "Hello { name }!");
+});
+
+Deno.test("replaceVariables - empty string value replaces with empty", () => {
+  setupTest();
+  const result = variableReplacer.replaceVariables(
+    "Hello {name}!" as import("../../../src/types/variables.ts").TextContent,
+    { name: "" },
+  );
+  assertEquals(result, "Hello !");
+});
+
+Deno.test("replaceVariables - duplicate occurrences all replaced", () => {
+  setupTest();
+  const result = variableReplacer.replaceVariables(
+    "{name} and {name}" as import("../../../src/types/variables.ts").TextContent,
+    { name: "X" },
+  );
+  assertEquals(result, "X and X");
 });

@@ -137,13 +137,7 @@ export class PromptManager {
       await this.fileUtils.writeFile(destinationPath, content);
       this.logger.debug("writePrompt completed", { destinationPath });
     } catch (error) {
-      if (error instanceof Deno.errors.NotFound) {
-        this.logger.error("writePrompt failed: directory not found", {
-          destinationPath,
-        });
-        throw new Error(`Cannot write to file: ${destinationPath}`);
-      }
-      this.logger.error("writePrompt failed: unexpected error", {
+      this.logger.error("writePrompt failed", {
         destinationPath,
         error: String(error),
       });

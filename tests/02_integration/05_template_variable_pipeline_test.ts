@@ -7,7 +7,7 @@
  * - Ensure error propagation across pipeline stages
  */
 
-import { assertEquals, assertRejects } from "@std/assert";
+import { assertEquals, assertRejects, assertThrows } from "@std/assert";
 import { TemplateLoader } from "../../src/core/template_loader.ts";
 import { VariableReplacer } from "../../src/core/variable_replacer.ts";
 import { ValidationError } from "../../src/errors.ts";
@@ -75,8 +75,6 @@ Deno.test({
       await cleanupPipeline();
     }
   },
-  sanitizeResources: false,
-  sanitizeOps: false,
 });
 
 Deno.test({
@@ -95,8 +93,6 @@ Deno.test({
       await cleanupPipeline();
     }
   },
-  sanitizeResources: false,
-  sanitizeOps: false,
 });
 
 Deno.test({
@@ -121,8 +117,6 @@ Deno.test({
       await cleanupPipeline();
     }
   },
-  sanitizeResources: false,
-  sanitizeOps: false,
 });
 
 Deno.test({
@@ -146,8 +140,6 @@ Deno.test({
       await cleanupPipeline();
     }
   },
-  sanitizeResources: false,
-  sanitizeOps: false,
 });
 
 Deno.test({
@@ -158,13 +150,12 @@ Deno.test({
       await assertRejects(
         () => templateLoader.load(`${tmpDir}/nonexistent.md`),
         ValidationError,
+        "Template not found",
       );
     } finally {
       await cleanupPipeline();
     }
   },
-  sanitizeResources: false,
-  sanitizeOps: false,
 });
 
 Deno.test({
@@ -176,14 +167,12 @@ Deno.test({
       await assertRejects(
         () => templateLoader.load(templatePath),
         ValidationError,
-        "Template not found",
+        "Template is empty",
       );
     } finally {
       await cleanupPipeline();
     }
   },
-  sanitizeResources: false,
-  sanitizeOps: false,
 });
 
 Deno.test({
@@ -192,19 +181,15 @@ Deno.test({
     await setupPipeline();
     try {
       const loaded = await templateLoader.load("Hello {schema_file}!");
-      // validateKeys rejects empty key
-      try {
-        variableReplacer.validateKeys({ "": "value" });
-        throw new Error("Should have thrown");
-      } catch (e) {
-        assertEquals(e instanceof ValidationError, true);
-      }
+      assertThrows(
+        () => variableReplacer.validateKeys({ "": "value" }),
+        ValidationError,
+        "Invalid variable name",
+      );
       // But the template loads successfully
       assertEquals(loaded.content, "Hello {schema_file}!");
     } finally {
       await cleanupPipeline();
     }
   },
-  sanitizeResources: false,
-  sanitizeOps: false,
 });

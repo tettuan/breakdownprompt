@@ -98,6 +98,16 @@ Deno.test("isFilePath - braces only returns false", () => {
   assertEquals(loader.isFilePath("{variable_name}"), false);
 });
 
+Deno.test("isFilePath - content with slash returns true (known limitation)", () => {
+  const loader = new TemplateLoader(
+    createMockPathValidator(),
+    createMockFileUtils(),
+    logger,
+  );
+  // isFilePath uses input.includes("/") which misidentifies slashed content
+  assertEquals(loader.isFilePath("content with / slash"), true);
+});
+
 // --- load() file path branch ---
 
 Deno.test("load - loads file content (happy path)", async () => {
@@ -137,7 +147,7 @@ Deno.test("load - throws for empty file content", async () => {
   await assertRejects(
     () => loader.load("path/to/empty.md"),
     ValidationError,
-    "Template not found",
+    "Template is empty",
   );
 });
 
