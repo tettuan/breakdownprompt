@@ -31,8 +31,7 @@ LOG_LEVEL=debug LOG_KEY=<key> LOG_LENGTH=W deno test --allow-env --allow-read --
 
 | KEY | 対象 |
 |-----|------|
-| `prompt` | PromptManager（オーケストレーション） |
-| `template` | TemplateFile（テンプレート読込・解析） |
+| `prompt` | PromptManager（オーケストレーション。TemplateFile のログもこの KEY で出力） |
 | `replace` | VariableReplacer/Matcher/Processor（変数置換） |
 | `validate` | PathValidator/VariableValidator/ParameterValidator（全検証） |
 | `file` | FileUtils（ファイルI/O） |

@@ -9,7 +9,7 @@
     "jsr:@std/path@1": "1.0.9",
     "jsr:@std/path@~0.220.1": "0.220.1",
     "jsr:@std/testing@~0.220.1": "0.220.1",
-    "jsr:@tettuan/breakdownlogger@^1.1.2": "1.1.2"
+    "jsr:@tettuan/breakdownlogger@^1.1.3": "1.1.3"
   },
   "jsr": {
     "@std/assert@0.220.1": {
@@ -52,8 +52,8 @@
         "jsr:@std/assert@~0.220.1"
       ]
     },
-    "@tettuan/breakdownlogger@1.1.2": {
-      "integrity": "eac0a4e434f0d1bbb4db7eaa15fb05092c67b82fb4f963da68537f729156e8f2"
+    "@tettuan/breakdownlogger@1.1.3": {
+      "integrity": "2a588e7449cbf9b662da087d713099912065475fd2e21da3f94d67f398f6549e"
     }
   },
   "redirects": {
@@ -184,7 +184,7 @@
       "jsr:@std/log@~0.224.14",
       "jsr:@std/path@~0.220.1",
       "jsr:@std/testing@^1.0.11",
-      "jsr:@tettuan/breakdownlogger@^1.1.2"
+      "jsr:@tettuan/breakdownlogger@^1.1.3"
     ]
   }
 }
