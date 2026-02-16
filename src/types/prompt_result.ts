@@ -61,34 +61,3 @@ export interface PromptResult {
     remaining: string[];
   };
 }
-
-/**
- * @deprecated Use PromptResult instead
- */
-export interface PromptSuccessResult {
-  /** Operation succeeded */
-  success: true;
-  /** The generated prompt content */
-  prompt: string;
-  /** List of variables found in the template */
-  variables: string[];
-  /** List of unknown variables found in the template */
-  unknownVariables?: string[];
-}
-
-/**
- * @deprecated Use PromptResult instead
- */
-export interface PromptErrorResult {
-  /** Operation failed */
-  success: false;
-  /** Error message explaining the failure */
-  error: string;
-  /** List of unknown variables found in the template */
-  unknownVariables?: string[];
-}
-
-/**
- * @deprecated Use PromptResult instead
- */
-export type PromptGenerationResult = PromptSuccessResult | PromptErrorResult;

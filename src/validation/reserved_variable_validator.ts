@@ -13,7 +13,6 @@
 
 import { ValidationError } from "../errors.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import type { TextContent as _TextContent } from "../types.ts";
 
 // Define reserved variable names
 const RESERVED_VARIABLES = new Set([

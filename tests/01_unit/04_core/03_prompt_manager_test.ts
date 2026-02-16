@@ -19,7 +19,7 @@ import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { TextValidator } from "../../../src/validation/markdown_validator.ts";
 import { PathValidator } from "../../../src/validation/path_validator.ts";
 import { VariableValidator } from "../../../src/validation/variable_validator.ts";
-import type { TextContent } from "../../../src/types.ts";
+import type { TextContent } from "../../../src/types/variables.ts";
 
 const logger = new BreakdownLogger();
 const textValidator = new TextValidator();
