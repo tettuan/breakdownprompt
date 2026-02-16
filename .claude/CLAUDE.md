@@ -42,6 +42,7 @@ export { META, VERSION } from "./src/version.ts";
 - テンプレート変数: `{snake_case}` (ハイフン可)。予約変数: `schema_file`, `input_text`, `input_text_file`, `destination_path`
 - フォーマット: 2スペース、100文字幅、ダブルクォート、セミコロン。テスト: `*_test.ts`
 - import: `deno.json` の import map エイリアス必須。インライン `jsr:`/`npm:`/`https:` は `no-import-prefix` lint 違反
+- テストには実行プロセスのデバッグ用に `@tettuan/breakdownlogger` を組み込む。配置・KEY命名は → `/breakdownlogger-implement-logger`、デバッグ実行は → `/breakdownlogger-debug-with-logger`
 
 ## Commands
 
