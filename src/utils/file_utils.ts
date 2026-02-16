@@ -15,7 +15,7 @@ import { exists } from "@std/fs";
 import { dirname, type fromFileUrl as _fromFileUrl, join, normalize, resolve } from "@std/path";
 import { PermissionErrorMessages } from "../errors/permission_errors.ts";
 
-const _logger = new BreakdownLogger();
+const logger = new BreakdownLogger("file");
 const pathValidator = new PathValidator();
 
 /**
@@ -29,6 +29,7 @@ export class FileUtils {
    * @throws {ValidationError} If the path is invalid or access is denied
    */
   async exists(path: string): Promise<boolean> {
+    logger.debug("exists called", { path });
     try {
       const normalizedPath = await pathValidator.validateFilePath(path);
       const absolutePath = resolve(normalizedPath);
@@ -48,10 +49,13 @@ export class FileUtils {
    * @throws {ValidationError} If the file cannot be read
    */
   async readFile(path: string): Promise<string> {
+    logger.debug("readFile called", { path });
     try {
       const normalizedPath = await pathValidator.validateFilePath(path);
       const absolutePath = resolve(normalizedPath);
-      return await Deno.readTextFile(absolutePath);
+      const content = await Deno.readTextFile(absolutePath);
+      logger.debug("readFile returning", { path, contentLength: content.length });
+      return content;
     } catch (_error) {
       if (_error instanceof ValidationError) {
         throw _error;
@@ -75,6 +79,7 @@ export class FileUtils {
    * @throws {ValidationError} If the file cannot be written
    */
   async writeFile(path: string, content: string): Promise<void> {
+    logger.debug("writeFile called", { path, contentLength: content.length });
     try {
       const normalizedPath = await pathValidator.validateFilePath(path);
       const absolutePath = resolve(normalizedPath);
@@ -133,7 +138,7 @@ export class FileUtils {
    */
   joinPaths(...paths: string[]): string {
     try {
-      return join(...paths);
+      return join(...paths as [string, ...string[]]);
     } catch (_error) {
       throw new ValidationError("Failed to join paths");
     }

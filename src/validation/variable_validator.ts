@@ -42,7 +42,7 @@
 
 import { ValidationError } from "../errors.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import type { TextContent, ValidVariableKey } from "../types.ts";
+import type { TextContent, ValidVariableKey } from "../types/variables.ts";
 import { TemplateError } from "../errors.ts";
 import { ReservedVariableValidator } from "./reserved_variable_validator.ts";
 
@@ -56,7 +56,7 @@ export class VariableValidator {
   private reservedVariableValidator: ReservedVariableValidator;
 
   constructor() {
-    this.logger = new BreakdownLogger();
+    this.logger = new BreakdownLogger("validate");
     this.reservedVariableValidator = new ReservedVariableValidator();
   }
 

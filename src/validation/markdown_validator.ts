@@ -7,7 +7,7 @@
  * - Check for basic text structure
  */
 
-import type { TextContent } from "../types.ts";
+import type { TextContent } from "../types/variables.ts";
 import { ValidationError } from "../errors.ts";
 
 /**

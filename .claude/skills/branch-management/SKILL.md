@@ -4,117 +4,37 @@ description: Review and guide branch strategy when creating PRs, merging, or cre
 allowed-tools: [Bash, Read, Grep, Glob]
 ---
 
-# Branch Management Guide
+# Branch Management
 
-## Purpose
-
-Manage branch strategy, naming conventions, and PR rules for breakdownprompt.
-
-- Full release flow (version bump -> tag -> merge): see `/release-procedure` skill
-- CI execution and troubleshooting: see `/local-ci` skill
-
-## Branch Strategy
-
-### Flow
-
-```mermaid
-flowchart LR
-    subgraph Protected["Protected (no direct push)"]
-        main[main]
-        develop[develop]
-    end
-
-    subgraph Release["Release branches"]
-        release[release/vX.Y.Z]
-    end
-
-    subgraph Work["Work branches"]
-        feature[feature/*]
-        fix[fix/*]
-        refactor[refactor/*]
-        docs[docs/*]
-    end
-
-    develop -->|branch from| release
-    release -->|branch from| feature
-    release -->|branch from| fix
-    release -->|branch from| refactor
-    release -->|branch from| docs
-
-    feature -->|PR| release
-    fix -->|PR| release
-    refactor -->|PR| release
-    docs -->|PR| release
-
-    release -->|PR| develop
-    develop -->|PR| main
-```
-
-### Merge Direction
-
-```
-Work branch → release/vX.Y.Z → develop → main → vtag
-```
+main/develop への直接 push を防ぐため、work branch → release/* → develop → main の順に PR でマージする。
 
 ## Rules
 
-| Operation | Allowed | Prohibited |
-|-----------|---------|------------|
-| Changes to main | PR merge from develop only | Direct push, merge from other branches |
-| Changes to develop | PR merge from release/* only | Direct push |
-| Create release/* | Branch from develop | Branch from main or work branches |
-| Create work branches | Branch from release/* | Branch from main or develop directly |
+| 操作 | 許可 | 禁止 |
+|------|------|------|
+| main 変更 | develop からの PR merge のみ | 直接 push、他ブランチからの merge |
+| develop 変更 | release/* からの PR merge のみ | 直接 push |
+| release/* 作成 | develop から分岐 | main や work branch から分岐 |
+| work branch 作成 | release/* から分岐 | main や develop から分岐 |
 
 ## Procedures
 
-### Create a work branch
-
 ```bash
-git checkout release/vX.Y.Z
-git checkout -b feature/my-feature
+# Work branch 作成
+git checkout release/vX.Y.Z && git checkout -b feature/my-feature
+
+# PR 作成
+gh pr create --base release/vX.Y.Z   # work → release
+gh pr create --base develop           # release → develop
+gh pr create --base main              # develop → main
+
+# Merge (CI pass 後)
+gh pr merge --squash   # work → release (履歴クリーン)
+gh pr merge --merge    # release → develop / develop → main (履歴保持)
 ```
 
-### Create a PR
+## Branch Naming
 
-| Current branch | PR target | Command |
-|---------------|-----------|---------|
-| feature/*, fix/*, refactor/*, docs/* | release/vX.Y.Z | `gh pr create --base release/vX.Y.Z` |
-| release/* | develop | `gh pr create --base develop` |
-| develop | main | `gh pr create --base main` |
+`feature/*` (新機能) / `fix/*` (バグ修正) / `refactor/*` (リファクタ) / `docs/*` (ドキュメント) / `release/vX.Y.Z` (リリース)
 
-### Merge a PR
-
-1. Verify CI passes: `gh pr checks <PR#>`
-2. Merge with appropriate strategy:
-
-| Merge method | Use case | Command |
-|-------------|----------|---------|
-| Squash | Work branch -> release (clean history) | `gh pr merge --squash` |
-| Merge | release -> develop (preserve history) | `gh pr merge --merge` |
-| Merge | develop -> main (preserve history) | `gh pr merge --merge` |
-
-3. Update local:
-
-```bash
-git checkout <target-branch>
-git pull origin <target-branch>
-```
-
-## Branch naming conventions
-
-```
-feature/*  - New features
-fix/*      - Bug fixes
-refactor/* - Refactoring
-docs/*     - Documentation changes
-release/vX.Y.Z - Release preparation
-```
-
-## Warning patterns
-
-| Operation | Warning |
-|-----------|---------|
-| `git push origin main` | Direct push to main is prohibited. Create a PR from develop. |
-| `git push origin develop` | Direct push to develop is prohibited. Create a PR from release/*. |
-| `git checkout -b feature/* develop` | Work branches must branch from release/*. |
-| `git merge main` | Merging from main is not expected. Check the branch origin. |
+リリースフロー全体は `/release-procedure`、CI は `/local-ci` を参照。

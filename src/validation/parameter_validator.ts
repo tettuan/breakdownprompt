@@ -24,10 +24,11 @@ export class ParameterValidator {
   private logger: BreakdownLogger;
 
   constructor() {
-    this.logger = new BreakdownLogger();
+    this.logger = new BreakdownLogger("validate");
   }
 
   validate(params: Parameters | null | undefined): ValidationResult {
+    this.logger.debug("validate called", { params });
     // Check if params is null or undefined
     if (params === null || params === undefined) {
       return {
