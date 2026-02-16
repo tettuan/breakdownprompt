@@ -37,6 +37,11 @@ export { FileSystemError, TemplateError, ValidationError } from "./src/errors.ts
 export { META, VERSION } from "./src/version.ts";
 ```
 
+## Agent Strategy
+
+- 調査・実装・テストなど非自明なタスクには必ず Team または Sub-agent (Task tool) を使い、main コンテキストの Token をクリーンに保つこと。
+- main エージェントは指揮・判断に専念し、重い処理はサブエージェントへ委譲する。
+
 ## Conventions
 
 - テンプレート変数: `{snake_case}` (ハイフン可)。予約変数: `schema_file`, `input_text`, `input_text_file`, `destination_path`
